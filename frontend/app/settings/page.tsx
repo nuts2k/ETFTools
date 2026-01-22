@@ -40,8 +40,8 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background pb-20">
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50">
-        <div className="px-5 pt-4 pb-3 flex items-center justify-between">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">设置</h1>
+        <div className="flex h-14 items-center justify-between px-5">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">设置</h1>
         </div>
       </header>
 

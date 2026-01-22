@@ -11,11 +11,13 @@ export default function WatchlistPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md px-6 py-3 flex items-center justify-between pt-safe">
-        <h1 className="text-2xl font-extrabold tracking-tight">自选</h1>
-        <button className="flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-muted transition-colors text-muted-foreground">
-          <Edit3 className="h-5 w-5" />
-        </button>
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50">
+        <div className="flex h-14 items-center justify-between px-5">
+          <h1 className="text-2xl font-bold tracking-tight">自选</h1>
+          <button className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-secondary transition-colors text-muted-foreground -mr-2">
+            <Edit3 className="h-6 w-6" />
+          </button>
+        </div>
       </header>
 
       {/* List Header */}

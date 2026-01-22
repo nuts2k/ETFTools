@@ -123,14 +123,16 @@ export default function ETFDetailPage() {
   return (
     <div className="min-h-screen bg-background pb-48 relative">
       {/* Header */}
-      <header className="sticky top-0 z-50 flex items-center justify-center bg-background/95 px-4 py-3 backdrop-blur-md border-b border-border/50 pt-safe transition-all">
-        <button 
-            onClick={() => router.back()} 
-            className="absolute left-4 flex size-9 items-center justify-center rounded-full text-foreground hover:bg-secondary transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <h2 className="text-lg font-bold tracking-tight text-foreground">{info.code}</h2>
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transition-all">
+        <div className="flex h-14 items-center justify-center relative px-5">
+          <button 
+              onClick={() => router.back()} 
+              className="absolute left-4 flex w-10 h-10 items-center justify-center rounded-full text-foreground hover:bg-secondary transition-colors -ml-2"
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </button>
+          <h2 className="text-lg font-bold tracking-tight text-foreground">{info.code}</h2>
+        </div>
       </header>
 
       {/* Hero Section */}

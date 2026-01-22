@@ -49,11 +49,13 @@ export default function SearchPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-20 flex h-[60px] items-center justify-between bg-background/90 backdrop-blur-md px-5 border-b border-border/50 pt-safe">
-        <h2 className="text-2xl font-bold leading-none tracking-tight">ETF工具</h2>
-        <button className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary transition-colors -mr-2">
-          <UserCircle className="h-7 w-7" />
-        </button>
+      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50">
+        <div className="flex h-14 items-center justify-between px-5">
+          <h2 className="text-2xl font-bold tracking-tight">ETF工具</h2>
+          <button className="flex items-center justify-center w-10 h-10 rounded-full text-muted-foreground hover:bg-secondary transition-colors -mr-2">
+            <UserCircle className="h-6 w-6" />
+          </button>
+        </div>
       </header>
 
       {/* Search Section */}
