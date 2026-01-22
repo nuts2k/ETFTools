@@ -1,0 +1,33 @@
+[project]
+name = "etftool-backend"
+version = "0.1.0"
+description = "FastAPI backend for ETFTool"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "akshare",
+    "pandas",
+    "numpy",
+    "pydantic",
+    "cachetools",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+    "httpx",
+]
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true

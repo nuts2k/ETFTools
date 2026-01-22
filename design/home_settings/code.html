@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>设置页面</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1269e2",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "surface-dark": "#1A222C",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans SC", "sans-serif"],
+                        "body": ["Inter", "Noto Sans SC", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .pt-safe { padding-top: env(safe-area-inset-top); }
+        body { font-family: 'Inter', 'Noto Sans SC', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased min-h-screen flex flex-col pb-24 selection:bg-primary/30">
+<header class="sticky top-0 z-40 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md pt-safe transition-colors duration-300">
+<div class="px-5 pt-4 pb-2 flex items-center justify-between">
+<h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">设置</h1>
+</div>
+</header>
+<main class="flex-1 w-full max-w-md mx-auto px-4 pt-4 space-y-6 overflow-y-auto no-scrollbar">
+<section>
+<h2 class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 pl-3">通用设置</h2>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5 dark:ring-white/5">
+<div class="group relative flex items-center justify-between p-4 min-h-[56px] cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5">
+<div class="flex items-center gap-3">
+<span class="text-slate-900 dark:text-white text-base font-normal">行情刷新频率</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-slate-500 dark:text-slate-400 text-base">5秒</span>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-[20px]">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center justify-between p-4 min-h-[56px] cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-b border-gray-100 dark:border-white/5">
+<div class="flex items-center gap-3">
+<span class="text-slate-900 dark:text-white text-base font-normal">涨跌颜色</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-slate-500 dark:text-slate-400 text-base">红涨绿跌</span>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-[20px]">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center justify-between p-4 min-h-[56px] cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<span class="text-slate-900 dark:text-white text-base font-normal">主题模式</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-slate-500 dark:text-slate-400 text-base">深色</span>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-[20px]">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<section>
+<h2 class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 pl-3">数据与存储</h2>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm ring-1 ring-black/5 dark:ring-white/5">
+<div class="group relative flex items-center justify-between p-4 min-h-[56px] cursor-pointer hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<span class="text-slate-900 dark:text-white text-base font-normal">清除缓存</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-slate-500 dark:text-slate-400 text-base">24.5 MB</span>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-500 text-[20px]">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<div class="py-6 text-center">
+<p class="text-xs text-slate-400 dark:text-slate-600">ETFTool © 2024</p>
+</div>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 pb-safe">
+<div class="flex items-center justify-around h-14 max-w-md mx-auto">
+<button class="flex-1 flex flex-col items-center justify-center gap-1 group w-full h-full text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[26px] font-normal group-hover:scale-105 transition-transform">search</span>
+<span class="text-[10px] font-medium tracking-wide">搜索</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-1 group w-full h-full text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[26px] font-normal group-hover:scale-105 transition-transform">star</span>
+<span class="text-[10px] font-medium tracking-wide">自选</span>
+</button>
+<button class="flex-1 flex flex-col items-center justify-center gap-1 group w-full h-full text-primary dark:text-primary">
+<span class="material-symbols-outlined text-[26px] font-variation-settings-'FILL'1 group-hover:scale-105 transition-transform">settings</span>
+<span class="text-[10px] font-medium tracking-wide">设置</span>
+</button>
+</div>
+</nav>
+
+</body></html>

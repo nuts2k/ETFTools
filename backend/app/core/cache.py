@@ -1,0 +1,67 @@
+import time
+from typing import List, Dict, Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+class ETFCacheManager:
+    def __init__(self):
+        # 存储全量 ETF 列表 [{"code": "510300", "name": "沪深300ETF", ...}]
+        self.etf_list: List[Dict] = []
+        
+        # 简单的哈希映射用于快速查找信息
+        self.etf_map: Dict[str, Dict] = {}
+        
+        self.last_updated: float = 0
+        # 缓存有效期 (秒) - 搜索列表和基础行情
+        self.ttl = 60 
+
+    def set_etf_list(self, data: List[Dict]):
+        """更新 ETF 列表缓存"""
+        self.etf_list = data
+        # 建立 code -> info 映射，方便 O(1) 查找
+        self.etf_map = {item["code"]: item for item in data}
+        self.last_updated = time.time()
+        logger.info(f"Cache updated with {len(data)} ETFs at {self.last_updated}")
+
+    def get_etf_list(self) -> List[Dict]:
+        return self.etf_list
+
+    def get_etf_info(self, code: str) -> Optional[Dict]:
+        """获取单个 ETF 的最新缓存信息"""
+        return self.etf_map.get(code)
+
+    def search(self, query: str, limit: int = 20) -> List[Dict]:
+        """内存搜索：匹配代码或名称"""
+        if not query:
+            return []
+        
+        query = query.lower()
+        results = []
+        # 优先匹配代码
+        for item in self.etf_list:
+            if item["code"].startswith(query):
+                results.append(item)
+                if len(results) >= limit:
+                    return results
+        
+        # 其次匹配名称
+        if len(results) < limit:
+            for item in self.etf_list:
+                if item not in results and query in item["name"].lower():
+                    results.append(item)
+                    if len(results) >= limit:
+                        break
+        return results
+
+    @property
+    def is_initialized(self) -> bool:
+        return len(self.etf_list) > 0
+
+    @property
+    def is_stale(self) -> bool:
+        """检查缓存是否过期"""
+        return (time.time() - self.last_updated) > self.ttl
+
+# 单例实例
+etf_cache = ETFCacheManager()

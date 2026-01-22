@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ETF 业绩分析详情</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1269e2",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101822",
+                        "surface-dark": "#1c242f",
+                        "stock-up": "#ef4444",
+                        "stock-down": "#22c55e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .chart-gradient {
+            background: linear-gradient(180deg, rgba(18, 105, 226, 0.20) 0%, rgba(18, 105, 226, 0.00) 100%);
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased">
+<div class="relative mx-auto flex h-full min-h-screen w-full max-w-md flex-col overflow-x-hidden bg-background-light dark:bg-background-dark text-slate-900 dark:text-white pb-48">
+<header class="sticky top-0 z-50 flex items-center justify-center bg-background-light/95 dark:bg-background-dark/95 px-4 py-3 backdrop-blur-md relative">
+<button class="absolute left-4 flex size-10 items-center justify-center rounded-full text-slate-900 dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">510300</h2>
+</header>
+<div class="flex flex-col items-center px-4 pt-4 pb-2 text-center">
+<h1 class="text-xl font-semibold leading-tight text-slate-900 dark:text-white opacity-90">华泰柏瑞沪深300ETF</h1>
+<div class="mt-4 flex flex-col items-center">
+<span class="text-[40px] font-bold tracking-tight leading-none text-slate-900 dark:text-white">¥3.842</span>
+<div class="mt-2 flex items-center gap-1 rounded-full bg-stock-up/10 px-3 py-1">
+<span class="material-symbols-outlined text-sm font-bold text-stock-up">trending_up</span>
+<span class="text-sm font-bold text-stock-up">+1.24% (+0.045)</span>
+</div>
+</div>
+<p class="mt-2 text-xs text-slate-500 dark:text-slate-300">3月15日 15:00:00 • 已收盘</p>
+</div>
+<div class="mt-6 flex flex-col w-full">
+<div class="flex w-full items-center justify-between px-6 mb-4">
+<button class="text-sm font-medium text-slate-500 dark:text-slate-300 hover:text-primary transition-colors">1年</button>
+<button class="text-sm font-medium text-slate-500 dark:text-slate-300 hover:text-primary transition-colors">3年</button>
+<button class="rounded-full bg-primary/20 px-4 py-1 text-sm font-bold text-primary">5年</button>
+<button class="text-sm font-medium text-slate-500 dark:text-slate-300 hover:text-primary transition-colors">全部</button>
+</div>
+<div class="relative h-[280px] w-full px-0">
+<div class="absolute inset-0 flex flex-col justify-between px-4 py-6 opacity-10 pointer-events-none">
+<div class="w-full border-t border-slate-500 border-dashed"></div>
+<div class="w-full border-t border-slate-500 border-dashed"></div>
+<div class="w-full border-t border-slate-500 border-dashed"></div>
+<div class="w-full border-t border-slate-500 border-dashed"></div>
+<div class="w-full border-t border-slate-500 border-dashed"></div>
+</div>
+<div class="absolute right-2 top-0 bottom-0 flex flex-col justify-between py-4 text-[10px] font-medium text-slate-500 dark:text-slate-300 pointer-events-none z-10">
+<span>5.50</span>
+<span>4.85</span>
+<span>4.20</span>
+<span>3.65</span>
+<span>3.00</span>
+</div>
+<svg class="h-full w-full" preserveAspectRatio="none" viewBox="0 0 400 200">
+<defs>
+<linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#1269e2" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#1269e2" stop-opacity="0.0"></stop>
+</linearGradient>
+</defs>
+<path d="M0,150 C40,140 60,110 100,115 C140,120 160,80 200,90 C240,100 260,130 300,110 C340,90 360,60 400,40 L400,200 L0,200 Z" fill="url(#chartFill)"></path>
+<path d="M0,150 C40,140 60,110 100,115 C140,120 160,80 200,90 C240,100 260,130 300,110 C340,90 360,60 400,40" fill="none" stroke="#1269e2" stroke-width="2.5" vector-effect="non-scaling-stroke"></path>
+<line class="opacity-50" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1" x1="280" x2="280" y1="0" y2="200"></line>
+<circle cx="280" cy="118" fill="#1269e2" r="4" stroke="white" stroke-width="2"></circle>
+</svg>
+<div class="absolute top-[35%] left-[55%] flex flex-col rounded-lg bg-surface-dark p-2 shadow-lg ring-1 ring-white/10 z-20">
+<span class="text-[10px] text-slate-400 dark:text-slate-300">2022-09-14</span>
+<span class="text-xs font-bold text-white">¥3.621</span>
+</div>
+<div class="absolute bottom-1 left-4">
+<p class="text-[10px] text-slate-500 dark:text-slate-300">价格已按前复权 (QFQ) 处理</p>
+</div>
+</div>
+<div class="flex justify-between px-4 text-[10px] text-slate-500 dark:text-slate-300 mt-[-10px] relative z-0">
+<span>2019</span>
+<span>2020</span>
+<span>2021</span>
+<span>2022</span>
+<span>2023</span>
+<span>2024</span>
+</div>
+</div>
+<div class="h-1 w-full bg-slate-100 dark:bg-surface-dark/50 mt-6"></div>
+<div class="flex flex-col px-4 py-6">
+<h3 class="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">核心指标</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="flex flex-col rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm ring-1 ring-slate-200 dark:ring-white/5">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-300">区间总收益</span>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="text-xl font-bold text-stock-up">+45.2%</span>
+</div>
+<span class="text-[10px] text-slate-400 dark:text-slate-300 mt-1">相对指数 +41.0%</span>
+</div>
+<div class="flex flex-col rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm ring-1 ring-slate-200 dark:ring-white/5">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-300">年化收益率 (CAGR)</span>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="text-xl font-bold text-stock-up">+7.8%</span>
+</div>
+<span class="text-[10px] text-slate-400 dark:text-slate-300 mt-1">年化</span>
+</div>
+<div class="flex flex-col rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm ring-1 ring-slate-200 dark:ring-white/5">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-300">最大回撤</span>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="text-xl font-bold text-stock-down">-32.1%</span>
+</div>
+<span class="text-[10px] text-slate-400 dark:text-slate-300 mt-1">2022年10月</span>
+</div>
+<div class="flex flex-col rounded-xl bg-white dark:bg-surface-dark p-4 shadow-sm ring-1 ring-slate-200 dark:ring-white/5">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-300">波动率</span>
+<div class="mt-2 flex items-baseline gap-1">
+<span class="text-xl font-bold text-slate-900 dark:text-white">18.5%</span>
+</div>
+<span class="text-[10px] text-slate-400 dark:text-slate-300 mt-1">风险等级: 高</span>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-md bg-background-light/95 backdrop-blur-md dark:bg-background-dark/95 border-t border-slate-200 dark:border-white/5">
+<div class="px-4 py-3">
+<button class="flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary py-3.5 text-[15px] font-bold text-white shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98] hover:bg-blue-600">
+<span class="material-symbols-outlined text-[22px]">add</span>
+<span>加入自选</span>
+</button>
+</div>
+<div class="grid grid-cols-3 h-14 border-t border-slate-100 dark:border-white/5 pb-2">
+<button class="flex flex-col items-center justify-center gap-0.5 text-slate-500 dark:text-slate-400 hover:text-primary active:text-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]">search</span>
+<span class="text-[10px] font-medium">搜索</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-0.5 text-slate-500 dark:text-slate-400 hover:text-primary active:text-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]">star</span>
+<span class="text-[10px] font-medium">自选</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-0.5 text-slate-500 dark:text-slate-400 hover:text-primary active:text-primary transition-colors">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="text-[10px] font-medium">设置</span>
+</button>
+</div>
+</div>
+</div>
+
+</body></html>

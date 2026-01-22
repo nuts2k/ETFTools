@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ETF工具 首页 (严格对齐版)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1269e2",
+              "background-light": "#f6f7f8",
+              "background-dark": "#0f172a",
+              "surface-light": "#ffffff",
+              "surface-dark": "#1e293b",
+              "market-red": "#ef4444",
+              "market-green": "#22c55e",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<header class="sticky top-0 z-20 flex h-[60px] items-center justify-between bg-background-light/90 dark:bg-background-dark/90 px-5 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/50">
+<h2 class="text-2xl font-bold leading-none tracking-tight text-slate-900 dark:text-white">ETF工具</h2>
+<div class="flex items-center justify-end">
+<button class="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors -mr-2">
+<span class="material-symbols-outlined text-[28px]">account_circle</span>
+</button>
+</div>
+</header>
+<section class="px-5 py-4">
+<div class="relative">
+<label class="flex flex-col w-full">
+<div class="relative flex w-full items-center rounded-xl h-12 bg-surface-light dark:bg-surface-dark shadow-sm border border-slate-200 dark:border-slate-700/50 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<div class="absolute left-4 flex items-center justify-center text-slate-400 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="h-full w-full bg-transparent rounded-xl border-none pl-11 pr-4 text-base text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:ring-0 focus:outline-none" inputmode="numeric" placeholder="输入6位ETF代码" type="text"/>
+</div>
+</label>
+</div>
+<p class="mt-2 text-xs text-slate-500 dark:text-slate-400 px-1">尝试搜索 “沪深300” 或 “半导体”</p>
+</section>
+<section class="flex flex-col">
+<div class="flex items-center justify-between px-5 pb-3 pt-1">
+<h3 class="text-lg font-bold leading-tight tracking-tight">搜索结果</h3>
+<span class="inline-flex items-center rounded bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary dark:text-blue-400 ring-1 ring-inset ring-primary/20">QFQ</span>
+</div>
+<div class="flex flex-col gap-3 px-5">
+<div class="group flex items-center justify-between gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-3 flex-1 min-w-0">
+<div class="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400">
+<span class="material-symbols-outlined text-[24px]">show_chart</span>
+</div>
+<div class="flex flex-col justify-center min-w-0 gap-0.5">
+<p class="text-base font-medium leading-tight text-slate-900 dark:text-white truncate">华泰柏瑞沪深300ETF</p>
+<div class="flex items-center gap-2">
+<span class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded">510300</span>
+<p class="text-xs text-slate-500 dark:text-slate-400">ETF</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<div class="flex flex-col items-end">
+<p class="text-base font-bold text-slate-900 dark:text-white tabular-nums">¥3.852</p>
+<p class="text-xs font-semibold text-market-red tabular-nums flex items-center">
+                                +1.24%
+                            </p>
+</div>
+<button aria-label="添加自选" class="flex items-center gap-0.5 rounded-lg bg-primary/10 hover:bg-primary/20 active:scale-95 px-2.5 py-1.5 text-xs font-medium text-primary dark:text-blue-400 transition-all">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>自选</span>
+</button>
+</div>
+</div>
+<div class="group flex items-center justify-between gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-3 flex-1 min-w-0">
+<div class="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400">
+<span class="material-symbols-outlined text-[24px]">show_chart</span>
+</div>
+<div class="flex flex-col justify-center min-w-0 gap-0.5">
+<p class="text-base font-medium leading-tight text-slate-900 dark:text-white truncate">华夏中证500ETF</p>
+<div class="flex items-center gap-2">
+<span class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded">510500</span>
+<p class="text-xs text-slate-500 dark:text-slate-400">ETF</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<div class="flex flex-col items-end">
+<p class="text-base font-bold text-slate-900 dark:text-white tabular-nums">¥5.920</p>
+<p class="text-xs font-semibold text-market-green tabular-nums flex items-center">
+                                -0.45%
+                            </p>
+</div>
+<button aria-label="添加自选" class="flex items-center gap-0.5 rounded-lg bg-primary/10 hover:bg-primary/20 active:scale-95 px-2.5 py-1.5 text-xs font-medium text-primary dark:text-blue-400 transition-all">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>自选</span>
+</button>
+</div>
+</div>
+<div class="group flex items-center justify-between gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-3 flex-1 min-w-0">
+<div class="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400">
+<span class="material-symbols-outlined text-[24px]">show_chart</span>
+</div>
+<div class="flex flex-col justify-center min-w-0 gap-0.5">
+<p class="text-base font-medium leading-tight text-slate-900 dark:text-white truncate">南方中证1000ETF</p>
+<div class="flex items-center gap-2">
+<span class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded">512100</span>
+<p class="text-xs text-slate-500 dark:text-slate-400">ETF</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<div class="flex flex-col items-end">
+<p class="text-base font-bold text-slate-900 dark:text-white tabular-nums">¥2.450</p>
+<p class="text-xs font-semibold text-market-red tabular-nums flex items-center">
+                                +0.12%
+                            </p>
+</div>
+<button aria-label="添加自选" class="flex items-center gap-0.5 rounded-lg bg-primary/10 hover:bg-primary/20 active:scale-95 px-2.5 py-1.5 text-xs font-medium text-primary dark:text-blue-400 transition-all">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>自选</span>
+</button>
+</div>
+</div>
+<div class="group flex items-center justify-between gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer active:scale-[0.98]">
+<div class="flex items-center gap-3 flex-1 min-w-0">
+<div class="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400">
+<span class="material-symbols-outlined text-[24px]">show_chart</span>
+</div>
+<div class="flex flex-col justify-center min-w-0 gap-0.5">
+<p class="text-base font-medium leading-tight text-slate-900 dark:text-white truncate">易方达创业板ETF</p>
+<div class="flex items-center gap-2">
+<span class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded">159915</span>
+<p class="text-xs text-slate-500 dark:text-slate-400">ETF</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<div class="flex flex-col items-end">
+<p class="text-base font-bold text-slate-900 dark:text-white tabular-nums">¥1.824</p>
+<p class="text-xs font-semibold text-market-green tabular-nums flex items-center">
+                                -1.05%
+                            </p>
+</div>
+<button aria-label="添加自选" class="flex items-center gap-0.5 rounded-lg bg-primary/10 hover:bg-primary/20 active:scale-95 px-2.5 py-1.5 text-xs font-medium text-primary dark:text-blue-400 transition-all">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>自选</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<nav class="fixed bottom-0 z-50 w-full bg-surface-light dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
+<div class="flex h-16 items-center justify-around px-2">
+<button class="flex flex-1 flex-col items-center justify-center gap-1 text-primary dark:text-blue-400">
+<span class="material-symbols-outlined filled" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="text-[10px] font-medium">搜索</span>
+</button>
+<button class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="text-[10px] font-medium">自选</span>
+</button>
+<button class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">设置</span>
+</button>
+</div>
+</nav>
+<div class="h-6"></div>
+</div>
+
+</body></html>
