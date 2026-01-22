@@ -31,6 +31,25 @@ class ETFCacheManager:
         """获取单个 ETF 的最新缓存信息"""
         return self.etf_map.get(code)
 
+    def update_etf_info(self, info: Dict):
+        """Manually update/insert an ETF info (e.g. from client sync)"""
+        code = info.get("code")
+        if not code:
+            return
+        
+        # Update map
+        self.etf_map[code] = info
+        
+        # Update list (Check if exists in list)
+        found = False
+        for i, item in enumerate(self.etf_list):
+            if item["code"] == code:
+                self.etf_list[i] = info
+                found = True
+                break
+        if not found:
+            self.etf_list.append(info)
+
     def search(self, query: str, limit: int = 20) -> List[Dict]:
         """内存搜索：匹配代码或名称"""
         if not query:

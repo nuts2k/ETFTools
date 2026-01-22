@@ -10,19 +10,22 @@
 
 ### 2.1 后端 (Backend)
 *   **框架**: FastAPI (Python 3.9+)
+*   **数据库**: SQLite (配合 SQLModel)。轻量级文件数据库，用于存储用户数据、配置和自选列表。
+*   **认证**: OAuth2 Password Flow + JWT (JSON Web Tokens)。
 *   **数据源**: AkShare
     *   **历史数据**: `ak.fund_etf_hist_em(adjust="qfq")` (东方财富源，前复权)
     *   **实时信息**: `ak.fund_etf_spot_em()` (用于获取名称和实时价格)
 *   **数据处理**: Pandas (时间序列分析)
-*   **缓存**: 内存缓存 (In-Memory LRU) - MVP 阶段使用。
+*   **缓存**: **DiskCache** (基于文件的持久化缓存)。替代原有的内存缓存，确保历史数据和计算结果在服务重启后不丢失，提升启动速度。
 
 ### 2.2 前端 (Frontend)
 *   **框架**: Next.js 14+ (App Router)
 *   **语言**: TypeScript
 *   **UI 组件库**: Shadcn/UI + Tailwind CSS
 *   **图表库**: Recharts (响应式设计，触摸友好)
+*   **状态管理**: React Context (用于管理 Auth 用户登录状态)。
 
-## 3. 功能需求 (Functional Requirements) - MVP
+## 3. 功能需求 (Functional Requirements)
 
 基于设计稿 (Design Files) 的界面结构，APP 分为三个主要模块：搜索、自选、设置。
 
@@ -74,12 +77,41 @@
 *   **数据与存储**:
     *   **清除缓存**: 显示当前缓存占用大小 (如 "24.5 MB")，提供清除按钮。
 
+### 3.6 用户系统 (User System)
+*   **注册与登录**:
+    *   支持用户名/密码注册。
+    *   **可选登录模式**: 用户不登录即可使用搜索、查看行情和本地自选股功能（数据存在 LocalStorage）。
+    *   登录后解锁数据云端同步功能。
+*   **数据同步策略**:
+    *   **自选股同步**: 用户登录时，自动将本地自选股上传并与云端列表合并。之后以云端数据为准。
+    *   **设置同步**: 用户偏好（如红涨绿跌、刷新频率、主题色）登录后自动同步到云端。
+*   **个人中心**:
+    *   展示用户名。
+    *   提供“退出登录”按钮（退出后清除本地 Token，但不清除本地缓存的数据，保持可用性）。
+
 ## 4. API 设计草案 (API Design Draft)
+
+### 基础数据 (ETF Data)
 *   `GET /api/v1/etf/search?q={keyword}` -> `[{code, name, price, change_pct}, ...]` (搜索)
 *   `GET /api/v1/etf/{code}/info` -> `{name, price, change_pct, update_time, market}` (详情头信息)
 *   `GET /api/v1/etf/{code}/history?period=5y` -> `[{date, close}, ...]` (图表数据)
 *   `GET /api/v1/etf/{code}/metrics?period=5y` -> `{cagr, mdd, volatility, total_return, risk_level, mdd_date}` (核心指标)
-*   *(注: 自选列表建议 MVP 阶段存储在客户端 LocalStorage，暂不需要后端存储 API)*
+
+### 认证与用户 (Auth & User)
+*   `POST /api/v1/auth/register` -> `{"msg": "User created"}`
+    *   Body: `username`, `password`
+*   `POST /api/v1/auth/token` -> `{"access_token": "...", "token_type": "bearer"}`
+    *   Body: OAuth2 Form Data (`username`, `password`)
+*   `GET /api/v1/users/me` -> `{username, settings: {theme, color_mode...}}`
+*   `PATCH /api/v1/users/me/settings` -> Update settings JSON.
+
+### 自选股 (Watchlist)
+*   `GET /api/v1/watchlist` -> `[{code, name, price, ...}, ...]`
+    *   获取当前用户的云端自选列表。
+*   `POST /api/v1/watchlist/{code}` -> Add to watchlist.
+*   `DELETE /api/v1/watchlist/{code}` -> Remove from watchlist.
+*   `POST /api/v1/watchlist/sync` -> `{"synced_count": 5}`
+    *   前端将本地代码列表上传，后端执行“并集”操作。
 
 ## 5. UI/UX 设计原则
 *   **移动优先 (Mobile First)**: 采用纵向布局，底部导航，适合单手操作。

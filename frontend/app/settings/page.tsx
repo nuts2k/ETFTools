@@ -6,10 +6,13 @@ import { Moon, Sun, Monitor, Trash2, ChevronRight, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
+import { useAuth } from "@/lib/auth-context";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { settings, updateSettings, isLoaded } = useSettings();
+  const { user, logout } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [cacheSize, setCacheSize] = useState("0 KB");
   const [showClearCacheDialog, setShowClearCacheDialog] = useState(false);
@@ -47,6 +50,35 @@ export default function SettingsPage() {
 
       <main className="flex-1 w-full max-w-md mx-auto px-4 pt-6 space-y-6">
         
+        {/* Account Section */}
+        <section>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 pl-3">账号</h2>
+          <div className="bg-card rounded-xl overflow-hidden shadow-sm ring-1 ring-border/50 divide-y divide-border/50">
+            {user ? (
+               <div className="p-4 flex items-center justify-between">
+                 <div>
+                   <p className="font-medium">{user.username}</p>
+                   <p className="text-xs text-muted-foreground">已登录</p>
+                 </div>
+                 <button 
+                   onClick={logout}
+                   className="text-sm text-destructive font-medium hover:underline"
+                 >
+                   退出登录
+                 </button>
+               </div>
+            ) : (
+               <Link href="/login" className="flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors">
+                 <div>
+                   <p className="font-medium">登录 / 注册</p>
+                   <p className="text-xs text-muted-foreground">开启多设备同步</p>
+                 </div>
+                 <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+               </Link>
+            )}
+          </div>
+        </section>
+
         {/* General Settings */}
         <section>
           <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 pl-3">通用设置</h2>

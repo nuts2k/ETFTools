@@ -50,3 +50,8 @@ frontend/.env.local
 frontend/.env.development.local
 frontend/.env.test.local
 frontend/.env.production.local
+
+# Backend runtime files
+backend/.cache/
+backend/etf_tool.db
+backend/*.db

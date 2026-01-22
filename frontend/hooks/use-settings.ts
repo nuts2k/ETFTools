@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
 
 export type ColorMode = "red-up" | "green-up";
 export type RefreshRate = 5 | 10 | 30 | 0; // 0 = Manual
@@ -18,26 +19,49 @@ const DEFAULT_SETTINGS: Settings = {
 export function useSettings() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { user, token } = useAuth();
 
-  // Load from local storage
+  // Load logic (Local vs Cloud)
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(SETTINGS_KEY);
-      if (stored) {
-        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) });
-      }
-    } catch (e) {
-      console.error("Failed to load settings", e);
-    } finally {
+    if (user && user.settings) {
+      // Merge cloud settings with defaults (to handle missing keys)
+      setSettings({ ...DEFAULT_SETTINGS, ...user.settings });
       setIsLoaded(true);
+    } else {
+      // Local storage fallback
+      try {
+        const stored = localStorage.getItem(SETTINGS_KEY);
+        if (stored) {
+          setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) });
+        }
+      } catch (e) {
+        console.error("Failed to load settings", e);
+      } finally {
+        setIsLoaded(true);
+      }
     }
-  }, []);
+  }, [user]);
 
-  // Save to local storage
-  const updateSettings = (newSettings: Partial<Settings>) => {
+  const updateSettings = async (newSettings: Partial<Settings>) => {
     const updated = { ...settings, ...newSettings };
     setSettings(updated);
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+
+    if (user && token) {
+      try {
+        await fetch("http://localhost:8000/api/v1/users/me/settings", {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(newSettings)
+        });
+      } catch (e) {
+        console.error("Failed to sync settings", e);
+      }
+    } else {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+    }
   };
 
   // Apply CSS variables for colors
