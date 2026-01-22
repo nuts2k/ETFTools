@@ -7,10 +7,13 @@ const STORAGE_KEY = "etftool-watchlist";
 export function useWatchlist() {
   const [watchlist, setWatchlist] = useState<ETFItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  const { user, token } = useAuth();
+  const { user, token, isLoading: authLoading } = useAuth();
 
   // Load watchlist (Local or Cloud)
   useEffect(() => {
+    // 如果认证状态还在加载中，不要急着做决定
+    if (authLoading) return;
+
     const load = async () => {
       if (user && token) {
         // Cloud mode
@@ -40,7 +43,7 @@ export function useWatchlist() {
     };
 
     load();
-  }, [user, token]);
+  }, [user, token, authLoading]);
 
   // Sync logic when logging in
   useEffect(() => {
