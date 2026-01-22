@@ -1,8 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Star, AlertTriangle, TrendingUp, Activity, ArrowDownCircle } from "lucide-react";
+import Link from "next/link";
+import { 
+  ArrowLeft, 
+  TrendingUp, 
+  TrendingDown, 
+  Plus, 
+  Check, 
+  Search, 
+  Star, 
+  Settings,
+  Activity,
+  ArrowDownCircle,
+  PieChart
+} from "lucide-react";
 import { fetchClient, type ETFDetail, type ETFMetrics } from "@/lib/api";
 import { ETFChart } from "@/components/ETFChart";
 import { useWatchlist } from "@/hooks/use-watchlist";
@@ -83,7 +96,7 @@ export default function ETFDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-muted-foreground">
+      <div className="flex items-center justify-center min-h-screen text-muted-foreground bg-background">
         加载中...
       </div>
     );
@@ -91,8 +104,7 @@ export default function ETFDetailPage() {
 
   if (error || !info) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
-        <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-background">
         <h2 className="text-xl font-bold mb-2">出错了</h2>
         <p className="text-muted-foreground mb-6">{error || "未找到该 ETF"}</p>
         <button onClick={() => router.back()} className="text-primary font-medium hover:underline">
@@ -102,105 +114,149 @@ export default function ETFDetailPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background pb-safe">
-      {/* Navbar */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-14 bg-background/80 backdrop-blur border-b">
-        <button onClick={() => router.back()} className="p-2 -ml-2 text-foreground/80 hover:text-foreground">
-          <ArrowLeft className="h-6 w-6" />
-        </button>
-        <div className="flex flex-col items-center">
-          <span className="text-sm font-bold">{info.code}</span>
-          <span className="text-[10px] text-muted-foreground">{info.name}</span>
-        </div>
-        <div className="w-8" /> {/* Spacer for centering */}
-      </div>
+  const isUp = info.change_pct > 0;
+  const isDown = info.change_pct < 0;
+  const changeColor = isUp ? "text-up" : isDown ? "text-down" : "text-foreground";
+  const bgColor = isUp ? "bg-up/10" : isDown ? "bg-down/10" : "bg-muted";
+  const iconColor = isUp ? "text-up" : isDown ? "text-down" : "text-muted-foreground";
 
-      <div className="px-4 py-6 space-y-6">
-        {/* Header Price */}
-        <div className="flex flex-col items-center">
-          <h1 className={cn(
-            "text-4xl font-mono font-bold tracking-tighter",
-            info.change_pct > 0 ? "text-up" : info.change_pct < 0 ? "text-down" : "text-foreground"
-          )}>
-            {info.price.toFixed(3)}
-          </h1>
-          <div className="flex items-center gap-2 mt-1">
-             <span className={cn(
-              "text-sm font-medium px-2 py-0.5 rounded-full",
-              info.change_pct > 0 ? "bg-up/10 text-up" : info.change_pct < 0 ? "bg-down/10 text-down" : "bg-muted text-muted-foreground"
-            )}>
-              {info.change_pct > 0 ? "+" : ""}{info.change_pct}%
-            </span>
-            <span className="text-xs text-muted-foreground">
-               {info.update_time.split(" ")[1]}
+  return (
+    <div className="min-h-screen bg-background pb-48 relative">
+      {/* Header */}
+      <header className="sticky top-0 z-50 flex items-center justify-center bg-background/95 px-4 py-3 backdrop-blur-md border-b border-border/50 pt-safe transition-all">
+        <button 
+            onClick={() => router.back()} 
+            className="absolute left-4 flex size-9 items-center justify-center rounded-full text-foreground hover:bg-secondary transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <h2 className="text-lg font-bold tracking-tight text-foreground">{info.code}</h2>
+      </header>
+
+      {/* Hero Section */}
+      <div className="flex flex-col items-center px-4 pt-6 pb-2 text-center">
+        <h1 className="text-xl font-semibold leading-tight text-foreground/90">{info.name}</h1>
+        <div className="mt-4 flex flex-col items-center">
+          <span className="text-[40px] font-bold tracking-tight leading-none text-foreground tabular-nums">
+            ¥{info.price.toFixed(3)}
+          </span>
+          <div className={cn("mt-2 flex items-center gap-1 rounded-full px-3 py-1", bgColor)}>
+            {isUp ? <TrendingUp className={cn("h-4 w-4", iconColor)} /> : <TrendingDown className={cn("h-4 w-4", iconColor)} />}
+            <span className={cn("text-sm font-bold tabular-nums", changeColor)}>
+              {isUp ? "+" : ""}{info.change_pct}%
             </span>
           </div>
         </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+            {info.update_time} • {info.market || "已收盘"}
+        </p>
+      </div>
 
-        {/* Chart */}
-        <div className="bg-card rounded-xl p-2 border shadow-sm">
-          <ETFChart code={code} />
-        </div>
+      {/* Chart Section */}
+      <div className="mt-4 w-full px-0">
+         <ETFChart code={code} />
+      </div>
 
-        {/* Metrics Grid */}
+      <div className="h-2 w-full bg-secondary/30 mt-6" />
+
+      {/* Metrics Section */}
+      <div className="flex flex-col px-4 py-6">
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">核心指标</h3>
         <div className="grid grid-cols-2 gap-3">
-          <MetricCard 
-            label="年化收益 (5年)" 
-            value={metrics ? `${(metrics.cagr * 100).toFixed(2)}%` : "--"} 
-            icon={TrendingUp}
-            color={metrics && metrics.cagr > 0 ? "text-up" : "text-foreground"}
-          />
-          <MetricCard 
-            label="最大回撤" 
-            value={metrics ? `${(metrics.max_drawdown * 100).toFixed(2)}%` : "--"} 
-            subValue={metrics?.mdd_date}
-            icon={ArrowDownCircle}
-            color="text-down" // Drawdown is always bad/down
-          />
-          <MetricCard 
-            label="波动率" 
-            value={metrics ? `${(metrics.volatility * 100).toFixed(2)}%` : "--"} 
-            subValue={metrics?.risk_level}
-            icon={Activity}
-          />
-          <MetricCard 
-            label="区间总收益" 
-            value={metrics ? `${(metrics.total_return * 100).toFixed(2)}%` : "--"} 
-            icon={Star}
-            color={metrics && metrics.total_return > 0 ? "text-up" : "text-down"}
-          />
+           <MetricCard 
+             label="区间总收益" 
+             value={metrics ? `${(metrics.total_return * 100).toFixed(2)}%` : "--"}
+             subValue={metrics ? "相对指数 +0.0%" : ""}
+             color={metrics && metrics.total_return > 0 ? "text-up" : "text-down"}
+             icon={PieChart}
+           />
+           <MetricCard 
+             label="年化收益 (CAGR)" 
+             value={metrics ? `${(metrics.cagr * 100).toFixed(2)}%` : "--"}
+             subValue="5年年化"
+             color="text-up"
+             icon={TrendingUp}
+           />
+           <MetricCard 
+             label="最大回撤" 
+             value={metrics ? `${(metrics.max_drawdown * 100).toFixed(2)}%` : "--"}
+             subValue={metrics?.mdd_date}
+             color="text-down"
+             icon={ArrowDownCircle}
+           />
+           <MetricCard 
+             label="波动率" 
+             value={metrics ? `${(metrics.volatility * 100).toFixed(2)}%` : "--"}
+             subValue={metrics ? `风险等级: ${metrics.risk_level}` : ""}
+             icon={Activity}
+           />
         </div>
       </div>
 
-      {/* Floating Action Button (Watchlist) */}
-      <div className="fixed bottom-6 right-6 z-20">
-        <button
-          onClick={toggleWatchlist}
-          disabled={!isWatchlistLoaded}
-          className={cn(
-            "h-14 w-14 rounded-full shadow-lg flex items-center justify-center transition-all active:scale-95",
-            watched ? "bg-secondary text-primary border-2 border-primary" : "bg-primary text-primary-foreground"
-          )}
-        >
-          <Star className={cn("h-6 w-6", watched && "fill-current")} />
-        </button>
+      {/* Bottom Action Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full bg-background/95 backdrop-blur-md border-t border-border pb-safe">
+        {/* Action Button */}
+        <div className="px-4 py-3">
+          <button 
+            onClick={toggleWatchlist}
+            className={cn(
+                "flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-[15px] font-bold shadow-lg transition-all active:scale-[0.98]",
+                watched 
+                    ? "bg-secondary text-foreground hover:bg-secondary/80" 
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25"
+            )}
+          >
+            {watched ? (
+                <>
+                    <Check className="h-5 w-5" />
+                    <span>已添加自选</span>
+                </>
+            ) : (
+                <>
+                    <Plus className="h-5 w-5" />
+                    <span>加入自选</span>
+                </>
+            )}
+          </button>
+        </div>
+
+        {/* Static Nav Links */}
+        <div className="grid grid-cols-3 h-14 border-t border-border/10 pb-2">
+            <Link href="/" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">
+                <Star className="h-6 w-6" />
+                <span className="text-[10px] font-medium">自选</span>
+            </Link>
+            <Link href="/search" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">
+                <Search className="h-6 w-6" />
+                <span className="text-[10px] font-medium">搜索</span>
+            </Link>
+            <Link href="/settings" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">
+                <Settings className="h-6 w-6" />
+                <span className="text-[10px] font-medium">设置</span>
+            </Link>
+        </div>
       </div>
     </div>
   );
 }
 
-function MetricCard({ label, value, subValue, icon: Icon, color }: any) {
+function MetricCard({ label, value, subValue, color, icon: Icon }: any) {
   return (
-    <div className="bg-card p-4 rounded-xl border shadow-sm flex flex-col justify-between">
-      <div className="flex items-center gap-2 mb-2 text-muted-foreground">
-        <Icon className="h-4 w-4" />
-        <span className="text-xs font-medium">{label}</span>
+    <div className="flex flex-col rounded-xl bg-card p-4 shadow-sm ring-1 ring-border/50">
+      <div className="flex items-center gap-1.5 mb-2">
+        {Icon && <Icon className="h-3 w-3 text-muted-foreground" />}
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
       </div>
-      <div>
-        <div className={cn("text-lg font-bold font-mono", color)}>{value}</div>
-        {subValue && <div className="text-[10px] text-muted-foreground mt-0.5">{subValue}</div>}
+      <div className="mt-1 flex items-baseline gap-1">
+        <span className={cn("text-xl font-bold tracking-tight tabular-nums", color || "text-foreground")}>
+            {value}
+        </span>
       </div>
+      {subValue && (
+        <span className="text-[10px] text-muted-foreground/80 mt-1 truncate">
+            {subValue}
+        </span>
+      )}
     </div>
   );
 }

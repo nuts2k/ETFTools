@@ -10,14 +10,14 @@ export function BottomNav() {
 
   const tabs = [
     {
-      label: "搜索",
+      label: "自选",
       href: "/",
-      icon: Search,
+      icon: Star,
     },
     {
-      label: "自选",
-      href: "/watchlist",
-      icon: Star,
+      label: "搜索",
+      href: "/search",
+      icon: Search,
     },
     {
       label: "设置",
@@ -26,17 +26,14 @@ export function BottomNav() {
     },
   ];
 
-  // 如果在详情页 (e.g. /etf/510300)，通常不显示底部导航，或者保持显示？
-  // 移动端习惯通常是详情页会覆盖导航，但 Web App 有时保留。
-  // 根据 PRD "底部操作栏" 在详情页是 "加入/移除自选"，这意味着详情页有自己的底部栏。
-  // 因此，我们在详情页隐藏全局 BottomNav。
+  // Hide BottomNav on Detail Page as it has its own floating action button / bottom bar
   const isDetailPage = pathname.startsWith("/etf/");
 
   if (isDetailPage) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background pb-safe">
-      <div className="flex h-16 items-center justify-around">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-md border-t border-border pb-safe">
+      <div className="flex h-16 items-center justify-around max-w-md mx-auto">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href;
           return (
@@ -44,16 +41,28 @@ export function BottomNav() {
               key={tab.href}
               href={tab.href}
               className={cn(
-                "flex flex-col items-center justify-center space-y-1 w-full h-full",
-                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                "flex flex-col items-center justify-center gap-1 group w-full h-full transition-colors",
+                isActive 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <tab.icon className="h-6 w-6" />
-              <span className="text-[10px] font-medium">{tab.label}</span>
+              <div className="relative">
+                {isActive && (
+                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary mb-1" />
+                )}
+                <tab.icon 
+                  className={cn(
+                    "h-6 w-6 transition-transform group-active:scale-95",
+                    isActive && "fill-current"
+                  )} 
+                />
+              </div>
+              <span className="text-[10px] font-medium tracking-wide">{tab.label}</span>
             </Link>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }

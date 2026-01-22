@@ -1,110 +1,86 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
 import Link from "next/link";
-import { useDebounce } from "@/hooks/use-debounce";
-import { fetchClient, type ETFItem } from "@/lib/api";
+import { Star, Edit3 } from "lucide-react";
+import { useWatchlist } from "@/hooks/use-watchlist";
 import { cn } from "@/lib/utils";
 
-export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<ETFItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  
-  // 防抖搜索
-  const debouncedQuery = useDebounce(query, 500);
-
-  useEffect(() => {
-    async function doSearch() {
-      if (!debouncedQuery) {
-        setResults([]);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const data = await fetchClient<ETFItem[]>(`/etf/search?q=${encodeURIComponent(debouncedQuery)}`);
-        setResults(data);
-      } catch (err) {
-        console.error("Search failed", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    doSearch();
-  }, [debouncedQuery]);
+export default function WatchlistPage() {
+  const { watchlist, isLoaded } = useWatchlist();
 
   return (
-    <div className="flex flex-col min-h-screen px-4 py-6 max-w-md mx-auto">
-      {/* Header / Search Bar */}
-      <div className="sticky top-0 bg-background/95 backdrop-blur z-10 pb-4 pt-2">
-        <h1 className="text-2xl font-bold mb-4">发现 ETF</h1>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input 
-            type="text"
-            placeholder="输入代码或名称 (如 300, 半导体)"
-            className="w-full h-10 pl-9 pr-4 rounded-full border bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
+    <div className="flex flex-col min-h-screen bg-background pb-20">
+      {/* Header */}
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md px-6 py-3 flex items-center justify-between pt-safe">
+        <h1 className="text-2xl font-extrabold tracking-tight">自选</h1>
+        <button className="flex items-center justify-center w-9 h-9 rounded-full bg-secondary hover:bg-muted transition-colors text-muted-foreground">
+          <Edit3 className="h-5 w-5" />
+        </button>
+      </header>
+
+      {/* List Header */}
+      <div className="px-6 py-2 flex items-center text-xs text-muted-foreground border-b border-border/50 mt-1">
+        <div className="flex-1">名称代码</div>
+        <div className="w-20 text-right pr-2">最新价</div>
+        <div className="w-20 text-right">涨跌幅</div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 mt-2">
-        {!query && (
-          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-            <Search className="h-12 w-12 mb-2 opacity-20" />
-            <p className="text-sm">搜索 ETF (支持代码或名称)</p>
-          </div>
-        )}
-
-        {loading && (
-          <div className="space-y-3 mt-2">
+      <div className="flex-1">
+        {!isLoaded ? (
+          <div className="space-y-0 mt-0">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 bg-secondary/30 rounded-lg animate-pulse" />
+               <div key={i} className="h-16 border-b border-border/30 bg-card/50 animate-pulse" />
             ))}
           </div>
-        )}
+        ) : watchlist.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+            <Star className="h-12 w-12 mb-2 opacity-20" />
+            <p className="text-sm">暂无自选 ETF</p>
+            <Link href="/search" className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-colors">
+              去搜索添加
+            </Link>
+          </div>
+        ) : (
+          <div className="flex flex-col pb-safe">
+            {watchlist.map((etf) => {
+                const isUp = etf.change_pct > 0;
+                const isDown = etf.change_pct < 0;
+                const changeColor = isUp ? "text-up" : isDown ? "text-down" : "text-muted-foreground";
+                const badgeColor = isUp ? "bg-up" : isDown ? "bg-down" : "bg-muted";
 
-        {!loading && query && results.length === 0 && (
-          <div className="text-center py-10 text-muted-foreground">
-            未找到相关结果
+                return (
+                  <Link 
+                    key={etf.code} 
+                    href={`/etf/${etf.code}`}
+                    className="group flex items-center justify-between px-6 py-4 active:bg-secondary/50 border-b border-border/30 cursor-pointer transition-colors"
+                  >
+                    <div className="flex flex-col flex-1 min-w-0 pr-4">
+                      <h3 className="text-base font-semibold truncate">{etf.name}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="inline-flex items-center justify-center rounded px-1 py-0.5 text-[10px] font-medium bg-secondary text-muted-foreground border border-border/50">
+                            {etf.code.startsWith("5") ? "SH" : "SZ"}
+                        </span>
+                        <span className="text-sm text-muted-foreground font-mono tracking-wide">{etf.code}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <span className={cn("text-base font-bold tabular-nums tracking-tight", changeColor)}>
+                        {etf.price?.toFixed(3)}
+                      </span>
+                      <div className={cn(
+                          "min-w-[72px] flex items-center justify-center rounded-lg h-8 px-2 text-white text-sm font-bold shadow-sm",
+                          badgeColor
+                      )}>
+                        {isUp ? "+" : ""}{etf.change_pct}%
+                      </div>
+                    </div>
+                  </Link>
+                );
+            })}
           </div>
         )}
-
-        <div className="space-y-3 pb-4">
-          {results.map((etf) => (
-            <div key={etf.code} className="flex items-center justify-between p-4 bg-card rounded-xl border shadow-sm hover:border-primary/30 transition-colors">
-              <Link href={`/etf/${etf.code}`} className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono font-bold text-base">{etf.code}</span>
-                  <span className="text-xs px-1.5 py-0.5 bg-secondary rounded text-muted-foreground">
-                    {etf.code.startsWith("5") ? "SH" : "SZ"}
-                  </span>
-                </div>
-                <div className="text-sm text-foreground/90 truncate pr-2">
-                  {etf.name}
-                </div>
-              </Link>
-              
-              <div className="flex flex-col items-end gap-1 ml-3 min-w-[80px]">
-                <span className="font-mono text-base font-medium">
-                  {etf.price?.toFixed(3)}
-                </span>
-                <span className={cn(
-                  "text-xs font-medium px-1.5 py-0.5 rounded",
-                  etf.change_pct > 0 ? "text-up bg-up/10" : etf.change_pct < 0 ? "text-down bg-down/10" : "text-muted-foreground bg-muted"
-                )}>
-                  {etf.change_pct > 0 ? "+" : ""}{etf.change_pct}%
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

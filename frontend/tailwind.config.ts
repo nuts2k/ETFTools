@@ -20,10 +20,6 @@ const config: Config = {
   				DEFAULT: 'hsl(var(--popover))',
   				foreground: 'hsl(var(--popover-foreground))'
   			},
-  			primary: {
-  				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
-  			},
   			secondary: {
   				DEFAULT: 'hsl(var(--secondary))',
   				foreground: 'hsl(var(--secondary-foreground))'
@@ -50,10 +46,26 @@ const config: Config = {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
-            // Custom Colors for ETF Tool
+            // Design System Colors
+            primary: {
+                DEFAULT: 'hsl(var(--primary))',
+                foreground: 'hsl(var(--primary-foreground))',
+            },
+            "background-light": "#f6f7f8",
+            "background-dark": "#101822",
+            "surface-dark": "#1A222C",
+            "stock-up": "var(--up)",
+            "stock-down": "var(--down)",
+            
+            // Legacy/Shadcn Mappings (Overridden or kept for compatibility)
             up: 'var(--up)',
             down: 'var(--down)',
   		},
+        fontFamily: {
+            display: ["Inter", "Noto Sans SC", "sans-serif"],
+            body: ["Inter", "Noto Sans SC", "sans-serif"],
+            sans: ["Inter", "Noto Sans SC", "sans-serif"], // Override default sans
+        },
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
