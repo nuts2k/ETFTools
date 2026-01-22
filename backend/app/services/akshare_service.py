@@ -6,6 +6,7 @@ from diskcache import Cache
 from datetime import datetime
 import os
 import time
+import threading
 
 from app.core.cache import etf_cache
 
@@ -21,6 +22,9 @@ disk_cache = Cache(CACHE_DIR)
 ETF_LIST_CACHE_KEY = "etf_list_all"
 
 class AkShareService:
+    _refresh_lock = threading.Lock()
+    _is_refreshing = False
+
     @staticmethod
     def load_fallback_data() -> List[Dict]:
         """Load ETF list from local JSON fallback"""
@@ -93,25 +97,61 @@ class AkShareService:
         return []
 
     @staticmethod
+    def _refresh_task():
+        """Background task to refresh ETF list"""
+        try:
+            with AkShareService._refresh_lock:
+                if AkShareService._is_refreshing:
+                    return
+                AkShareService._is_refreshing = True
+
+            logger.info("Starting background refresh of ETF list...")
+            data = AkShareService.fetch_all_etfs()
+            if data:
+                etf_cache.set_etf_list(data)
+                logger.info("Background refresh complete.")
+            else:
+                logger.warning("Background refresh failed to get data.")
+
+        except Exception as e:
+            logger.error(f"Error in background refresh: {e}")
+        finally:
+            with AkShareService._refresh_lock:
+                AkShareService._is_refreshing = False
+
+    @staticmethod
     def get_etf_info(code: str) -> Optional[Dict]:
         """
         获取单个 ETF 的实时信息。
-        逻辑：优先查缓存，如果缓存过期(60s)，则重新拉取全量列表并更新缓存。
+        逻辑：
+        1. 如果缓存过期但已初始化：启动后台刷新，立即返回旧数据（非阻塞）。
+        2. 如果缓存未初始化：必须同步阻塞刷新（否则没数据）。
         """
-        if etf_cache.is_stale or not etf_cache.is_initialized:
-            # 缓存过期，触发刷新 (可以是异步的，这里为了简化MVP先同步)
-            # 在高并发下这里应该加锁，MVP 暂略
-            logger.info("Cache stale or empty, refreshing etf list...")
+        if not etf_cache.is_initialized:
+            # 必须同步加载 (Cold start)
+            logger.info("Cache empty (cold start), syncing etf list...")
             data = AkShareService.fetch_all_etfs()
             if data:
                 etf_cache.set_etf_list(data)
             
-            # If still not initialized (e.g. network failure and no disk cache), try fallback
+            # Try disk cache fallback if network failed
             if not etf_cache.is_initialized:
-                # Try to load from disk cache directly if we haven't already
-                cached_list = disk_cache.get(ETF_LIST_CACHE_KEY)
-                if cached_list:
-                    etf_cache.set_etf_list(cached_list)
+                 cached_list = disk_cache.get(ETF_LIST_CACHE_KEY)
+                 if cached_list:
+                     etf_cache.set_etf_list(cached_list)
+
+        elif etf_cache.is_stale:
+            # 缓存过期但有数据，触发后台刷新 (Stale-While-Revalidate)
+            should_start = False
+            with AkShareService._refresh_lock:
+                if not AkShareService._is_refreshing:
+                    should_start = True
+            
+            if should_start:
+                logger.info("Cache stale, triggering background refresh...")
+                t = threading.Thread(target=AkShareService._refresh_task)
+                t.daemon = True
+                t.start()
 
         return etf_cache.get_etf_info(code)
 
