@@ -60,12 +60,20 @@ export default function SettingsPage() {
                    <p className="font-medium">{user.username}</p>
                    <p className="text-xs text-muted-foreground">已登录</p>
                  </div>
-                 <button 
-                   onClick={logout}
-                   className="text-sm text-destructive font-medium hover:underline"
-                 >
-                   退出登录
-                 </button>
+                 <div className="flex items-center gap-4">
+                     <Link 
+                        href="/settings/password"
+                        className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                     >
+                        修改密码
+                     </Link>
+                     <button 
+                       onClick={logout}
+                       className="text-sm text-destructive font-medium hover:underline"
+                     >
+                       退出登录
+                     </button>
+                 </div>
                </div>
             ) : (
                <Link href="/login" className="flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors">

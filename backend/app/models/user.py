@@ -14,6 +14,10 @@ class User(UserBase, table=True):
 class UserCreate(UserBase):
     password: str
 
+class UserPasswordUpdate(SQLModel):
+    old_password: str
+    new_password: str
+
 class UserRead(UserBase):
     id: int
     created_at: datetime

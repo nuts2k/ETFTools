@@ -59,3 +59,11 @@ class AuthService:
         if not AuthService.verify_password(password, user.hashed_password):
             return None
         return user
+
+    @staticmethod
+    def update_password(session: Session, user: User, new_password: str) -> User:
+        user.hashed_password = AuthService.get_password_hash(new_password)
+        session.add(user)
+        session.commit()
+        session.refresh(user)
+        return user

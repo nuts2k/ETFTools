@@ -8,7 +8,7 @@ from jose import JWTError, jwt
 
 from app.core.database import get_session
 from app.services.auth_service import AuthService, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
-from app.models.user import User, UserCreate, UserRead
+from app.models.user import User, UserCreate, UserRead, UserPasswordUpdate
 
 router = APIRouter()
 
@@ -57,3 +57,15 @@ def login_for_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.post("/password")
+def update_password(
+    password_update: UserPasswordUpdate,
+    current_user: Annotated[User, Depends(get_current_user)],
+    session: Session = Depends(get_session)
+):
+    if not AuthService.verify_password(password_update.old_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Incorrect old password")
+    
+    AuthService.update_password(session, current_user, password_update.new_password)
+    return {"message": "Password updated successfully"}
