@@ -27,7 +27,7 @@ export default function LoginPage() {
       })
 
       if (!res.ok) {
-        throw new Error("Login failed")
+        throw new Error("登录失败")
       }
 
       const data = await res.json()
@@ -37,16 +37,16 @@ export default function LoginPage() {
       
       router.push("/settings")
     } catch (err) {
-      setError("Invalid username or password")
+      setError("用户名或密码错误")
     }
   }
 
   return (
     <div className="container max-w-md mx-auto p-4 pt-10">
-      <h1 className="text-2xl font-bold mb-6 text-center">Login to ETFTool</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">登录 ETFTool</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Username</label>
+          <label className="block text-sm font-medium mb-1">用户名</label>
           <input
             type="text"
             value={username}
@@ -56,7 +56,7 @@ export default function LoginPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Password</label>
+          <label className="block text-sm font-medium mb-1">密码</label>
           <input
             type="password"
             value={password}
@@ -72,14 +72,14 @@ export default function LoginPage() {
           type="submit"
           className="w-full py-2 bg-primary text-primary-foreground rounded-md font-medium"
         >
-          Login
+          登录
         </button>
       </form>
       
       <p className="mt-4 text-center text-sm text-muted-foreground">
-        Don't have an account?{" "}
+        没有账号？{" "}
         <Link href="/register" className="text-primary hover:underline">
-          Register
+          去注册
         </Link>
       </p>
     </div>

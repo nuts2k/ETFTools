@@ -25,7 +25,7 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.detail || "Registration failed")
+        throw new Error(data.detail || "注册失败")
       }
 
       // Redirect to login on success
@@ -37,10 +37,10 @@ export default function RegisterPage() {
 
   return (
     <div className="container max-w-md mx-auto p-4 pt-10">
-      <h1 className="text-2xl font-bold mb-6 text-center">Register</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center">注册</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Username</label>
+          <label className="block text-sm font-medium mb-1">用户名</label>
           <input
             type="text"
             value={username}
@@ -51,7 +51,7 @@ export default function RegisterPage() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Password</label>
+          <label className="block text-sm font-medium mb-1">密码</label>
           <input
             type="password"
             value={password}
@@ -68,14 +68,14 @@ export default function RegisterPage() {
           type="submit"
           className="w-full py-2 bg-primary text-primary-foreground rounded-md font-medium"
         >
-          Create Account
+          注册
         </button>
       </form>
       
       <p className="mt-4 text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        已有账号？{" "}
         <Link href="/login" className="text-primary hover:underline">
-          Login
+          去登录
         </Link>
       </p>
     </div>
