@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function ChangePasswordPage() {
   const [oldPassword, setOldPassword] = useState("");
@@ -41,7 +42,7 @@ export default function ChangePasswordPage() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://localhost:8000/api/v1/auth/password", {
+      const res = await fetch(`${API_BASE_URL}/auth/password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

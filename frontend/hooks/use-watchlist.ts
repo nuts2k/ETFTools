@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { type ETFItem } from "@/lib/api";
+import { type ETFItem, API_BASE_URL } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 const STORAGE_KEY = "etftool-watchlist";
@@ -18,7 +18,7 @@ export function useWatchlist() {
       if (user && token) {
         // Cloud mode
         try {
-          const res = await fetch("http://localhost:8000/api/v1/watchlist/", {
+          const res = await fetch(`${API_BASE_URL}/watchlist/`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.ok) {
@@ -55,7 +55,7 @@ export function useWatchlist() {
           const localItems: ETFItem[] = JSON.parse(stored);
           if (localItems.length > 0) {
             try {
-              await fetch("http://localhost:8000/api/v1/watchlist/sync", {
+              await fetch(`${API_BASE_URL}/watchlist/sync`, {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
@@ -66,7 +66,7 @@ export function useWatchlist() {
               // Clear local storage after sync
               localStorage.removeItem(STORAGE_KEY);
               // Refresh list
-              const res = await fetch("http://localhost:8000/api/v1/watchlist/", {
+              const res = await fetch(`${API_BASE_URL}/watchlist/`, {
                 headers: { Authorization: `Bearer ${token}` }
               });
               if (res.ok) {
@@ -97,9 +97,9 @@ export function useWatchlist() {
 
     if (user && token) {
       try {
-        await fetch(`http://localhost:8000/api/v1/watchlist/${item.code}`, {
+        await fetch(`${API_BASE_URL}/watchlist/${item.code}`, {
           method: "POST",
-          headers: { 
+          headers: {  
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}` 
           },
@@ -120,7 +120,7 @@ export function useWatchlist() {
 
     if (user && token) {
       try {
-        await fetch(`http://localhost:8000/api/v1/watchlist/${code}`, {
+        await fetch(`${API_BASE_URL}/watchlist/${code}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -147,7 +147,7 @@ export function useWatchlist() {
 
     if (user && token) {
       try {
-        await fetch("http://localhost:8000/api/v1/watchlist/reorder", {
+        await fetch(`${API_BASE_URL}/watchlist/reorder`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

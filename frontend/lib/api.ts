@@ -1,5 +1,17 @@
 // 简单的 API 客户端封装
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  // 客户端：自动推断主机名 (用于局域网调试)
+  if (typeof window !== 'undefined') {
+    return `http://${window.location.hostname}:8000/api/v1`;
+  }
+  // 服务端：默认 localhost
+  return 'http://localhost:8000/api/v1';
+};
+
+export const API_BASE_URL = getApiBaseUrl();
 
 export async function fetchClient<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;

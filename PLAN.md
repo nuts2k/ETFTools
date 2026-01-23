@@ -194,3 +194,43 @@
 - **DarkMode**: 确保阴影颜色在深色模式下清晰且不干扰曲线。
 - **Label**: 在区域上方增加微弱文字标记 "最大回撤" / "修复期"。
 
+---
+
+# Bug Fix Plan: Mobile Safari Connection Error
+
+## Problem
+When testing on mobile Safari (accessing via LAN IP), the search function fails with `Console TypeError. Load failed`.
+
+## Root Cause Analysis
+1.  **Hardcoded URLs**: The frontend code contains multiple instances of `http://localhost:8000`. When running on a mobile device, `localhost` refers to the device itself, not the development server on the computer.
+2.  **CORS Restrictions**: The backend configuration likely restricts CORS to specific origins (e.g., localhost), which blocks requests coming from a LAN IP address (e.g., `192.168.x.x`).
+
+## Solution Strategy
+
+### 1. Backend: Relax CORS Policy
+-   **File**: `backend/app/core/config.py`
+-   **Action**: Update `BACKEND_CORS_ORIGINS` to allow all origins (`["*"]`) during development. This ensures that requests from any device on the local network are accepted.
+
+### 2. Frontend: Centralize and Dynamic API Configuration
+-   **File**: `frontend/lib/api.ts`
+-   **Action**: 
+    -   Remove the hardcoded default `http://localhost:8000`.
+    -   Implement logic to determine the `API_BASE_URL` dynamically:
+        -   First, check for `process.env.NEXT_PUBLIC_API_URL`.
+        -   If not set, fallback to a dynamic check of `window.location.hostname`. If running on a LAN IP (e.g., `192.168.1.5:3000`), assume the backend is on port 8000 of the same IP (`http://192.168.1.5:8000/api/v1`).
+        -   Default fallback to `http://localhost:8000/api/v1` for server-side rendering or local dev.
+
+### 3. Frontend: Refactor Hardcoded Strings
+-   **Files**:
+    -   `frontend/hooks/use-watchlist.ts`
+    -   `frontend/lib/auth-context.tsx`
+    -   `frontend/app/login/page.tsx`
+    -   `frontend/app/register/page.tsx`
+    -   `frontend/app/settings/password/page.tsx`
+    -   `frontend/hooks/use-settings.ts`
+-   **Action**: Replace all occurrences of `http://localhost:8000...` with the imported `API_BASE_URL` from `@/lib/api`.
+
+## Verification
+-   Start backend and frontend.
+-   Access frontend via LAN IP (e.g., `http://192.168.1.5:3000`) on a mobile device.
+-   Verify search functionality works without "Load failed" errors.

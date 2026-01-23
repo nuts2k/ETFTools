@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
+import { API_BASE_URL } from "@/lib/api"
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
@@ -21,7 +22,7 @@ export default function LoginPage() {
       formData.append("username", username)
       formData.append("password", password)
 
-      const res = await fetch("http://localhost:8000/api/v1/auth/token", {
+      const res = await fetch(`${API_BASE_URL}/auth/token`, {
         method: "POST",
         body: formData,
       })

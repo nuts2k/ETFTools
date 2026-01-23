@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { API_BASE_URL } from "@/lib/api";
 
 export type ColorMode = "red-up" | "green-up";
 export type RefreshRate = 5 | 10 | 30 | 0; // 0 = Manual
@@ -48,7 +49,7 @@ export function useSettings() {
 
     if (user && token) {
       try {
-        await fetch("http://localhost:8000/api/v1/users/me/settings", {
+        await fetch(`${API_BASE_URL}/users/me/settings`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",

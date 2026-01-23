@@ -6,10 +6,7 @@ class Settings(BaseModel):
     API_V1_STR: str = "/api/v1"
     
     # 允许的前端来源
-    BACKEND_CORS_ORIGINS: list[str] = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000"
-    ]
+    BACKEND_CORS_ORIGINS: list[str] = ["*"]
 
     class Config:
         case_sensitive = True
