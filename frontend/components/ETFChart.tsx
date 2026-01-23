@@ -293,7 +293,7 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                 type="monotone" 
                 dataKey="close" 
                 stroke={chartColor} 
-                strokeWidth={2.5}
+                strokeWidth={1}
                 fillOpacity={1} 
                 fill="url(#colorPrice)" 
                 isAnimationActive={false} 
