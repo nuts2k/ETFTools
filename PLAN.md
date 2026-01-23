@@ -147,3 +147,50 @@
 - **联动性**: 切换到 "1年" 时，图表变更为1年试图，同时下方 "最大回撤" 等指标数值发生变化。
 - **数据准确**: 确保 "1年" 的最大回撤不是历史最大回撤，而是最近1年的最大回撤。
 - **加载体验**: 切换时无明显页面闪烁，指标数据更新流畅。
+
+---
+
+# ETF 最大回撤区间可视化计划
+
+## 目标
+在 ETF 走势图上通过背景阴影直观展示选定时间段内的“最大回撤区间”和“修复区间”。
+
+## 1. 后端 API 算法增强
+**文件**: `backend/app/api/v1/endpoints/etf.py`
+
+- **逻辑升级**:
+  - 在计算 `max_drawdown` 的基础上，定位以下三个关键日期：
+    1. **Peak Date (mdd_start)**: 回撤前的最高点日期。
+    2. **Trough Date (mdd_trough)**: 谷底日期（原 mdd_date）。
+    3. **Recovery Date (mdd_end)**: 价格重新回到 Peak Date 水平的日期（若未修复则为 None）。
+- **返回值增加**:
+  - `metrics` 对象中新增 `mdd_start`, `mdd_trough`, `mdd_end`。
+
+## 2. 前端类型定义更新
+**文件**: `frontend/lib/api.ts`
+
+- **Interface Update**:
+  - `ETFMetrics` 增加对应字段，类型为 `string` (YYYY-MM-DD)。
+
+## 3. 图表组件增强
+**文件**: `frontend/components/ETFChart.tsx`
+
+- **Props Update**:
+  - 接收 `drawdownInfo` 对象，包含 `{ start: string, trough: string, end?: string }`。
+- **Render Logic**:
+  - 使用 Recharts `ReferenceArea` 组件。
+  - **Drawdown Zone**: `start` -> `trough`, 填充红色背景 (`#ef4444` with low opacity)。
+  - **Recovery Zone**: `trough` -> `end` (or last data date), 填充绿色背景 (`#22c55e` with low opacity)。
+  - **Handling Ongoing Recovery**: 如果 `end` 为空，使用数据最后一个点的日期作为终点。
+
+## 4. 详情页数据透传
+**文件**: `frontend/app/etf/[code]/page.tsx`
+
+- **Data Flow**:
+  - 从 `metrics` 状态中解构出 mdd 相关字段。
+  - 传递给 `ETFChart` 组件。
+
+## 5. 样式与体验
+- **DarkMode**: 确保阴影颜色在深色模式下清晰且不干扰曲线。
+- **Label**: 在区域上方增加微弱文字标记 "最大回撤" / "修复期"。
+

@@ -169,7 +169,17 @@ export default function ETFDetailPage() {
 
       {/* Chart Section */}
       <div className="mt-4 w-full px-0">
-         <ETFChart code={code} period={period} onPeriodChange={setPeriod} />
+         <ETFChart 
+            code={code} 
+            period={period} 
+            onPeriodChange={setPeriod}
+            drawdownInfo={metrics ? {
+                start: metrics.mdd_start,
+                trough: metrics.mdd_trough,
+                end: metrics.mdd_end,
+                value: metrics.max_drawdown
+            } : undefined}
+         />
       </div>
 
       <div className="h-2 w-full bg-secondary/30 mt-6" />

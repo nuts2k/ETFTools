@@ -49,6 +49,9 @@ export interface ETFMetrics {
   cagr: number;
   max_drawdown: number;
   mdd_date: string;
+  mdd_start?: string; // Peak Date
+  mdd_trough?: string; // Trough Date (same as mdd_date)
+  mdd_end?: string | null; // Recovery Date (null if not recovered)
   volatility: number;
   risk_level: string;
 }

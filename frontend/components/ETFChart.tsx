@@ -9,6 +9,7 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
+  ReferenceArea
 } from "recharts";
 import { fetchClient, type ETFHistoryItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -19,9 +20,22 @@ interface ETFChartProps {
   code: string;
   period: Period;
   onPeriodChange: (p: Period) => void;
+  drawdownInfo?: {
+      start?: string;
+      trough?: string;
+      end?: string | null;
+      value?: number;
+  };
 }
 
-export function ETFChart({ code, period, onPeriodChange }: ETFChartProps) {
+function calculateDaysDiff(start: string, end: string): number {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChartProps) {
   const [data, setData] = useState<ETFHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -115,6 +129,49 @@ export function ETFChart({ code, period, onPeriodChange }: ETFChartProps) {
               {/* Dashed Grid Lines similar to design */}
               <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
               
+              {/* Drawdown & Recovery Zones */}
+              {drawdownInfo?.start && drawdownInfo?.trough && (
+                  <ReferenceArea 
+                      x1={drawdownInfo.start} 
+                      x2={drawdownInfo.trough} 
+                      y1={min} 
+                      y2={max}
+                      fill="var(--down)" 
+                      fillOpacity={0.15}
+                      ifOverflow="extendDomain"
+                      label={{ 
+                          value: `回撤${(drawdownInfo.value ? drawdownInfo.value * 100 : 0).toFixed(1)}%`, 
+                          position: "insideBottom", 
+                          fill: "var(--down)", 
+                          fontSize: 12,
+                          fontWeight: 600,
+                          dy: -5
+                      }}
+                  />
+              )}
+              
+              {drawdownInfo?.trough && (
+                  <ReferenceArea 
+                      x1={drawdownInfo.trough} 
+                      x2={drawdownInfo.end || filteredData[filteredData.length - 1]?.date} 
+                      y1={min} 
+                      y2={max}
+                      fill="var(--up)" 
+                      fillOpacity={0.15}
+                      ifOverflow="extendDomain"
+                      label={{ 
+                          value: drawdownInfo.end 
+                            ? `${calculateDaysDiff(drawdownInfo.trough, drawdownInfo.end)}天修复`
+                            : `修复中${calculateDaysDiff(drawdownInfo.trough, filteredData[filteredData.length - 1]?.date || new Date().toISOString())}天+`,
+                          position: "insideTop", 
+                          fill: "var(--up)", 
+                          fontSize: 12,
+                          fontWeight: 600,
+                          dy: 5
+                      }}
+                  />
+              )}
+
               <XAxis 
                 dataKey="date" 
                 hide 

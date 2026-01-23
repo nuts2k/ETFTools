@@ -125,8 +125,34 @@ async def get_etf_metrics(code: str, period: str = "5y"):
     drawdown = (closes - rolling_max) / rolling_max
     max_drawdown = drawdown.min()
     
-    # Max Drawdown Date
-    mdd_date = drawdown.idxmin().strftime("%Y-%m-%d")
+    # 1. Trough Date (mdd_trough): date of max drawdown
+    trough_idx = drawdown.idxmin()
+    mdd_trough = trough_idx.strftime("%Y-%m-%d")
+    
+    # 2. Peak Date (mdd_start): last time price was at rolling_max before trough
+    # We look at data up to trough
+    data_upto_trough = closes.loc[:trough_idx]
+    rolling_max_upto_trough = rolling_max.loc[:trough_idx]
+    
+    # The peak price is the rolling_max at the trough date
+    peak_price = rolling_max_upto_trough.iloc[-1]
+    
+    # Find the last date where price >= peak_price (before or on trough date)
+    # Actually, strictly speaking, it's where price == peak_price
+    # Because peak_price comes from rolling_max, there must be at least one point where close == peak_price
+    peak_idx = data_upto_trough[data_upto_trough >= peak_price].index[-1]
+    mdd_start = peak_idx.strftime("%Y-%m-%d")
+    
+    # 3. Recovery Date (mdd_end): first time price >= peak_price after trough
+    data_after_trough = closes.loc[trough_idx:]
+    # drop the first point (trough itself) to avoid matching if trough == peak (impossible for drawdown < 0)
+    data_after_trough = data_after_trough.iloc[1:]
+    
+    mdd_end = None
+    if not data_after_trough.empty:
+        recovered = data_after_trough[data_after_trough >= peak_price]
+        if not recovered.empty:
+            mdd_end = recovered.index[0].strftime("%Y-%m-%d")
     
     # Volatility (Annualized)
     # 日收益率标准差 * sqrt(252)
@@ -138,7 +164,10 @@ async def get_etf_metrics(code: str, period: str = "5y"):
         "total_return": round(total_return, 4),
         "cagr": round(cagr, 4),
         "max_drawdown": round(max_drawdown, 4),
-        "mdd_date": mdd_date,
+        "mdd_date": mdd_trough, # Keep backward compatibility
+        "mdd_start": mdd_start,
+        "mdd_trough": mdd_trough,
+        "mdd_end": mdd_end,
         "volatility": round(volatility, 4),
         "risk_level": "High" if volatility > 0.25 else ("Medium" if volatility > 0.15 else "Low")
     }
