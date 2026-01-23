@@ -154,7 +154,7 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+            <AreaChart data={filteredData} margin={{ top: 10, right: 0, left: 0, bottom: 20 }}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={chartColor} stopOpacity={0.2}/>
@@ -211,10 +211,21 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                   />
               )}
 
-              <XAxis 
-                dataKey="date" 
-                hide 
-              />
+               <XAxis
+                 dataKey="date"
+                 tick={{fontSize: 10, fill: "hsl(var(--muted-foreground))", fontWeight: 500}}
+                 axisLine={false}
+                 tickLine={false}
+                 tickFormatter={(str) => {
+                   const date = new Date(str);
+                   const month = date.getMonth() + 1;
+                   if (period === "1y") {
+                     return `${month}-${date.getDate()}`;
+                   }
+                   return `${date.getFullYear().toString().slice(2)}-${month}`;
+                 }}
+                 minTickGap={30}
+               />
               <YAxis 
                 domain={[min, max]} 
                 orientation="right" 
