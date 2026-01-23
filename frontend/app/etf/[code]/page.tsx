@@ -196,19 +196,29 @@ export default function ETFDetailPage() {
              icon={PieChart}
              loading={metricsLoading}
            />
-           <MetricCard 
-             label="年化收益 (CAGR)" 
-             value={metrics ? `${(metrics.cagr * 100).toFixed(2)}%` : "--"}
-             subValue={
-               period === "all" ? "成立以来年化" : 
-               period === "1y" ? "1年年化" :
-               period === "3y" ? "3年年化" :
-               "5年年化"
-             }
-             color="text-up"
-             icon={TrendingUp}
-             loading={metricsLoading}
-           />
+            <MetricCard 
+              label="年化收益 (CAGR)" 
+              value={metrics ? `${(metrics.cagr * 100).toFixed(2)}%` : "--"}
+              subValue={(() => {
+                if (!metrics) return "--";
+                if (period === "all") return "成立以来年化";
+                
+                const requestedYears = period === "1y" ? 1 : period === "3y" ? 3 : 5;
+                const actualYears = metrics.actual_years ?? 0;
+                
+                // 如果实际时长明显少于请求时长（少于 95%），显示实际时长
+                if (actualYears < requestedYears * 0.95) {
+                  return actualYears < 1.0 
+                    ? `成立以来 (${(actualYears * 12).toFixed(1)}个月) 年化`
+                    : `成立以来 (${actualYears.toFixed(1)}年) 年化`;
+                }
+                
+                return period === "1y" ? "1年年化" : period === "3y" ? "3年年化" : "5年年化";
+              })()}
+              color={metrics && metrics.cagr >= 0 ? "text-up" : "text-down"}
+              icon={TrendingUp}
+              loading={metricsLoading}
+            />
            <MetricCard 
              label="最大回撤" 
              value={metrics ? `${(metrics.max_drawdown * 100).toFixed(2)}%` : "--"}

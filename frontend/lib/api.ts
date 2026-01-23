@@ -66,4 +66,5 @@ export interface ETFMetrics {
   mdd_end?: string | null; // Recovery Date (null if not recovered)
   volatility: number;
   risk_level: string;
+  actual_years?: number; // 实际计算所用的年数
 }

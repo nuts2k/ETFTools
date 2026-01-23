@@ -103,21 +103,42 @@ async def get_etf_metrics(code: str, period: str = "5y"):
         
     df_period = df.loc[start_date:end_date]
     
-    if df_period.empty:
-         raise HTTPException(status_code=404, detail="Not enough data for metrics")
+    # 边界情况处理：数据点不足
+    if len(df_period) < 2:
+        if df_period.empty:
+            raise HTTPException(status_code=404, detail="Not enough data for metrics")
+        
+        # 如果只有1个数据点，返回零值指标，避免前端崩溃
+        single_date = df_period.index[0].strftime("%Y-%m-%d")
+        return {
+            "period": f"{single_date} to {single_date}",
+            "total_return": 0.0,
+            "cagr": 0.0,
+            "actual_years": 0.0,
+            "max_drawdown": 0.0,
+            "mdd_date": single_date,
+            "mdd_start": single_date,
+            "mdd_trough": single_date,
+            "mdd_end": None,
+            "volatility": 0.0,
+            "risk_level": "Low"
+        }
 
     # 3. 计算指标
     closes = df_period["close"]
     
     # CAGR
-    # 年数 = (end - start).days / 365.25
-    days = (end_date - start_date).days
-    years = days / 365.25
+    # 使用实际数据范围计算年数，解决历史数据不足选定时间段的问题
+    actual_start_date = df_period.index[0]
+    actual_end_date = df_period.index[-1]
+    actual_days = (actual_end_date - actual_start_date).days
+    actual_years = actual_days / 365.25
+    
     total_return = (closes.iloc[-1] / closes.iloc[0]) - 1
     
     cagr = 0.0
-    if years > 0 and closes.iloc[0] > 0:
-        cagr = (closes.iloc[-1] / closes.iloc[0]) ** (1 / years) - 1
+    if actual_years > 0 and closes.iloc[0] > 0:
+        cagr = (closes.iloc[-1] / closes.iloc[0]) ** (1 / actual_years) - 1
 
     # Max Drawdown
     # 累计最大值
@@ -160,9 +181,10 @@ async def get_etf_metrics(code: str, period: str = "5y"):
     volatility = daily_returns.std() * np.sqrt(252)
     
     return {
-        "period": f"{start_date.date()} to {end_date.date()}",
+        "period": f"{actual_start_date.date()} to {actual_end_date.date()}",
         "total_return": round(total_return, 4),
         "cagr": round(cagr, 4),
+        "actual_years": round(actual_years, 4),
         "max_drawdown": round(max_drawdown, 4),
         "mdd_date": mdd_trough, # Keep backward compatibility
         "mdd_start": mdd_start,
