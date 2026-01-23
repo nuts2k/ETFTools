@@ -68,9 +68,8 @@ export default function SearchPage() {
               </div>
               <input 
                 className="h-full w-full bg-transparent rounded-xl border-none pl-11 pr-4 text-base placeholder:text-muted-foreground focus:ring-0 focus:outline-none" 
-                inputMode="numeric" 
                 placeholder="输入代码或名称 (如 300)" 
-                type="text"
+                type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
