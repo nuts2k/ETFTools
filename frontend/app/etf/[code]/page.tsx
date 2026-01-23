@@ -107,17 +107,9 @@ export default function ETFDetailPage() {
     }
   };
 
-  if (loading) {
+  if (error && !info) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-muted-foreground bg-background">
-        加载中...
-      </div>
-    );
-  }
-
-  if (error || !info) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center bg-background">
+      <div className="flex flex-col items-center justify-center min-h-[100dvh] p-4 text-center bg-background">
         <h2 className="text-xl font-bold mb-2">出错了</h2>
         <p className="text-muted-foreground mb-6">{error || "未找到该 ETF"}</p>
         <button onClick={() => router.back()} className="text-primary font-medium hover:underline">
@@ -127,16 +119,16 @@ export default function ETFDetailPage() {
     );
   }
 
-  const isUp = info.change_pct > 0;
-  const isDown = info.change_pct < 0;
+  const isUp = info?.change_pct ? info.change_pct > 0 : false;
+  const isDown = info?.change_pct ? info.change_pct < 0 : false;
   const changeColor = isUp ? "text-up" : isDown ? "text-down" : "text-foreground";
   const bgColor = isUp ? "bg-up/10" : isDown ? "bg-down/10" : "bg-muted";
   const iconColor = isUp ? "text-up" : isDown ? "text-down" : "text-muted-foreground";
 
   return (
-    <div className="min-h-screen bg-background pb-48 relative">
+    <div className="min-h-[100dvh] bg-background pb-48 relative">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transition-all">
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transition-all transform-gpu backface-hidden">
         <div className="flex h-14 items-center justify-center relative px-5">
           <button 
               onClick={() => router.back()} 
@@ -144,27 +136,46 @@ export default function ETFDetailPage() {
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <h2 className="text-lg font-bold tracking-tight text-foreground">{info.code}</h2>
+          <h2 className="text-lg font-bold tracking-tight text-foreground">{code}</h2>
         </div>
       </header>
 
       {/* Hero Section */}
       <div className="flex flex-col items-center px-4 pt-6 pb-2 text-center">
-        <h1 className="text-xl font-semibold leading-tight text-foreground/90">{info.name}</h1>
+        {loading ? (
+            <div className="h-7 w-48 bg-secondary/50 animate-pulse rounded-lg mb-2" />
+        ) : (
+            <h1 className="text-xl font-semibold leading-tight text-foreground/90">{info?.name}</h1>
+        )}
+        
         <div className="mt-4 flex flex-col items-center">
-          <span className="text-[40px] font-bold tracking-tight leading-none text-foreground tabular-nums">
-            ¥{info.price.toFixed(3)}
-          </span>
-          <div className={cn("mt-2 flex items-center gap-1 rounded-full px-3 py-1", bgColor)}>
-            {isUp ? <TrendingUp className={cn("h-4 w-4", iconColor)} /> : <TrendingDown className={cn("h-4 w-4", iconColor)} />}
-            <span className={cn("text-sm font-bold tabular-nums", changeColor)}>
-              {isUp ? "+" : ""}{info.change_pct}%
-            </span>
-          </div>
+          {loading ? (
+              <div className="h-10 w-32 bg-secondary/50 animate-pulse rounded-lg mb-2" />
+          ) : (
+              <span className="text-[40px] font-bold tracking-tight leading-none text-foreground tabular-nums">
+                ¥{info?.price.toFixed(3)}
+              </span>
+          )}
+          
+          {loading ? (
+              <div className="mt-2 h-7 w-24 bg-secondary/50 animate-pulse rounded-full" />
+          ) : (
+              <div className={cn("mt-2 flex items-center gap-1 rounded-full px-3 py-1", bgColor)}>
+                {isUp ? <TrendingUp className={cn("h-4 w-4", iconColor)} /> : <TrendingDown className={cn("h-4 w-4", iconColor)} />}
+                <span className={cn("text-sm font-bold tabular-nums", changeColor)}>
+                  {isUp ? "+" : ""}{info?.change_pct}%
+                </span>
+              </div>
+          )}
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">
-            {info.update_time} • {info.market || "已收盘"}
-        </p>
+        
+        {loading ? (
+            <div className="mt-3 h-4 w-40 bg-secondary/30 animate-pulse rounded mb-1" />
+        ) : (
+            <p className="mt-3 text-xs text-muted-foreground">
+                {info?.update_time} • {info?.market || "已收盘"}
+            </p>
+        )}
       </div>
 
       {/* Chart Section */}
@@ -194,7 +205,7 @@ export default function ETFDetailPage() {
              subValue={metrics ? "相对指数 +0.0%" : ""}
              color={metrics && metrics.total_return > 0 ? "text-up" : "text-down"}
              icon={PieChart}
-             loading={metricsLoading}
+             loading={metricsLoading || loading}
            />
             <MetricCard 
               label="年化收益 (CAGR)" 
@@ -217,7 +228,7 @@ export default function ETFDetailPage() {
               })()}
               color={metrics && metrics.cagr >= 0 ? "text-up" : "text-down"}
               icon={TrendingUp}
-              loading={metricsLoading}
+              loading={metricsLoading || loading}
             />
            <MetricCard 
              label="最大回撤" 
@@ -225,20 +236,20 @@ export default function ETFDetailPage() {
              subValue={metrics?.mdd_date}
              color="text-down"
              icon={ArrowDownCircle}
-             loading={metricsLoading}
+             loading={metricsLoading || loading}
            />
            <MetricCard 
              label="波动率" 
              value={metrics ? `${(metrics.volatility * 100).toFixed(2)}%` : "--"}
              subValue={metrics ? `风险等级: ${metrics.risk_level}` : ""}
              icon={Activity}
-             loading={metricsLoading}
+             loading={metricsLoading || loading}
            />
         </div>
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full bg-background/95 backdrop-blur-md border-t border-border pb-safe">
+      <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full bg-background/95 backdrop-blur-md border-t border-border pb-safe transform-gpu backface-hidden">
         {/* Action Button */}
         <div className="px-4 py-3">
           <button 

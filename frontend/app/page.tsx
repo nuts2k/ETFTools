@@ -110,9 +110,9 @@ export default function WatchlistPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-20">
+    <div className="flex flex-col min-h-[100dvh] bg-background pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50">
+      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transform-gpu backface-hidden">
         <div className="flex h-14 items-center justify-between px-5">
           {isSearchMode ? (
             <div className="flex flex-1 items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">

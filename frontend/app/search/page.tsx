@@ -47,9 +47,9 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-20">
+    <div className="flex flex-col min-h-[100dvh] bg-background pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50">
+      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transform-gpu backface-hidden">
         <div className="flex h-14 items-center justify-between px-5">
           <h1 className="text-2xl font-bold tracking-tight">搜索</h1>
         </div>

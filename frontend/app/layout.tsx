@@ -34,7 +34,7 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-            <main className="min-h-screen pb-20">
+            <main className="min-h-[100dvh] pb-20">
               {children}
             </main>
             <BottomNav />

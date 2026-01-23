@@ -81,8 +81,8 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background pb-20">
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50">
+    <div className="flex flex-col min-h-[100dvh] bg-background pb-20">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transform-gpu backface-hidden">
         <div className="flex h-14 items-center px-2">
           <Link href="/settings" className="p-2 hover:bg-secondary/50 rounded-full transition-colors">
             <ChevronLeft className="h-6 w-6 text-foreground" />
