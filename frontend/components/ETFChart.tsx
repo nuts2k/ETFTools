@@ -129,16 +129,16 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
   return (
     <div className="w-full">
       {/* Period Switcher */}
-      <div className="flex w-full items-center justify-between px-4 mb-4">
+      <div className="grid grid-cols-4 w-full px-4 mb-4 justify-items-center">
         {(["1y", "3y", "5y", "all"] as Period[]).map((p) => (
           <button
             key={p}
             onClick={() => onPeriodChange(p)}
             className={cn(
-              "text-sm font-medium transition-colors",
+              "text-sm font-medium transition-all",
               period === p 
                 ? "rounded-full bg-primary/10 px-4 py-1 font-bold text-primary" 
-                : "text-muted-foreground hover:text-primary px-2"
+                : "text-muted-foreground hover:text-primary px-2 py-1"
             )}
           >
             {p === "all" ? "全部" : p.replace("y", "年")}
