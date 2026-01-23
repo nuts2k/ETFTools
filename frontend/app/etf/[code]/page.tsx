@@ -17,7 +17,7 @@ import {
   PieChart
 } from "lucide-react";
 import { fetchClient, type ETFDetail, type ETFMetrics } from "@/lib/api";
-import { ETFChart } from "@/components/ETFChart";
+import { ETFChart, type Period } from "@/components/ETFChart";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,9 @@ export default function ETFDetailPage() {
   const [info, setInfo] = useState<ETFDetail | null>(null);
   const [metrics, setMetrics] = useState<ETFMetrics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [metricsLoading, setMetricsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [period, setPeriod] = useState<Period>("5y");
 
   const { isWatched, add, remove, isLoaded: isWatchlistLoaded } = useWatchlist();
   const watched = isWatched(code);
@@ -51,13 +53,7 @@ export default function ETFDetailPage() {
     async function initialLoad() {
       try {
         setLoading(true);
-        // Fetch Info and Metrics in parallel
-        await Promise.all([
-          fetchInfo(),
-          fetchClient<ETFMetrics>(`/etf/${code}/metrics`)
-            .then(setMetrics)
-            .catch(() => null)
-        ]);
+        await fetchInfo();
       } catch (err) {
         setError("Failed to load ETF data");
         console.error(err);
@@ -67,6 +63,23 @@ export default function ETFDetailPage() {
     }
     initialLoad();
   }, [code]);
+
+  useEffect(() => {
+    async function loadMetrics() {
+        if (!code) return;
+        try {
+            setMetricsLoading(true);
+            const data = await fetchClient<ETFMetrics>(`/etf/${code}/metrics?period=${period}`);
+            setMetrics(data);
+        } catch (err) {
+            console.error("Failed to load metrics", err);
+            // Optionally clear metrics or show error in metrics section
+        } finally {
+            setMetricsLoading(false);
+        }
+    }
+    loadMetrics();
+  }, [code, period]);
 
   // Auto Refresh Logic
   useEffect(() => {
@@ -156,7 +169,7 @@ export default function ETFDetailPage() {
 
       {/* Chart Section */}
       <div className="mt-4 w-full px-0">
-         <ETFChart code={code} />
+         <ETFChart code={code} period={period} onPeriodChange={setPeriod} />
       </div>
 
       <div className="h-2 w-full bg-secondary/30 mt-6" />
@@ -171,13 +184,20 @@ export default function ETFDetailPage() {
              subValue={metrics ? "相对指数 +0.0%" : ""}
              color={metrics && metrics.total_return > 0 ? "text-up" : "text-down"}
              icon={PieChart}
+             loading={metricsLoading}
            />
            <MetricCard 
              label="年化收益 (CAGR)" 
              value={metrics ? `${(metrics.cagr * 100).toFixed(2)}%` : "--"}
-             subValue="5年年化"
+             subValue={
+               period === "all" ? "成立以来年化" : 
+               period === "1y" ? "1年年化" :
+               period === "3y" ? "3年年化" :
+               "5年年化"
+             }
              color="text-up"
              icon={TrendingUp}
+             loading={metricsLoading}
            />
            <MetricCard 
              label="最大回撤" 
@@ -185,12 +205,14 @@ export default function ETFDetailPage() {
              subValue={metrics?.mdd_date}
              color="text-down"
              icon={ArrowDownCircle}
+             loading={metricsLoading}
            />
            <MetricCard 
              label="波动率" 
              value={metrics ? `${(metrics.volatility * 100).toFixed(2)}%` : "--"}
              subValue={metrics ? `风险等级: ${metrics.risk_level}` : ""}
              icon={Activity}
+             loading={metricsLoading}
            />
         </div>
       </div>
@@ -242,7 +264,7 @@ export default function ETFDetailPage() {
   );
 }
 
-function MetricCard({ label, value, subValue, color, icon: Icon }: any) {
+function MetricCard({ label, value, subValue, color, icon: Icon, loading }: any) {
   return (
     <div className="flex flex-col rounded-xl bg-card p-4 shadow-sm ring-1 ring-border/50">
       <div className="flex items-center gap-1.5 mb-2">
@@ -250,11 +272,15 @@ function MetricCard({ label, value, subValue, color, icon: Icon }: any) {
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
       </div>
       <div className="mt-1 flex items-baseline gap-1">
-        <span className={cn("text-xl font-bold tracking-tight tabular-nums", color || "text-foreground")}>
-            {value}
-        </span>
+        {loading ? (
+            <div className="h-7 w-20 bg-secondary/50 animate-pulse rounded" />
+        ) : (
+            <span className={cn("text-xl font-bold tracking-tight tabular-nums", color || "text-foreground")}>
+                {value}
+            </span>
+        )}
       </div>
-      {subValue && (
+      {subValue && !loading && (
         <span className="text-[10px] text-muted-foreground/80 mt-1 truncate">
             {subValue}
         </span>

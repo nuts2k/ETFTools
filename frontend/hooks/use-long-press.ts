@@ -112,7 +112,7 @@ export function useLongPress(
 
 const preventDefault = (event: Event) => {
   if (!('touches' in event)) return;
-  if (event instanceof TouchEvent && event.touches.length < 2 && event.preventDefault) {
+  if (event instanceof TouchEvent && event.touches.length < 2) {
     // We only prevent default if we want to stop scroll on long press? 
     // Actually blocking scroll is tricky. Usually we don't want to block scroll unless we are sure.
     // Let's keep it simple: we don't preventDefault here for now to allow scrolling.

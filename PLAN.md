@@ -102,3 +102,48 @@
   - 拖拽过程中列表平滑让位。
   - 松手后位置固定，刷新页面/重新登录后顺序保持。
 - **云端同步**: 登录状态下，在一端调整顺序，另一端刷新后顺序同步。
+
+---
+
+# ETF 详情页指标动态同步计划
+
+## 目标
+实现详情页核心指标（CAGR、最大回撤、波动率）与图表上方选择的时间段（1y/3y/5y/all）实时联动，确保展示的数据与图表区间逻辑一致。
+
+## 1. 后端 API 调整
+**文件**: `backend/app/api/v1/endpoints/etf.py`
+
+- **Update `get_etf_metrics`**:
+  - 增加 `period` 参数 (可选值: "1y", "3y", "5y", "all")。
+  - 逻辑变更:
+    - 接收 `period` 参数。
+    - 根据参数计算 `start_date`。
+    - 对历史数据 `DataFrame` 进行切片。
+    - 基于切片后的数据计算 Total Return, CAGR, MaxDrawdown, Volatility。
+    - 确保 `mdd_date` 在切片范围内。
+
+## 2. 前端状态提升与重构
+**文件**: `frontend/app/etf/[code]/page.tsx`
+
+- **状态管理**:
+  - 新增 `period` 状态 (State): `const [period, setPeriod] = useState("5y")`.
+  - `metrics` 数据请求需依赖 `period` 状态。
+- **交互逻辑**:
+  - 当 `period` 改变时:
+    - 重新 fetch `/etf/{code}/metrics?period={period}`。
+    - 指标卡片区域显示局部 Loading 状态。
+
+## 3. 图表组件改造
+**文件**: `frontend/components/ETFChart.tsx`
+
+- **Props 变更**:
+  - 移除内部 `period` 状态。
+  - 新增 Props: `period: string`, `onPeriodChange: (p: string) => void`.
+- **功能**:
+  - 点击时间切换按钮时，调用 `onPeriodChange`。
+  - 接收外部 `period` prop 控制图表数据过滤范围。
+
+## 4. 验证
+- **联动性**: 切换到 "1年" 时，图表变更为1年试图，同时下方 "最大回撤" 等指标数值发生变化。
+- **数据准确**: 确保 "1年" 的最大回撤不是历史最大回撤，而是最近1年的最大回撤。
+- **加载体验**: 切换时无明显页面闪烁，指标数据更新流畅。

@@ -13,14 +13,15 @@ import {
 import { fetchClient, type ETFHistoryItem } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
+export type Period = "1y" | "3y" | "5y" | "all";
+
 interface ETFChartProps {
   code: string;
+  period: Period;
+  onPeriodChange: (p: Period) => void;
 }
 
-type Period = "1y" | "3y" | "5y" | "all";
-
-export function ETFChart({ code }: ETFChartProps) {
-  const [period, setPeriod] = useState<Period>("5y");
+export function ETFChart({ code, period, onPeriodChange }: ETFChartProps) {
   const [data, setData] = useState<ETFHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -83,7 +84,7 @@ export function ETFChart({ code }: ETFChartProps) {
         {(["1y", "3y", "5y", "all"] as Period[]).map((p) => (
           <button
             key={p}
-            onClick={() => setPeriod(p)}
+            onClick={() => onPeriodChange(p)}
             className={cn(
               "text-sm font-medium transition-colors",
               period === p 
@@ -156,7 +157,7 @@ export function ETFChart({ code }: ETFChartProps) {
         )}
         
         <div className="absolute bottom-1 left-4 pointer-events-none">
-            <p className="text-[10px] text-muted-foreground/70">价格已按前复权 (QFQ) 处理</p>
+          <p className="text-[10px] text-muted-foreground/70">价格已按前复权 (QFQ) 处理</p>
         </div>
       </div>
     </div>

@@ -85,11 +85,19 @@ async def get_etf_metrics(code: str, period: str = "5y"):
     df = df.set_index("date").sort_index()
     
     # 2. 根据 period 筛选数据
-    # 5y = 最近5年
     end_date = df.index[-1]
-    start_date = end_date - pd.DateOffset(years=5)
     
-    # 如果数据不足5年，就用全部数据
+    if period == "1y":
+        start_date = end_date - pd.DateOffset(years=1)
+    elif period == "3y":
+        start_date = end_date - pd.DateOffset(years=3)
+    elif period == "5y":
+        start_date = end_date - pd.DateOffset(years=5)
+    else:
+        # "all" or default fallback
+        start_date = df.index[0]
+    
+    # 如果数据不足或者 start_date 早于数据起点，就用全部数据
     if start_date < df.index[0]:
         start_date = df.index[0]
         
