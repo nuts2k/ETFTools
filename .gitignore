@@ -3,6 +3,7 @@
 .idea/
 .vscode/
 *.log
+*.skill
 
 # Python / Backend
 __pycache__/
