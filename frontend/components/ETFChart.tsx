@@ -40,10 +40,15 @@ function CustomAreaLabel(props: any) {
   // Use labelPosition instead of position to avoid potential conflict with Recharts injected props
   const { viewBox, value, fill, fontSize, fontWeight, dy, labelPosition } = props;
   const { x, width, y, height } = viewBox;
-  
+
   if (!viewBox || !value) return null;
 
+  // Check for invalid coordinates
+  if (isNaN(x) || isNaN(width) || isNaN(y) || isNaN(height)) return null;
+
   const centerX = x + width / 2;
+  if (isNaN(centerX)) return null;
+
   // Ensure text stays visible on the left side
   // 45px padding allows for text to be half visible if centered at 45px (text width approx 70-80px)
   const safeX = Math.max(centerX, 45); 
@@ -124,7 +129,48 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
     return { min: min - padding, max: max + padding };
   }, [filteredData]);
 
+  const xAxisTicks = useMemo(() => {
+    if (!filteredData.length) return [];
+    if (filteredData.length <= 5) return filteredData.map(d => d.date);
+
+    const indices = [0, Math.floor(filteredData.length / 4), Math.floor(2 * filteredData.length / 4), Math.floor(3 * filteredData.length / 4), filteredData.length - 1];
+    return indices.map(i => filteredData[i].date);
+  }, [filteredData]);
+
   const chartColor = "hsl(var(--primary))";
+
+  const CustomXAxisTick = (props: any) => {
+    const { x, y, payload, index } = props;
+
+    let textAnchor: "start" | "middle" | "end" = "middle";
+    if (index === 0) textAnchor = "start";
+    else if (index === xAxisTicks.length - 1) textAnchor = "end";
+
+    const date = new Date(payload.value);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    let formattedDate: string;
+    if (period === "1y") {
+      const day = date.getDate().toString().padStart(2, '0');
+      formattedDate = `${month}-${day}`;
+    } else {
+      const year = date.getFullYear().toString().slice(2);
+      formattedDate = `${year}-${month}`;
+    }
+
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          dy={16}
+          fontSize={10}
+          fill="hsl(var(--muted-foreground))"
+          fontWeight={500}
+          textAnchor={textAnchor}
+        >
+          {formattedDate}
+        </text>
+      </g>
+    );
+  };
 
   return (
     <div className="w-full">
@@ -154,7 +200,7 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredData} margin={{ top: 10, right: 0, left: 0, bottom: 20 }}>
+            <AreaChart data={filteredData} margin={{ top: 10, right: 5, left: 5, bottom: 20 }}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={chartColor} stopOpacity={0.2}/>
@@ -213,18 +259,11 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
 
                <XAxis
                  dataKey="date"
-                 tick={{fontSize: 10, fill: "hsl(var(--muted-foreground))", fontWeight: 500}}
+                 ticks={xAxisTicks}
+                 interval={0}
+                 tick={<CustomXAxisTick />}
                  axisLine={false}
                  tickLine={false}
-                 tickFormatter={(str) => {
-                   const date = new Date(str);
-                   const month = date.getMonth() + 1;
-                   if (period === "1y") {
-                     return `${month}-${date.getDate()}`;
-                   }
-                   return `${date.getFullYear().toString().slice(2)}-${month}`;
-                 }}
-                 minTickGap={30}
                />
               <YAxis 
                 domain={[min, max]} 
