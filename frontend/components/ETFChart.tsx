@@ -251,10 +251,10 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
             </AreaChart>
           </ResponsiveContainer>
         )}
-        
-        <div className="absolute bottom-1 left-4 pointer-events-none">
-          <p className="text-[10px] text-muted-foreground/70">价格已按前复权 (QFQ) 处理</p>
-        </div>
+      </div>
+
+      <div className="mt-2 px-4">
+        <p className="text-[10px] text-muted-foreground/70">价格已按前复权 (QFQ) 处理</p>
       </div>
     </div>
   );
