@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search as SearchIcon, UserCircle } from "lucide-react";
+import { Search as SearchIcon } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import { fetchClient, type ETFItem } from "@/lib/api";
 import { StockCard } from "@/components/StockCard";
@@ -52,9 +52,6 @@ export default function SearchPage() {
       <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50">
         <div className="flex h-14 items-center justify-between px-5">
           <h1 className="text-2xl font-bold tracking-tight">搜索</h1>
-          <button className="flex items-center justify-center w-10 h-10 rounded-full text-muted-foreground hover:bg-secondary transition-colors -mr-2">
-            <UserCircle className="h-6 w-6" />
-          </button>
         </div>
       </header>
 
