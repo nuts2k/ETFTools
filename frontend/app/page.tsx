@@ -68,8 +68,10 @@ export default function WatchlistPage() {
     if (isWatched(etf.code)) {
       remove(etf.code);
     } else {
-      await add(etf);
-      // Exit search mode and clear query after adding
+      // Execute add logic without awaiting to prevent UI blocking
+      add(etf);
+      
+      // Close search mode immediately
       setIsSearchMode(false);
       setSearchQuery("");
       setSearchResults([]);

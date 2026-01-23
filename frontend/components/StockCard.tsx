@@ -18,8 +18,8 @@ export function StockCard({ etf, isWatched, onToggleWatchlist }: StockCardProps)
   const market = etf.code.startsWith("5") ? "SH" : "SZ";
 
   return (
-    <div className="group flex items-center justify-between gap-3 rounded-xl bg-card p-4 shadow-sm border border-border/50 hover:border-border transition-all cursor-pointer active:scale-[0.98]">
-      <Link href={`/etf/${etf.code}`} className="flex items-center gap-3 flex-1 min-w-0">
+    <div className="group flex items-center justify-between gap-3 rounded-xl bg-card p-4 shadow-sm border border-border/50 hover:border-border transition-all">
+      <Link href={`/etf/${etf.code}`} className="flex items-center gap-3 flex-1 min-w-0 transition-transform active:scale-[0.98]">
         <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-secondary text-muted-foreground/70">
           <LineChart className="h-6 w-6" />
         </div>
@@ -48,9 +48,15 @@ export function StockCard({ etf, isWatched, onToggleWatchlist }: StockCardProps)
         
         {onToggleWatchlist && (
             <button 
-                onClick={onToggleWatchlist}
+                type="button"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggleWatchlist(e);
+                }}
                 className={cn(
-                    "flex items-center justify-center h-8 w-8 rounded-lg transition-all active:scale-95",
+                    "relative z-30 flex items-center justify-center h-8 w-8 rounded-lg transition-all active:scale-95",
                     isWatched 
                         ? "bg-secondary text-muted-foreground" 
                         : "bg-primary/10 text-primary hover:bg-primary/20"
