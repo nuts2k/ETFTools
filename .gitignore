@@ -56,3 +56,4 @@ frontend/.env.production.local
 backend/.cache/
 backend/etf_tool.db
 backend/*.db
+.cache/
