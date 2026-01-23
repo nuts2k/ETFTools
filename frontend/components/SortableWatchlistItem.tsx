@@ -60,6 +60,28 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
           </span>
           <span className="text-sm text-muted-foreground font-mono tracking-wide">{etf.code}</span>
         </div>
+        
+        {/* Dual-line Metrics Display */}
+        <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground/80 font-medium tracking-tight">
+             <div className="flex items-center gap-1">
+                <span>ATR:</span>
+                <span className="text-foreground/90 tabular-nums">
+                    {etf.atr !== undefined && etf.atr !== null ? etf.atr.toFixed(4) : "--"}
+                </span>
+             </div>
+             <div className="w-[1px] h-2.5 bg-border/80" />
+             <div className="flex items-center gap-1">
+                <span>120日回撤:</span>
+                <span className={cn(
+                    "tabular-nums", 
+                    (etf.current_drawdown || 0) < 0 ? "text-down font-bold" : "text-foreground/90"
+                )}>
+                    {etf.current_drawdown !== undefined && etf.current_drawdown !== null 
+                        ? `${(etf.current_drawdown * 100).toFixed(2)}%` 
+                        : "--"}
+                </span>
+             </div>
+        </div>
       </div>
       
       {!isEditing ? (

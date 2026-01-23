@@ -39,6 +39,8 @@ export interface ETFItem {
   price: number;
   change_pct: number;
   volume: number;
+  atr?: number | null;
+  current_drawdown?: number | null;
 }
 
 export interface ETFDetail extends ETFItem {

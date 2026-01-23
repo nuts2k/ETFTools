@@ -8,6 +8,7 @@ from app.core.cache import etf_cache
 from app.api.v1.endpoints.auth import get_current_user
 from app.models.user import User, Watchlist
 from app.services.akshare_service import ak_service
+from app.services.metrics_service import metrics_service
 
 router = APIRouter()
 
@@ -16,7 +17,7 @@ def get_watchlist(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Get authenticated user's watchlist with realtime info"""
+    """Get authenticated user's watchlist with realtime info and lite metrics"""
     # 1. Get codes from DB, sorted by sort_order
     statement = select(Watchlist).where(Watchlist.user_id == current_user.id).order_by(Watchlist.sort_order.asc())
     watchlist_items = session.exec(statement).all()
@@ -24,37 +25,42 @@ def get_watchlist(
     if not watchlist_items:
         return []
 
-    # 2. Fetch realtime info for each code
+    # 2. Fetch realtime info and lite metrics for each code
     results = []
     items_to_update = []
     
     for item in watchlist_items:
         info = ak_service.get_etf_info(item.etf_code)
+        
+        # Prepare basic info
+        price = 0.0
+        change_pct = 0.0
+        name = item.name or "Unknown"
+
         if info:
-            name = info.get("name") or item.name
+            name = info.get("name") or name
+            price = float(info.get("price", 0.0))
+            change_pct = float(info.get("change_pct", 0.0))
+            
             # If we got a name from cache but DB doesn't have it, update DB
             if info.get("name") and not item.name:
                 item.name = info.get("name")
                 items_to_update.append(item)
-            
-            results.append({
-                "code": item.etf_code,
-                "name": name,
-                "price": info.get("price"),
-                "change_pct": info.get("change_pct"),
-                "sort_order": item.sort_order,
-                "added_at": item.created_at
-            })
-        else:
-            # Fallback if info not found in cache/live, use DB name
-            results.append({
-                "code": item.etf_code,
-                "name": item.name or "Unknown",
-                "price": 0,
-                "change_pct": 0,
-                "sort_order": item.sort_order,
-                "added_at": item.created_at
-            })
+        
+        # Calculate lite metrics (ATR, Current Drawdown)
+        # This is fast because it uses cached history base data
+        metrics = metrics_service.get_realtime_metrics_lite(item.etf_code, price, change_pct)
+        
+        results.append({
+            "code": item.etf_code,
+            "name": name,
+            "price": price,
+            "change_pct": change_pct,
+            "sort_order": item.sort_order,
+            "added_at": item.created_at,
+            "atr": metrics.get("atr"),
+            "current_drawdown": metrics.get("current_drawdown")
+        })
     
     # Batch update items that got new names
     if items_to_update:
@@ -64,6 +70,7 @@ def get_watchlist(
             
     # Already sorted by sort_order from DB query
     return results
+
 
 # IMPORTANT: /sync must be defined BEFORE /{code} to avoid route conflict
 @router.post("/sync")
