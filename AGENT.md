@@ -46,3 +46,19 @@
 ## 6. 常用命令 (待补充)
 *   *启动后端*: `cd backend && uvicorn app.main:app --reload`
 *   *启动前端*: `cd frontend && npm run dev`
+
+## 7. 功能开关 (Feature Toggles)
+
+### 7.1 ETF 估值分位 (Valuation)
+该功能利用 `AkShare` 抓取中证指数官网数据 (`ak.stock_zh_index_value_csindex`)，目前已在后端代码中通过注释禁用，以避免不必要的外部网络请求。
+
+**如何重新开启**:
+1.  打开 `backend/app/api/v1/endpoints/etf.py`。
+2.  定位到 `get_etf_metrics` 路由函数底部。
+3.  取消对 `valuation_service.get_valuation(code)` 调用逻辑的注释。
+4.  保存后，后端 `uvicorn` 会自动热重载，前端详情页将恢复显示估值卡片。
+
+**相关代码资产**:
+*   核心服务: `backend/app/services/valuation_service.py`
+*   映射配置: `backend/app/data/etf_index_map.json` (用于 ETF 代码映射到指数代码)
+*   前端组件: `frontend/components/ValuationCard.tsx`

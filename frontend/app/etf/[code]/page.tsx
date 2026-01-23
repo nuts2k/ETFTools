@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { fetchClient, type ETFDetail, type ETFMetrics } from "@/lib/api";
 import { ETFChart, type Period } from "@/components/ETFChart";
+import ValuationCard from "@/components/ValuationCard";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
@@ -195,8 +196,18 @@ export default function ETFDetailPage() {
 
       <div className="h-2 w-full bg-secondary/30 mt-6" />
 
-      {/* Metrics Section */}
       <div className="flex flex-col px-4 py-6">
+        {/* Valuation Card with Loading State */}
+        {(loading || metricsLoading || metrics?.valuation) && (
+          <div className="mb-6">
+            {loading || metricsLoading ? (
+               <div className="h-24 w-full bg-secondary/50 animate-pulse rounded-xl" />
+            ) : metrics?.valuation ? (
+               <ValuationCard data={metrics.valuation} />
+            ) : null}
+          </div>
+        )}
+
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">核心指标</h3>
         <div className="grid grid-cols-2 gap-3">
            <MetricCard 

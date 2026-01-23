@@ -234,3 +234,47 @@ When testing on mobile Safari (accessing via LAN IP), the search function fails 
 -   Start backend and frontend.
 -   Access frontend via LAN IP (e.g., `http://192.168.1.5:3000`) on a mobile device.
 -   Verify search functionality works without "Load failed" errors.
+
+---
+
+# ETF 估值分位功能 (Valuation Feature)
+
+## 目标
+利用第三方（雪球/蛋卷）接口，为 ETF 提供“最近 10 年估值分位”展示，帮助用户判断当前价格的安全边际。
+
+## 1. 数据映射 (Mapping)
+**文件**: `backend/app/data/etf_index_map.json` (新增)
+- **内容**: 建立常用 ETF 代码与雪球指数 ID 的映射。
+- **示例**: `{"510300": "SH000300", "159915": "SZ399006"}`.
+
+## 2. 后端服务增强
+**文件**: `backend/app/services/valuation_service.py` (新增), `backend/app/api/v1/endpoints/etf.py`
+
+- **ValuationService**:
+  - `fetch_valuation(index_code)`: 访问雪球 API 获取估值数据。
+  - **缓存**: 使用 `etf_cache` 或 `disk_cache` 缓存结果 (有效期 24h)。
+  - **Fallback**: 若映射不存在或接口失败，返回 None。
+
+- **API 扩展**:
+  - `GET /etf/{code}/metrics`: 响应体增加 `valuation` 字段。
+    ```json
+    "valuation": {
+      "pe": 12.34,
+      "pe_percentile": 20.5,
+      "dist_view": "低估",
+      "index_name": "沪深300"
+    }
+    ```
+
+## 3. 前端展示
+**文件**: `frontend/app/etf/[code]/page.tsx`, `frontend/components/ValuationCard.tsx` (新增)
+
+- **ValuationCard**:
+  - 展示“当前市盈率(PE)”。
+  - **仪表盘/进度条**: 可视化展示分位点 (0% - 100%)。
+  - **区间颜色**: 0-30% (绿色/低估), 30-70% (黄色/适中), 70-100% (红色/高估)。
+  - **说明文本**: "当前估值低于历史 80% 的时间"。
+
+## 4. 验证
+- 访问沪深300 ETF (510300)，确认显示估值卡片且数据合理。
+- 访问无映射的冷门 ETF，确认不显示卡片且不报错。

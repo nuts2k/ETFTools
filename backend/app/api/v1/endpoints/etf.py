@@ -6,6 +6,7 @@ from datetime import datetime, time
 
 from app.core.cache import etf_cache
 from app.services.akshare_service import ak_service
+from app.services.valuation_service import valuation_service
 
 router = APIRouter()
 
@@ -180,6 +181,15 @@ async def get_etf_metrics(code: str, period: str = "5y"):
     daily_returns = closes.pct_change().dropna()
     volatility = daily_returns.std() * np.sqrt(252)
     
+    # 获取估值数据 (非阻塞或独立获取，不因估值失败影响指标)
+    # 此功能暂时关闭，如需开启请参考 AGENT.md
+    valuation_data = None
+    # try:
+    #     valuation_data = valuation_service.get_valuation(code)
+    # except Exception as e:
+    #     # log but don't fail
+    #     pass
+
     return {
         "period": f"{actual_start_date.date()} to {actual_end_date.date()}",
         "total_return": round(total_return, 4),
@@ -191,5 +201,6 @@ async def get_etf_metrics(code: str, period: str = "5y"):
         "mdd_trough": mdd_trough,
         "mdd_end": mdd_end,
         "volatility": round(volatility, 4),
-        "risk_level": "High" if volatility > 0.25 else ("Medium" if volatility > 0.15 else "Low")
+        "risk_level": "High" if volatility > 0.25 else ("Medium" if volatility > 0.15 else "Low"),
+        "valuation": valuation_data
     }

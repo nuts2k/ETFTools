@@ -55,6 +55,17 @@ export interface ETFHistoryItem {
   volume: number;
 }
 
+export interface ETFValuation {
+  pe: number;
+  pe_percentile: number;
+  dist_view: string;
+  index_code: string;
+  index_name: string;
+  data_date: string;
+  history_start: string;
+  history_years: number;
+}
+
 export interface ETFMetrics {
   period: string;
   total_return: number;
@@ -67,4 +78,5 @@ export interface ETFMetrics {
   volatility: number;
   risk_level: string;
   actual_years?: number; // 实际计算所用的年数
+  valuation?: ETFValuation | null;
 }
