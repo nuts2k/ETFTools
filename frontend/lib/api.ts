@@ -79,4 +79,10 @@ export interface ETFMetrics {
   risk_level: string;
   actual_years?: number; // 实际计算所用的年数
   valuation?: ETFValuation | null;
+  atr?: number | null;
+  current_drawdown?: number | null;
+  drawdown_days?: number;
+  effective_drawdown_days?: number;
+  current_drawdown_peak_date?: string | null;
+  days_since_peak?: number;
 }

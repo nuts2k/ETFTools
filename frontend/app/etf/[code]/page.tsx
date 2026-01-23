@@ -256,6 +256,29 @@ export default function ETFDetailPage() {
              icon={Activity}
              loading={metricsLoading || loading}
            />
+           <MetricCard 
+             label="ATR (14日)" 
+             value={metrics?.atr !== undefined && metrics.atr !== null ? metrics.atr.toFixed(4) : "--"}
+             subValue="平均真实波幅"
+             icon={Activity}
+             loading={metricsLoading || loading}
+           />
+           <MetricCard 
+             label={
+                 metrics?.effective_drawdown_days && metrics?.drawdown_days && metrics.effective_drawdown_days < metrics.drawdown_days
+                    ? `成立以来回撤 (${metrics.effective_drawdown_days}日)`
+                    : (metrics?.drawdown_days ? `近${metrics.drawdown_days}日回撤` : "短期回撤")
+             } 
+             value={metrics?.current_drawdown !== undefined && metrics.current_drawdown !== null ? `${(metrics.current_drawdown * 100).toFixed(2)}%` : "--"}
+             subValue={
+                metrics?.current_drawdown_peak_date 
+                  ? `峰值:${metrics.current_drawdown_peak_date}(距今${metrics.days_since_peak}天)` 
+                  : "距区间最高点"
+             }
+             color={metrics && (metrics.current_drawdown || 0) < 0 ? "text-down" : "text-foreground"}
+             icon={TrendingDown}
+             loading={metricsLoading || loading}
+           />
         </div>
       </div>
 

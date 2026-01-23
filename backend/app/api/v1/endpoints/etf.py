@@ -7,6 +7,7 @@ from datetime import datetime, time
 from app.core.cache import etf_cache
 from app.services.akshare_service import ak_service
 from app.services.valuation_service import valuation_service
+from app.core.config_loader import metric_config
 
 router = APIRouter()
 
@@ -190,6 +191,96 @@ async def get_etf_metrics(code: str, period: str = "5y"):
     #     # log but don't fail
     #     pass
 
+    # --- New Metrics Calculation (ATR & Current Drawdown) ---
+    atr_val = None
+    current_drawdown = None
+    current_drawdown_peak_date = None
+    days_since_peak = 0
+    effective_drawdown_days = 0
+    
+    # ATR Calculation
+    atr_period = metric_config.atr_period
+    # Need enough data for rolling window
+    if len(df) > atr_period + 1:
+        # Calculate True Range (TR)
+        # TR = Max(High-Low, |High-PrevClose|, |Low-PrevClose|)
+        # We need to shift close to get PrevClose
+        prev_close = df["close"].shift(1)
+        high = df["high"]
+        low = df["low"]
+        close = df["close"]
+        
+        tr1 = high - low
+        tr2 = (high - prev_close).abs()
+        tr3 = (low - prev_close).abs()
+        
+        tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
+        # Simple Moving Average for ATR
+        atr_series = tr.rolling(window=atr_period).mean()
+        # Get the latest ATR (from the last row)
+        if not pd.isna(atr_series.iloc[-1]):
+             atr_val = float(atr_series.iloc[-1])
+
+    # Drawdown from N-day Peak (Configurable)
+    # 峰值计算：历史收盘价窗口 + 当天实时价
+    dd_days = metric_config.drawdown_days
+
+    if len(df) >= 2:
+        current_price = float(df.iloc[-1]["close"])
+        current_date = df.index[-1]
+        
+        # Determine actual history window size available
+        # len(df) includes today. History pool is previous rows.
+        # Max lookback is dd_days.
+        # Available history length = len(df) - 1
+        available_history_len = len(df) - 1
+        
+        if available_history_len <= dd_days:
+            # Data is shorter than config window -> Use all available history
+            # This is "since inception" effectively relative to the loaded data
+            start_idx = 0 
+            effective_drawdown_days = available_history_len
+        else:
+            # Data is sufficient -> Use config window
+            start_idx = -(dd_days + 1)
+            effective_drawdown_days = dd_days
+            
+        # The pool for history peak calculation (exclude last row which is current)
+        history_window = df.iloc[start_idx:-1]
+        
+        peak_price = 0.0
+        peak_date = None
+
+        if not history_window.empty:
+            hist_peak = float(history_window["close"].max())
+            hist_peak_idx = history_window["close"].idxmax()
+            
+            # Compare history peak with current price
+            if current_price >= hist_peak:
+                # New High (Real-time)
+                peak_price = current_price
+                peak_date = current_date
+            else:
+                # History Peak is higher
+                peak_price = hist_peak
+                peak_date = hist_peak_idx
+        else:
+            # Not enough history (e.g. only current point if we logic-ed wrong, 
+            # but len>=2 ensures at least 1 history point).
+            # Fallback for safety.
+            peak_price = current_price
+            peak_date = current_date
+
+        # Calculate metrics
+        if peak_date:
+            current_drawdown_peak_date = peak_date.strftime("%Y-%m-%d")
+            days_since_peak = (current_date - peak_date).days
+
+        if peak_price > 0:
+            current_drawdown = (current_price - peak_price) / peak_price
+        else:
+            current_drawdown = 0.0
+
     return {
         "period": f"{actual_start_date.date()} to {actual_end_date.date()}",
         "total_return": round(total_return, 4),
@@ -202,5 +293,11 @@ async def get_etf_metrics(code: str, period: str = "5y"):
         "mdd_end": mdd_end,
         "volatility": round(volatility, 4),
         "risk_level": "High" if volatility > 0.25 else ("Medium" if volatility > 0.15 else "Low"),
-        "valuation": valuation_data
+        "valuation": valuation_data,
+        "atr": round(atr_val, 4) if atr_val is not None else None,
+        "current_drawdown": round(current_drawdown, 4) if current_drawdown is not None else None,
+        "drawdown_days": dd_days,
+        "effective_drawdown_days": effective_drawdown_days,
+        "current_drawdown_peak_date": current_drawdown_peak_date,
+        "days_since_peak": days_since_peak
     }
