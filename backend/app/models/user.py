@@ -27,4 +27,5 @@ class Watchlist(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id", index=True)
     etf_code: str = Field(index=True)
     name: Optional[str] = Field(default=None)
+    sort_order: int = Field(default=0, index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)

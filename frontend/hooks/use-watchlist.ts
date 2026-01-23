@@ -89,9 +89,10 @@ export function useWatchlist() {
 
 
   const add = async (item: ETFItem) => {
-    // Optimistic update
-    const newList = [...watchlist, item];
     if (watchlist.some((i) => i.code === item.code)) return;
+    
+    // Optimistic update - Add to TOP
+    const newList = [item, ...watchlist];
     setWatchlist(newList);
 
     if (user && token) {
@@ -131,9 +132,40 @@ export function useWatchlist() {
     }
   };
 
+  const reorder = async (newOrderCodes: string[]) => {
+    // 1. Construct new list based on codes
+    const itemMap = new Map(watchlist.map(item => [item.code, item]));
+    const newList = newOrderCodes
+      .map(code => itemMap.get(code))
+      .filter((item): item is ETFItem => item !== undefined);
+    
+    // If somehow items are missing (shouldn't happen), append them at end
+    const missingItems = watchlist.filter(item => !newOrderCodes.includes(item.code));
+    const finalList = [...newList, ...missingItems];
+
+    setWatchlist(finalList);
+
+    if (user && token) {
+      try {
+        await fetch("http://localhost:8000/api/v1/watchlist/reorder", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(newOrderCodes)
+        });
+      } catch (e) {
+        console.error("Cloud reorder failed", e);
+      }
+    } else {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(finalList));
+    }
+  };
+
   const isWatched = (code: string) => {
     return watchlist.some((i) => i.code === code);
   };
 
-  return { watchlist, add, remove, isWatched, isLoaded };
+  return { watchlist, add, remove, reorder, isWatched, isLoaded };
 }

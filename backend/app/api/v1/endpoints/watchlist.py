@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Body, Request
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func
 from datetime import datetime
 
 from app.core.database import get_session
@@ -17,8 +17,8 @@ def get_watchlist(
     current_user: User = Depends(get_current_user)
 ):
     """Get authenticated user's watchlist with realtime info"""
-    # 1. Get codes from DB
-    statement = select(Watchlist).where(Watchlist.user_id == current_user.id)
+    # 1. Get codes from DB, sorted by sort_order
+    statement = select(Watchlist).where(Watchlist.user_id == current_user.id).order_by(Watchlist.sort_order.asc())
     watchlist_items = session.exec(statement).all()
     
     if not watchlist_items:
@@ -42,6 +42,7 @@ def get_watchlist(
                 "name": name,
                 "price": info.get("price"),
                 "change_pct": info.get("change_pct"),
+                "sort_order": item.sort_order,
                 "added_at": item.created_at
             })
         else:
@@ -51,6 +52,7 @@ def get_watchlist(
                 "name": item.name or "Unknown",
                 "price": 0,
                 "change_pct": 0,
+                "sort_order": item.sort_order,
                 "added_at": item.created_at
             })
     
@@ -60,8 +62,7 @@ def get_watchlist(
             session.add(updated_item)
         session.commit()
             
-    # Sort by added time (desc)
-    results.sort(key=lambda x: x["added_at"], reverse=True)
+    # Already sorted by sort_order from DB query
     return results
 
 # IMPORTANT: /sync must be defined BEFORE /{code} to avoid route conflict
@@ -113,16 +114,47 @@ async def sync_watchlist(
         existing = session.exec(statement).first()
         
         if not existing:
+            # Determine order: put at bottom for sync or top? 
+            # For sync, maybe just append. Let's append to bottom.
+            min_order_stmt = select(func.min(Watchlist.sort_order)).where(Watchlist.user_id == current_user.id)
+            min_order = session.exec(min_order_stmt).one() or 0
+            
             item = Watchlist(
                 user_id=current_user.id, 
                 etf_code=code,
-                name=item_info.get("name") if item_info else None
+                name=item_info.get("name") if item_info else None,
+                sort_order=min_order - 1 # Place at top like adding
             )
             session.add(item)
             synced_count += 1
             
     session.commit()
     return {"synced_count": synced_count}
+
+@router.put("/reorder")
+def reorder_watchlist(
+    codes: List[str] = Body(...),
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Reorder watchlist items.
+    Receives a list of codes in the desired order.
+    """
+    # Fetch all items for user
+    statement = select(Watchlist).where(Watchlist.user_id == current_user.id)
+    items = session.exec(statement).all()
+    item_map = {item.etf_code: item for item in items}
+    
+    # Update sort_order
+    for index, code in enumerate(codes):
+        if code in item_map:
+            item = item_map[code]
+            item.sort_order = index
+            session.add(item)
+            
+    session.commit()
+    return {"msg": "Order updated"}
 
 @router.post("/{code}")
 def add_to_watchlist(
@@ -153,11 +185,18 @@ def add_to_watchlist(
     if existing:
         return {"msg": "Already in watchlist"}
     
-    # Add new
+    # Add new - Place at TOP (min_order - 1)
+    min_order_stmt = select(func.min(Watchlist.sort_order)).where(Watchlist.user_id == current_user.id)
+    min_order = session.exec(min_order_stmt).one()
+    
+    # If no items, min_order is None, set to 0
+    new_order = (min_order - 1) if min_order is not None else 0
+
     item = Watchlist(
         user_id=current_user.id, 
         etf_code=code,
-        name=item_info.get("name") if item_info else None
+        name=item_info.get("name") if item_info else None,
+        sort_order=new_order
     )
     session.add(item)
     session.commit()
