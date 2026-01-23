@@ -35,6 +35,41 @@ function calculateDaysDiff(start: string, end: string): number {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
+
+function CustomAreaLabel(props: any) {
+  // Use labelPosition instead of position to avoid potential conflict with Recharts injected props
+  const { viewBox, value, fill, fontSize, fontWeight, dy, labelPosition } = props;
+  const { x, width, y, height } = viewBox;
+  
+  if (!viewBox || !value) return null;
+
+  const centerX = x + width / 2;
+  // Ensure text stays visible on the left side
+  // 45px padding allows for text to be half visible if centered at 45px (text width approx 70-80px)
+  const safeX = Math.max(centerX, 45); 
+
+  let textY = y;
+  if (labelPosition === "insideBottom") {
+    textY = y + height; 
+  }
+  
+  if (dy) textY += dy;
+
+  return (
+    <text
+      x={safeX}
+      y={textY}
+      fill={fill}
+      fontSize={fontSize}
+      fontWeight={fontWeight}
+      textAnchor="middle"
+      dominantBaseline={labelPosition === "insideTop" ? "hanging" : "auto"} 
+    >
+      {value}
+    </text>
+  );
+}
+
 export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChartProps) {
   const [data, setData] = useState<ETFHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -119,7 +154,7 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={filteredData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+            <AreaChart data={filteredData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={chartColor} stopOpacity={0.2}/>
@@ -139,14 +174,16 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                       fill="var(--down)" 
                       fillOpacity={0.15}
                       ifOverflow="extendDomain"
-                      label={{ 
-                          value: `回撤${(drawdownInfo.value ? drawdownInfo.value * 100 : 0).toFixed(1)}%`, 
-                          position: "insideBottom", 
-                          fill: "var(--down)", 
-                          fontSize: 12,
-                          fontWeight: 600,
-                          dy: -5
-                      }}
+                      label={
+                        <CustomAreaLabel 
+                          value={`回撤${(drawdownInfo.value ? drawdownInfo.value * 100 : 0).toFixed(1)}%`}
+                          labelPosition="insideBottom"
+                          fill="var(--down)"
+                          fontSize={12}
+                          fontWeight={600}
+                          dy={-6}
+                        />
+                      }
                   />
               )}
               
@@ -159,16 +196,18 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                       fill="var(--up)" 
                       fillOpacity={0.15}
                       ifOverflow="extendDomain"
-                      label={{ 
-                          value: drawdownInfo.end 
+                      label={
+                        <CustomAreaLabel 
+                          value={drawdownInfo.end 
                             ? `${calculateDaysDiff(drawdownInfo.trough, drawdownInfo.end)}天修复`
-                            : `修复中${calculateDaysDiff(drawdownInfo.trough, filteredData[filteredData.length - 1]?.date || new Date().toISOString())}天+`,
-                          position: "insideTop", 
-                          fill: "var(--up)", 
-                          fontSize: 12,
-                          fontWeight: 600,
-                          dy: 5
-                      }}
+                            : `修复中${calculateDaysDiff(drawdownInfo.trough, filteredData[filteredData.length - 1]?.date || new Date().toISOString())}天+`}
+                          labelPosition="insideTop"
+                          fill="var(--up)"
+                          fontSize={12}
+                          fontWeight={600}
+                          dy={6}
+                        />
+                      }
                   />
               )}
 
