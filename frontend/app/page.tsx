@@ -213,23 +213,12 @@ export default function WatchlistPage() {
       {/* Main List Content - hidden when searching */}
       {!isSearchMode && (
         <>
-          {/* List Header */}
-          <div className="px-6 py-2 flex items-center text-xs text-muted-foreground border-b border-border/50 mt-1">
-        <div className={cn("flex-1 transition-all", isEditing && "pl-8")}>名称代码</div>
-        {!isEditing && (
-            <>
-                <div className="w-20 text-right pr-2">最新价</div>
-                <div className="w-20 text-right">涨跌幅</div>
-            </>
-        )}
-      </div>
-
           {/* Content */}
-          <div className="flex-1">
+          <div className="flex-1 mt-2">
             {!isLoaded ? (
-              <div className="space-y-0 mt-0">
+              <div className="space-y-3 px-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-16 border-b border-border/30 bg-card/50 animate-pulse" />
+                  <div key={i} className="h-20 rounded-2xl bg-card/50 border border-border/50 animate-pulse" />
                 ))}
               </div>
             ) : watchlist.length === 0 ? (
@@ -246,7 +235,7 @@ export default function WatchlistPage() {
                 )}
               </div>
             ) : (
-              <div className="flex flex-col pb-safe">
+              <div className="flex flex-col space-y-3 px-4 pb-safe">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}

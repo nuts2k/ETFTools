@@ -106,37 +106,38 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
 
   if (isEditing) {
     return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        {...attributes}
-        {...listeners}
-        className={cn(
-          "group flex items-center justify-between px-4 py-4 border-b border-border/30 bg-background transition-colors touch-none select-none",
-          isDragging && "shadow-lg bg-secondary/50 scale-[1.02]"
-        )}
-      >
-        <div 
-            className="mr-4 text-red-500 cursor-pointer active:scale-95 transition-transform"
-            onClick={(e) => {
-                e.stopPropagation(); // Prevent drag start if clicking remove
-                onRemove(etf.code);
-            }}
-        >
-            <Trash2 className="h-5 w-5 fill-none" />
-        </div>
-        {content}
-      </div>
-    );
-  }
-
-  // Non-editing mode with long press support
-  return (
-    <div 
-      {...longPressHandlers}
-      className="group flex items-center justify-between px-6 py-4 active:bg-secondary/50 border-b border-border/30 cursor-pointer transition-colors select-none"
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={cn(
+        "group flex items-center justify-between p-4 rounded-2xl bg-card border border-border/50 shadow-sm transition-all touch-none select-none",
+        isDragging ? "shadow-lg scale-[1.02] z-50 ring-2 ring-primary/20" : "hover:border-border/80"
+      )}
     >
+      <div 
+          className="mr-3 text-red-500 cursor-pointer active:scale-95 transition-transform p-2 -ml-2 rounded-full hover:bg-red-500/10"
+          onClick={(e) => {
+              e.stopPropagation(); // Prevent drag start if clicking remove
+              onRemove(etf.code);
+          }}
+      >
+          <Trash2 className="h-5 w-5 fill-none" />
+      </div>
       {content}
     </div>
   );
 }
+
+// Non-editing mode with long press support
+return (
+  <div 
+    {...longPressHandlers}
+    className="group flex items-center justify-between p-4 rounded-2xl bg-card border border-border/50 shadow-sm active:scale-[0.98] transition-all cursor-pointer select-none mb-0"
+  >
+    {content}
+  </div>
+);
+}
+
