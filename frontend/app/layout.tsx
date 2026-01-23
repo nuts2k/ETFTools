@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   description: "专业的 A 股 ETF 前复权收益分析工具",
 };
 
+import { WatchlistProvider } from "@/lib/watchlist-context";
+import { SettingsProvider } from "@/lib/settings-context";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,17 +31,21 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} bg-background text-foreground antialiased`}>
         <AuthProvider>
-          <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-            <main className="min-h-[100dvh] pb-20">
-              {children}
-            </main>
-            <BottomNav />
-          </ThemeProvider>
+          <SettingsProvider>
+            <WatchlistProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <main className="min-h-[100dvh] pb-20">
+                  {children}
+                </main>
+                <BottomNav />
+              </ThemeProvider>
+            </WatchlistProvider>
+          </SettingsProvider>
         </AuthProvider>
       </body>
     </html>
