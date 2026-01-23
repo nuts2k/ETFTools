@@ -2,12 +2,35 @@ from fastapi import APIRouter, HTTPException, Query
 from typing import List, Dict, Optional
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, time
 
 from app.core.cache import etf_cache
 from app.services.akshare_service import ak_service
 
 router = APIRouter()
+
+def get_market_status() -> str:
+    """
+    判断当前是否为交易时间 (A股)
+    交易时间: 周一至周五 9:15-11:30, 13:00-15:00
+    """
+    now = datetime.now()
+    
+    # 周末
+    if now.weekday() >= 5:
+        return "已收盘"
+        
+    current_time = now.time()
+    
+    # 9:15 - 11:30
+    if time(9, 15) <= current_time <= time(11, 30):
+        return "交易中"
+        
+    # 13:00 - 15:00
+    if time(13, 0) <= current_time <= time(15, 0):
+        return "交易中"
+        
+    return "已收盘"
 
 @router.get("/search", response_model=List[Dict])
 async def search_etf(q: str = Query(..., min_length=1, description="ETF代码或名称关键字")):
@@ -25,8 +48,15 @@ async def get_etf_info(code: str):
     if not info:
         raise HTTPException(status_code=404, detail="ETF not found")
     
+    # Create a copy to avoid modifying the cache directly
+    info = info.copy()
+    
     # 补充 update_time (近似值，即缓存最后更新时间)
     info["update_time"] = datetime.fromtimestamp(etf_cache.last_updated).strftime("%Y-%m-%d %H:%M:%S")
+    
+    # 补充 market (交易状态)
+    info["market"] = get_market_status()
+    
     return info
 
 @router.get("/{code}/history")
