@@ -1,5 +1,6 @@
 import pandas as pd
 import logging
+import threading
 from typing import Dict, Optional, Tuple
 from datetime import datetime
 
@@ -10,74 +11,60 @@ logger = logging.getLogger(__name__)
 
 class MetricsService:
     def __init__(self):
-        # Cache for "Heavy" history calculations (Peak Price, TR sum)
-        # Key: "metrics_base_{code}_{days}"
-        pass
+        self._fetching_codes = set()
+        self._lock = threading.Lock()
 
-    def _get_history_base_data(self, code: str) -> Optional[Dict]:
-        """
-        Get cached base data for metrics calculation.
-        Base data includes:
-        - 120-day historical peak (excluding today)
-        - ATR components (TR history)
+    def _async_fetch_history(self, code: str):
+        """Background task to fetch and cache history metrics base data"""
+        with self._lock:
+            if code in self._fetching_codes:
+                return
+            self._fetching_codes.add(code)
         
-        This data is cached for a longer duration (e.g. 1 hour or until EOD)
-        because historical daily data (OHLC) doesn't change during the day 
-        (except for the current forming bar which we handle in real-time).
-        """
-        # Configs
+        try:
+            logger.info(f"Background fetching history base for {code}...")
+            # This will populate the cache inside fetch_history_raw
+            self._get_history_base_data(code, force_sync=True)
+            logger.info(f"Background history fetch complete for {code}.")
+        except Exception as e:
+            logger.error(f"Error in async history fetch for {code}: {e}")
+        finally:
+            with self._lock:
+                self._fetching_codes.remove(code)
+
+    def _get_history_base_data(self, code: str, force_sync: bool = False) -> Optional[Dict]:
+        """Get cached base data. If missing and not force_sync, trigger async fetch."""
         dd_days = metric_config.drawdown_days
         atr_period = metric_config.atr_period
-        
         cache_key = f"metrics_base_{code}_{dd_days}_{atr_period}"
-        cached = disk_cache.get(cache_key)
         
+        cached = disk_cache.get(cache_key)
         if cached:
             return cached
 
-        # Fetch history (reuse service logic which has its own cache)
-        # We need enough history for 120 days + ATR
-        # Fetching 'daily' period
+        if not force_sync:
+            # Trigger background fetch and return None immediately
+            t = threading.Thread(target=self._async_fetch_history, args=(code,))
+            t.daemon = True
+            t.start()
+            return None
+
+        # Actual synchronous fetch (only for background threads or explicit calls)
         df = ak_service.fetch_history_raw(code, period="daily", adjust="qfq")
-        
         if df.empty or len(df) < 2:
             return None
 
-        # --- Calculate 120-day Peak (History Only) ---
-        # Exclude today/latest if it's potentially incomplete?
-        # fetch_history_raw returns historical closed candles usually. 
-        # But if it includes today's partial candle, we should be careful.
-        # For simplicity, we treat the entire DF as "history context".
-        
         # Drawdown History Window
         start_idx = -(dd_days) 
-        if abs(start_idx) > len(df):
-            start_idx = 0
-            
+        if abs(start_idx) > len(df): start_idx = 0
         hist_window = df.iloc[start_idx:]
         hist_peak_price = float(hist_window["close"].max()) if not hist_window.empty else 0.0
         
-        # --- Calculate ATR Base (Last N days TR) ---
-        # To calculate real-time ATR, we need the rolling mean of TR.
-        # Real-time ATR ~ ((Prior ATR * (n-1)) + Current TR) / n
-        # Or simpler: just get the TR series and we'll append today's TR in real-time.
-        
+        # ATR Calculation
         atr_val = None
         if len(df) > atr_period:
             prev_close = df["close"].shift(1)
-            high = df["high"]
-            low = df["low"]
-            
-            tr1 = high - low
-            tr2 = (high - prev_close).abs()
-            tr3 = (low - prev_close).abs()
-            
-            tr = pd.concat([tr1, tr2, tr3], axis=1).max(axis=1)
-            
-            # We store the last ATR value from history to help smooth today's value
-            # OR we just pre-calculate ATR from history and return it as "Yesterday's ATR"
-            # For list view, Yesterday's ATR is often close enough, or we refine it slightly.
-            # Let's simple use the latest full-day ATR.
+            tr = pd.concat([df["high"] - df["low"], (df["high"] - prev_close).abs(), (df["low"] - prev_close).abs()], axis=1).max(axis=1)
             atr_series = tr.rolling(window=atr_period).mean()
             if not pd.isna(atr_series.iloc[-1]):
                 atr_val = float(atr_series.iloc[-1])
@@ -85,39 +72,23 @@ class MetricsService:
         result = {
             "hist_peak_price": hist_peak_price,
             "prev_atr": atr_val,
-            "last_date": df.iloc[-1]["date"] # To check if we need to merge today
+            "last_date": df.iloc[-1]["date"]
         }
-        
-        # Cache for 4 hours (during trading day, history doesn't change, only today's bar)
-        disk_cache.set(cache_key, result, expire=14400)
+        disk_cache.set(cache_key, result, expire=14400) # 4 hours
         return result
 
     def get_realtime_metrics_lite(self, code: str, current_price: float, current_change_pct: float) -> Dict:
-        """
-        Fast, lightweight calculation for lists.
-        Combines cached history base data with real-time price.
-        """
+        """Fast calculation using cached or async-fetched history base data"""
         base_data = self._get_history_base_data(code)
         
         atr = None
         drawdown = None
         
         if base_data:
-            # 1. ATR (Use cached value for list view performance)
-            # In a detailed view we might recalculate with today's High/Low.
-            # For watchlist, the previous close ATR is sufficient proxy.
             atr = base_data.get("prev_atr")
-
-            # 2. Drawdown (Real-time synthesis)
-            # Compare current price with history peak
             hist_peak = base_data.get("hist_peak_price", 0.0)
-            
             peak = max(hist_peak, current_price)
-            
-            if peak > 0:
-                drawdown = (current_price - peak) / peak
-            else:
-                drawdown = 0.0
+            drawdown = (current_price - peak) / peak if peak > 0 else 0.0
                 
         return {
             "atr": round(atr, 4) if atr is not None else None,
