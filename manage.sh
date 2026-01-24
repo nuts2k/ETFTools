@@ -113,10 +113,6 @@ install_dependencies() {
 stop_services() {
     log_info "Stopping services..."
 
-    if ! command -v lsof >/dev/null 2>&1; then
-        log_warn "lsof not found. Port-based cleanup might not work."
-    fi
-
     # 1. Stop by PID file
     if [[ -f "$PID_FILE" ]]; then
         while read pid; do
@@ -126,18 +122,22 @@ stop_services() {
     fi
 
     # 2. Cleanup by port (fallback)
-    local backend_pids=$(lsof -t -i:$BACKEND_PORT)
-    if [[ -n "$backend_pids" ]]; then
-        for pid in $backend_pids; do
-            safe_kill "$pid" "Backend (Port $BACKEND_PORT)"
-        done
-    fi
+    if command -v lsof >/dev/null 2>&1; then
+        local backend_pids=$(lsof -t -i:$BACKEND_PORT)
+        if [[ -n "$backend_pids" ]]; then
+            for pid in $backend_pids; do
+                safe_kill "$pid" "Backend (Port $BACKEND_PORT)"
+            done
+        fi
 
-    local frontend_pids=$(lsof -t -i:$FRONTEND_PORT)
-    if [[ -n "$frontend_pids" ]]; then
-        for pid in $frontend_pids; do
-            safe_kill "$pid" "Frontend (Port $FRONTEND_PORT)"
-        done
+        local frontend_pids=$(lsof -t -i:$FRONTEND_PORT)
+        if [[ -n "$frontend_pids" ]]; then
+            for pid in $frontend_pids; do
+                safe_kill "$pid" "Frontend (Port $FRONTEND_PORT)"
+            done
+        fi
+    else
+        log_warn "lsof not found. Skipping port-based cleanup."
     fi
     
     log_info "All services stopped."
@@ -198,23 +198,29 @@ check_status() {
     fi
 
     echo "--- Port Status ---"
-    if lsof -i:$BACKEND_PORT > /dev/null; then
-        echo -e "Backend ($BACKEND_PORT): ${GREEN}Active${NC}"
-    else
-        echo -e "Backend ($BACKEND_PORT): ${RED}Inactive${NC}"
-    fi
+    if command -v lsof >/dev/null 2>&1; then
+        if lsof -i:$BACKEND_PORT > /dev/null; then
+            echo -e "Backend ($BACKEND_PORT): ${GREEN}Active${NC}"
+        else
+            echo -e "Backend ($BACKEND_PORT): ${RED}Inactive${NC}"
+        fi
 
-    if lsof -i:$FRONTEND_PORT > /dev/null; then
-        echo -e "Frontend ($FRONTEND_PORT): ${GREEN}Active${NC}"
+        if lsof -i:$FRONTEND_PORT > /dev/null; then
+            echo -e "Frontend ($FRONTEND_PORT): ${GREEN}Active${NC}"
+        else
+            echo -e "Frontend ($FRONTEND_PORT): ${RED}Inactive${NC}"
+        fi
     else
-        echo -e "Frontend ($FRONTEND_PORT): ${RED}Inactive${NC}"
+        log_warn "lsof not found. Cannot check port status."
+        echo -e "Backend ($BACKEND_PORT): ${YELLOW}Unknown${NC}"
+        echo -e "Frontend ($FRONTEND_PORT): ${YELLOW}Unknown${NC}"
     fi
 }
 
 # Main Logic
 case "$1" in
     start)
-        INSTALL="false"
+        INSTALL="command -v lsof"
         if [[ "$2" == "--install" ]]; then
             INSTALL="true"
         fi
@@ -224,7 +230,7 @@ case "$1" in
         stop_services
         ;;
     restart)
-        INSTALL="false"
+        INSTALL="command -v lsof"
         if [[ "$2" == "--install" ]]; then
             INSTALL="true"
         fi
