@@ -28,7 +28,7 @@ log_error() {
 # Determine Python Executable
 setup_python_env() {
     # If already in a virtual env, use it
-    if [ -n "$VIRTUAL_ENV" ]; then
+    if [[ -n "$VIRTUAL_ENV" ]]; then
         PYTHON_EXEC="python"
         log_info "Using active virtual environment: $VIRTUAL_ENV"
         return
@@ -37,7 +37,7 @@ setup_python_env() {
     # Check common venv locations
     local venv_dirs=(".venv" "venv" "env" "backend/.venv" "backend/venv")
     for dir in "${venv_dirs[@]}"; do
-        if [ -f "$dir/bin/python" ]; then
+        if [[ -f "$dir/bin/python" ]]; then
             PYTHON_EXEC="$dir/bin/python"
             log_info "Found virtual environment: $dir"
             return
@@ -54,7 +54,7 @@ safe_kill() {
     local pid=$1
     local name=$2
     
-    if [ -z "$pid" ]; then return; fi
+    if [[ -z "$pid" ]]; then return; fi
 
     if ps -p "$pid" > /dev/null 2>&1; then
         log_info "Stopping $name (PID: $pid)..."
@@ -81,7 +81,7 @@ install_dependencies() {
     local force=$1
 
     # Backend
-    if [ "$force" == "true" ]; then
+    if [[ "$force" == "true" ]]; then
         log_info "Installing backend dependencies..."
         if "$PYTHON_EXEC" -m pip install -e ".[dev]" > /dev/null 2>&1; then
             log_info "Backend dependencies installed."
@@ -93,11 +93,11 @@ install_dependencies() {
     fi
 
     # Frontend
-    if [ "$force" == "true" ] || [ ! -d "frontend/node_modules" ]; then
+    if [[ "$force" == "true" || ! -d "frontend/node_modules" ]]; then
         log_info "Installing frontend dependencies..."
         if command -v npm &> /dev/null; then
             (cd frontend && npm install > /dev/null 2>&1)
-            if [ $? -eq 0 ]; then
+            if [[ $? -eq 0 ]]; then
                 log_info "Frontend dependencies installed."
             else
                 log_error "Frontend dependency installation failed."
@@ -113,8 +113,12 @@ install_dependencies() {
 stop_services() {
     log_info "Stopping services..."
 
+    if ! command -v lsof >/dev/null 2>&1; then
+        log_warn "lsof not found. Port-based cleanup might not work."
+    fi
+
     # 1. Stop by PID file
-    if [ -f "$PID_FILE" ]; then
+    if [[ -f "$PID_FILE" ]]; then
         while read pid; do
             safe_kill "$pid" "Process"
         done < "$PID_FILE"
@@ -123,14 +127,14 @@ stop_services() {
 
     # 2. Cleanup by port (fallback)
     local backend_pids=$(lsof -t -i:$BACKEND_PORT)
-    if [ -n "$backend_pids" ]; then
+    if [[ -n "$backend_pids" ]]; then
         for pid in $backend_pids; do
             safe_kill "$pid" "Backend (Port $BACKEND_PORT)"
         done
     fi
 
     local frontend_pids=$(lsof -t -i:$FRONTEND_PORT)
-    if [ -n "$frontend_pids" ]; then
+    if [[ -n "$frontend_pids" ]]; then
         for pid in $frontend_pids; do
             safe_kill "$pid" "Frontend (Port $FRONTEND_PORT)"
         done
@@ -167,7 +171,7 @@ start_services() {
 
     log_info "Starting Frontend..."
     # Improved approach:
-    cd frontend
+    cd frontend || { log_error "Frontend directory missing"; exit 1; }
     nohup npm run dev > "../$FRONTEND_LOG" 2>&1 &
     FRONTEND_PID=$!
     cd ..
@@ -181,7 +185,7 @@ start_services() {
 
 check_status() {
     echo "--- Process Status ---"
-    if [ -f "$PID_FILE" ]; then
+    if [[ -f "$PID_FILE" ]]; then
         while read pid; do
             if ps -p "$pid" > /dev/null 2>&1; then
                 echo -e "PID $pid: ${GREEN}Running${NC}"
