@@ -220,7 +220,7 @@ check_status() {
 # Main Logic
 case "$1" in
     start)
-        INSTALL="command -v lsof"
+        INSTALL="false"
         if [[ "$2" == "--install" ]]; then
             INSTALL="true"
         fi
@@ -230,7 +230,7 @@ case "$1" in
         stop_services
         ;;
     restart)
-        INSTALL="command -v lsof"
+        INSTALL="false"
         if [[ "$2" == "--install" ]]; then
             INSTALL="true"
         fi
