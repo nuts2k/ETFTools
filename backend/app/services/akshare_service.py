@@ -1,6 +1,6 @@
 import akshare as ak
 import pandas as pd
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, cast
 import logging
 from diskcache import Cache
 from datetime import datetime
@@ -79,7 +79,7 @@ class AkShareService:
                     })
                     df["price"] = pd.to_numeric(df["price"], errors="coerce")
                     df["change_pct"] = pd.to_numeric(df["change_pct"], errors="coerce")
-                    records = df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records")
+                    records = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))  # type: ignore
                     
                     logger.info(f"Successfully loaded {len(records)} ETFs from EastMoney.")
                     disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
@@ -112,7 +112,7 @@ class AkShareService:
                                 if col not in df.columns:
                                     df[col] = 0.0
                             
-                            subset = df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records")
+                            subset = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))  # type: ignore
                             all_sina_records.extend(subset)
                 except Exception as cat_e:
                     logger.warning(f"Sina category {cat} failed: {cat_e}")
@@ -152,7 +152,7 @@ class AkShareService:
                 # 数据清洗
                 df["price"] = pd.to_numeric(df["price"], errors="coerce")
                 
-                records = df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records")
+                records = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))  # type: ignore
                 
                 logger.info(f"Successfully loaded {len(records)} ETFs from THS.")
                 disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
@@ -162,7 +162,7 @@ class AkShareService:
 
         # --- Attempt 4: Disk Cache ---
         logger.warning("All online fetches failed. Attempting to load from disk cache...")
-        cached_list = disk_cache.get(ETF_LIST_CACHE_KEY)
+        cached_list = cast(List[Dict[str, Any]], disk_cache.get(ETF_LIST_CACHE_KEY))
         if cached_list and len(cached_list) > 20:
             return cached_list
         
@@ -212,7 +212,7 @@ class AkShareService:
             if not etf_cache.is_initialized:
                  cached_list = disk_cache.get(ETF_LIST_CACHE_KEY)
                  if cached_list:
-                     etf_cache.set_etf_list(cached_list)
+                     etf_cache.set_etf_list(cast(List[Dict[str, Any]], cached_list))
 
         elif etf_cache.is_stale:
             # 缓存过期但有数据，触发后台刷新 (Stale-While-Revalidate)
@@ -238,7 +238,7 @@ class AkShareService:
         cached_data = disk_cache.get(cache_key)
         if cached_data is not None:
              # logger.info(f"Cache hit for {code}")
-             return cached_data
+             return cast(pd.DataFrame, cached_data)
 
         try:
             logger.info(f"Fetching history for {code} adjust={adjust} from AkShare")
