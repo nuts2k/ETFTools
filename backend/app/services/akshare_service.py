@@ -7,6 +7,20 @@ from datetime import datetime
 import os
 import time
 import threading
+import urllib.request
+
+# 强制禁用代理，防止本地环境代理干扰
+urllib.request.getproxies = lambda: {}
+
+# 补丁 requests 增加默认 User-Agent
+import requests
+_original_session_init = requests.Session.__init__
+def _patched_session_init(self, *args, **kwargs):
+    _original_session_init(self, *args, **kwargs)
+    self.headers.update({
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    })
+requests.Session.__init__ = _patched_session_init
 
 from app.core.cache import etf_cache
 
@@ -43,58 +57,87 @@ class AkShareService:
     def fetch_all_etfs() -> List[Dict]:
         """
         获取全市场 ETF 实时行情（用于构建基础列表）
-        Source: ak.fund_etf_spot_em()
+        策略：优先使用东方财富(EM)，失败则尝试新浪(Sina)
         """
-        retries = 3
+        # --- Attempt 1: EastMoney ---
+        retries = 2
         for i in range(retries):
             try:
-                logger.info(f"Fetching all ETF spot data from AkShare (Attempt {i+1}/{retries})...")
+                logger.info(f"Fetching ETF spot data from EastMoney (Attempt {i+1}/{retries})...")
                 df = ak.fund_etf_spot_em()
-                
-                # 字段映射
-                df = df.rename(columns={
-                    "代码": "code",
-                    "名称": "name",
-                    "最新价": "price",
-                    "涨跌幅": "change_pct",
-                    "成交额": "volume", 
-                })
-                
-                # 清洗数据，确保 price 是数字
-                df["price"] = pd.to_numeric(df["price"], errors="coerce")
-                df["change_pct"] = pd.to_numeric(df["change_pct"], errors="coerce")
-                
-                records = df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records")
-                
-                logger.info(f"Successfully loaded {len(records)} ETFs.")
-                
-                # Save to disk cache for persistence across restarts
-                disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400) # Valid for 24 hours in disk
-                
-                return records
+                if not df.empty:
+                    # 字段映射
+                    df = df.rename(columns={
+                        "代码": "code",
+                        "名称": "name",
+                        "最新价": "price",
+                        "涨跌幅": "change_pct",
+                        "成交额": "volume", 
+                    })
+                    df["price"] = pd.to_numeric(df["price"], errors="coerce")
+                    df["change_pct"] = pd.to_numeric(df["change_pct"], errors="coerce")
+                    records = df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records")
+                    
+                    logger.info(f"Successfully loaded {len(records)} ETFs from EastMoney.")
+                    disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
+                    return records
             except Exception as e:
-                logger.error(f"Error fetching ETF list: {e}")
-                time.sleep(1) # Wait before retry
-        
-        # If all retries fail, try to load from disk cache
-        logger.warning("All retries failed. Attempting to load from disk cache...")
+                logger.error(f"EastMoney fetch failed: {e}")
+                time.sleep(2)
+
+        # --- Attempt 2: Sina Fallback ---
+        logger.warning("EastMoney failed, trying Sina fallback...")
+        try:
+            # Sina category map: symbol -> record filter/mapper
+            sina_categories = ["ETF基金", "QDII基金", "封闭式基金"]
+            all_sina_records = []
+            for cat in sina_categories:
+                try:
+                    logger.info(f"Fetching {cat} from Sina...")
+                    df = ak.fund_etf_category_sina(symbol=cat)
+                    if df is not None and not df.empty:
+                        # Normalize columns
+                        col_map = {"代码": "code", "名称": "name", "最新价": "price", "涨跌幅": "change_pct", "成交额": "volume"}
+                        # Only rename columns that exist
+                        actual_map = {k: v for k, v in col_map.items() if k in df.columns}
+                        df = df.rename(columns=actual_map)
+                        
+                        if "code" in df.columns:
+                            df["code"] = df["code"].astype(str).str.replace("sh", "").str.replace("sz", "")
+                            # Fill missing required columns with defaults if necessary
+                            for col in ["price", "change_pct", "volume"]:
+                                if col not in df.columns:
+                                    df[col] = 0.0
+                            
+                            subset = df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records")
+                            all_sina_records.extend(subset)
+                except Exception as cat_e:
+                    logger.warning(f"Sina category {cat} failed: {cat_e}")
+            
+            if all_sina_records:
+                # Dedup by code
+                seen = set()
+                deduped = []
+                for r in all_sina_records:
+                    if r['code'] not in seen:
+                        deduped.append(r)
+                        seen.add(r['code'])
+                
+                logger.info(f"Successfully loaded {len(deduped)} ETFs from Sina.")
+                disk_cache.set(ETF_LIST_CACHE_KEY, deduped, expire=86400)
+                return deduped
+        except Exception as e:
+            logger.error(f"Sina fetch failed: {e}")
+
+        # --- Attempt 3: Disk Cache ---
+        logger.warning("All online fetches failed. Attempting to load from disk cache...")
         cached_list = disk_cache.get(ETF_LIST_CACHE_KEY)
-        if cached_list and len(cached_list) > 20: # Ensure we have a decent amount of data
-            logger.info(f"Loaded {len(cached_list)} ETFs from disk cache.")
+        if cached_list and len(cached_list) > 20:
             return cached_list
         
-        # If disk cache is empty or too small (e.g. only Seed data), load fallback
-        logger.warning("Disk cache empty or insufficient. Loading fallback data...")
-        fallback_data = AkShareService.load_fallback_data()
-        if fallback_data:
-            # Merge with existing cache if any (e.g. Seed data)
-            if cached_list:
-                # Simple merge: prefer fallback for broader coverage
-                # In real world, we might want to dedup
-                return fallback_data 
-            return fallback_data
-            
-        return []
+        # --- Attempt 4: Fallback JSON ---
+        logger.warning("Disk cache empty. Loading fallback JSON...")
+        return AkShareService.load_fallback_data()
 
     @staticmethod
     def _refresh_task():

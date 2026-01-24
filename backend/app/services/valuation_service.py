@@ -5,6 +5,11 @@ import json
 import os
 import re
 from typing import Optional, Dict
+import urllib.request
+
+# 强制禁用代理
+urllib.request.getproxies = lambda: {}
+
 # Reuse the cache instance from akshare_service to avoid lock contention
 from app.services.akshare_service import disk_cache as valuation_cache
 
