@@ -1,280 +1,330 @@
-# 确认对话框开发计划
+# ETFTools 项目改进计划
 
-## 目标
-将设置页面中原生的 `window.confirm()` 替换为符合应用 "App Shell" 设计语言的自定义模态对话框 (Modal)。
-
-## 1. 创建组件: `ConfirmationDialog`
-**文件**: `frontend/components/ConfirmationDialog.tsx`
-
-**规格**:
-- **遮罩层 (Backdrop)**: 固定覆盖层，使用 `bg-black/50` 和 `backdrop-blur-sm`。
-- **容器 (Container)**: 居中显示，`rounded-xl`, `bg-card`, `shadow-2xl`。
-- **内容**:
-  - 标题 (粗体, 大号)
-  - 描述 (柔和色调, 小号)
-  - 操作按钮 (取消 / 确认)
-- **Props**:
-  - `isOpen`: boolean
-  - `title`: string
-  - `description`: string
-  - `confirmLabel`: string (默认: "确认")
-  - `cancelLabel`: string (默认: "取消")
-  - `onConfirm`: () => void
-  - `onCancel`: () => void
-  - `variant`: 'default' | 'destructive' (影响确认按钮颜色)
-
-## 2. 更新设置页面
-**文件**: `frontend/app/settings/page.tsx`
-
-**变更**:
-- 引入 `ConfirmationDialog` 组件。
-- 添加状态: `const [showClearCacheDialog, setShowClearCacheDialog] = useState(false)`.
-- 替换 `confirm()` 逻辑:
-  - 点击按钮时设置 `showClearCacheDialog(true)`。
-  - 对话框的 `onConfirm` 触发 `localStorage.clear()` 并刷新页面。
-- 在 JSX 底部渲染对话框组件。
-
-## 3. 样式细节
-- **确认按钮 (Destructive)**: `bg-destructive text-destructive-foreground`
-- **取消按钮**: `bg-secondary text-secondary-foreground`
-- **动画**: 简单的透明度/缩放过渡 (可选，或使用条件渲染)。
-
-## 4. 验证
-- 验证点击 "清除缓存" 时对话框是否出现。
-- 验证 "取消" 按钮能否关闭对话框且不执行操作。
-- 验证 "确认" 按钮能否清除缓存并刷新页面。
-- 检查深色模式 (Dark Mode) 下的显示效果。
+> 基于代码库质量分析生成的最佳实践改进路线图
+> 生成时间: 2026-01-24
 
 ---
 
-# 自选页面编辑与长按拖拽排序功能计划
+## 📊 项目现状总结
 
-## 目标
-为自选列表添加编辑模式，支持删除操作和基于长按拖拽的自定义排序功能。新增项自动置顶，排序结果需持久化到本地及云端。
+**项目类型**: 全栈 ETF 分析工具  
+**技术栈**: 
+- 后端: Python + FastAPI + SQLModel + AkShare
+- 前端: Next.js 16 + React 19 + TypeScript + Tailwind CSS
 
-## 1. 后端功能扩展 (API)
-**文件**: `backend/app/models/user.py`, `backend/app/api/v1/endpoints/watchlist.py`
+**代码规模**:
+- 后端: ~1,589 行 Python 代码
+- 前端: ~2,587 行 TypeScript/TSX 代码
+- 测试覆盖: ❌ 无测试文件
 
-- **模型更新**:
-  - `Watchlist` 表增加 `sort_order` (Integer) 字段，默认 0。
-- **接口调整**:
-  - `GET /watchlist/`: 修改查询逻辑，按 `sort_order ASC` 排序。
-  - `POST /watchlist/{code}` (添加): 查询当前用户最小 `sort_order`，新项设为 `min_order - 1` (确保置顶)。
-- **新增接口**:
-  - `PUT /watchlist/reorder`: 接收 JSON `["code1", "code2", ...]`，事务性批量更新 `sort_order`。
+**综合评分**: ⭐⭐⚪⚪⚪ (2.2/5)
 
-## 2. 前端 Hook 增强
-**文件**: `frontend/hooks/use-watchlist.ts`
-
-- **新增方法**: `reorder(newOrderCodes: string[])`。
-- **本地模式**: 更新 `localStorage` 存储的数组顺序。
-- **云端模式**: 乐观更新本地 State，同时异步调用 `PUT /reorder` 接口。
-- **现有逻辑优化**: 
-  - `add` 方法确保新元素插入数组头部 (Index 0)。
-  - `remove` 方法保持立即执行。
-
-## 3. 前端 UI 实现
-**文件**: `frontend/app/page.tsx`, `frontend/components/SortableETFItem.tsx` (新增)
-
-- **依赖**: 安装 `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`。
-- **状态管理**:
-  - 新增 `isEditing` 状态。
-  - 顶部按钮: 默认显示 `Edit3` 图标，`isEditing=true` 时显示 "完成" 文本。
-- **长按拖拽 (SortableContext)**:
-  - 使用 `PointerSensor`，配置 `activationConstraint: { delay: 250, tolerance: 5 }` (长按 250ms 触发)。
-  - **震动反馈**: `onDragStart` 时调用 `navigator.vibrate(10)`。
-  - **拖拽结束**: `onDragEnd` 时获取新顺序并调用 `hook.reorder()`。
-- **列表项组件 (`SortableETFItem`)**:
-  - **正常模式**: 保持 `Link` 跳转。
-  - **编辑模式**:
-    - 禁用跳转。
-    - 左侧显示红色删除图标 (点击立即删除)。
-    - 右侧显示拖拽手柄图标 (视觉引导)。
-    - 整行支持长按触发拖拽。
-    - 拖拽时的样式: 增加阴影 (Shadow-lg)，轻微放大，背景色调整。
-
-## 4. 验证与交互
-- **新增项置顶**: 添加新 ETF，确认出现在列表首位。
-- **编辑模式**: 点击编辑按钮进入/退出模式正确。
-- **删除**: 编辑模式下点击左侧红点立即删除行。
-- **拖拽排序**:
-  - 长按 250ms 后触发拖拽，手机震动。
-  - 拖拽过程中列表平滑让位。
-  - 松手后位置固定，刷新页面/重新登录后顺序保持。
-- **云端同步**: 登录状态下，在一端调整顺序，另一端刷新后顺序同步。
+| 维度 | 评分 | 说明 |
+|------|------|------|
+| 代码质量 | ⭐⭐⭐⚪⚪ (3/5) | 架构清晰，但存在过长函数和重复代码 |
+| 类型安全 | ⭐⭐⭐⚪⚪ (3/5) | TS严格模式开启，但Python类型注解不完整 |
+| 错误处理 | ⭐⭐⚪⚪⚪ (2/5) | 有回退机制，但异常捕获过于宽泛 |
+| 安全性 | ⭐⚪⚪⚪⚪ (1/5) | ❌ 硬编码密钥、CORS过宽，存在严重风险 |
+| 测试覆盖 | ⚪⚪⚪⚪⚪ (0/5) | ❌ 完全无测试 |
+| 依赖管理 | ⭐⭐⭐⭐⚪ (4/5) | 依赖组织良好，但缺少版本锁定 |
 
 ---
 
-# ETF 详情页指标动态同步计划
+## 🎯 改进计划概览
 
-## 目标
-实现详情页核心指标（CAGR、最大回撤、波动率）与图表上方选择的时间段（1y/3y/5y/all）实时联动，确保展示的数据与图表区间逻辑一致。
+### 🔴 阶段一: 安全加固 (P0 - 立即执行)
 
-## 1. 后端 API 调整
-**文件**: `backend/app/api/v1/endpoints/etf.py`
+**目标**: 修复严重安全漏洞，确保基础安全
 
-- **Update `get_etf_metrics`**:
-  - 增加 `period` 参数 (可选值: "1y", "3y", "5y", "all")。
-  - 逻辑变更:
-    - 接收 `period` 参数。
-    - 根据参数计算 `start_date`。
-    - 对历史数据 `DataFrame` 进行切片。
-    - 基于切片后的数据计算 Total Return, CAGR, MaxDrawdown, Volatility。
-    - 确保 `mdd_date` 在切片范围内。
+#### 1. 环境变量管理
+- **问题**: `SECRET_KEY` 硬编码在代码中
+- **位置**: `backend/app/services/auth_service.py:10`
+- **风险等级**: 🔴 CRITICAL
+- **影响**: JWT 可被伪造，用户会话可被劫持
+- **任务**:
+  - 创建 `.env.example` 模板文件
+  - 修改 `backend/app/core/config.py` 从环境变量加载配置
+  - 修改 `auth_service.py` 使用配置中的 SECRET_KEY
+  - 添加配置验证逻辑，启动时检查必需的环境变量
 
-## 2. 前端状态提升与重构
-**文件**: `frontend/app/etf/[code]/page.tsx`
+#### 2. CORS 配置优化
+- **问题**: CORS 允许所有来源 `["*"]`
+- **位置**: `backend/app/core/config.py:9`
+- **风险等级**: 🔴 HIGH
+- **影响**: 易受 CSRF 攻击
+- **任务**:
+  - 配置明确的允许域名列表
+  - 区分开发环境和生产环境的 CORS 策略
+  - 从环境变量读取允许的来源
 
-- **状态管理**:
-  - 新增 `period` 状态 (State): `const [period, setPeriod] = useState("5y")`.
-  - `metrics` 数据请求需依赖 `period` 状态。
-- **交互逻辑**:
-  - 当 `period` 改变时:
-    - 重新 fetch `/etf/{code}/metrics?period={period}`。
-    - 指标卡片区域显示局部 Loading 状态。
+#### 3. 修复缺失依赖
+- **问题**: 代码使用但未声明的依赖
+- **缺失包**: `sqlmodel`, `python-jose`, `bcrypt`, `passlib`, `pydantic-settings`, `diskcache`
+- **风险等级**: 🟡 MEDIUM
+- **影响**: 部署失败，环境不一致
+- **任务**:
+  - 更新 `pyproject.toml` 添加所有缺失依赖
+  - 为依赖添加版本约束（特别是 akshare）
+  - 生成 `requirements.txt` 锁定版本
 
-## 3. 图表组件改造
-**文件**: `frontend/components/ETFChart.tsx`
-
-- **Props 变更**:
-  - 移除内部 `period` 状态。
-  - 新增 Props: `period: string`, `onPeriodChange: (p: string) => void`.
-- **功能**:
-  - 点击时间切换按钮时，调用 `onPeriodChange`。
-  - 接收外部 `period` prop 控制图表数据过滤范围。
-
-## 4. 验证
-- **联动性**: 切换到 "1年" 时，图表变更为1年试图，同时下方 "最大回撤" 等指标数值发生变化。
-- **数据准确**: 确保 "1年" 的最大回撤不是历史最大回撤，而是最近1年的最大回撤。
-- **加载体验**: 切换时无明显页面闪烁，指标数据更新流畅。
-
----
-
-# ETF 最大回撤区间可视化计划
-
-## 目标
-在 ETF 走势图上通过背景阴影直观展示选定时间段内的“最大回撤区间”和“修复区间”。
-
-## 1. 后端 API 算法增强
-**文件**: `backend/app/api/v1/endpoints/etf.py`
-
-- **逻辑升级**:
-  - 在计算 `max_drawdown` 的基础上，定位以下三个关键日期：
-    1. **Peak Date (mdd_start)**: 回撤前的最高点日期。
-    2. **Trough Date (mdd_trough)**: 谷底日期（原 mdd_date）。
-    3. **Recovery Date (mdd_end)**: 价格重新回到 Peak Date 水平的日期（若未修复则为 None）。
-- **返回值增加**:
-  - `metrics` 对象中新增 `mdd_start`, `mdd_trough`, `mdd_end`。
-
-## 2. 前端类型定义更新
-**文件**: `frontend/lib/api.ts`
-
-- **Interface Update**:
-  - `ETFMetrics` 增加对应字段，类型为 `string` (YYYY-MM-DD)。
-
-## 3. 图表组件增强
-**文件**: `frontend/components/ETFChart.tsx`
-
-- **Props Update**:
-  - 接收 `drawdownInfo` 对象，包含 `{ start: string, trough: string, end?: string }`。
-- **Render Logic**:
-  - 使用 Recharts `ReferenceArea` 组件。
-  - **Drawdown Zone**: `start` -> `trough`, 填充红色背景 (`#ef4444` with low opacity)。
-  - **Recovery Zone**: `trough` -> `end` (or last data date), 填充绿色背景 (`#22c55e` with low opacity)。
-  - **Handling Ongoing Recovery**: 如果 `end` 为空，使用数据最后一个点的日期作为终点。
-
-## 4. 详情页数据透传
-**文件**: `frontend/app/etf/[code]/page.tsx`
-
-- **Data Flow**:
-  - 从 `metrics` 状态中解构出 mdd 相关字段。
-  - 传递给 `ETFChart` 组件。
-
-## 5. 样式与体验
-- **DarkMode**: 确保阴影颜色在深色模式下清晰且不干扰曲线。
-- **Label**: 在区域上方增加微弱文字标记 "最大回撤" / "修复期"。
+#### 4. 添加速率限制
+- **问题**: API 端点无速率限制
+- **风险等级**: 🟡 MEDIUM
+- **影响**: 易受 DDoS 和暴力破解攻击
+- **任务**:
+  - 安装 `slowapi` 库
+  - 为登录、注册端点添加速率限制（5次/分钟）
+  - 为搜索端点添加速率限制（30次/分钟）
+  - 配置全局异常处理器
 
 ---
 
-# Bug Fix Plan: Mobile Safari Connection Error
+### 🟡 阶段二: 测试框架建立 (P1 - 两周内)
 
-## Problem
-When testing on mobile Safari (accessing via LAN IP), the search function fails with `Console TypeError. Load failed`.
+**目标**: 建立完整的测试基础设施
 
-## Root Cause Analysis
-1.  **Hardcoded URLs**: The frontend code contains multiple instances of `http://localhost:8000`. When running on a mobile device, `localhost` refers to the device itself, not the development server on the computer.
-2.  **CORS Restrictions**: The backend configuration likely restricts CORS to specific origins (e.g., localhost), which blocks requests coming from a LAN IP address (e.g., `192.168.x.x`).
+#### 5. 后端单元测试框架
+- **问题**: 后端无任何测试文件
+- **当前状态**: 0 测试覆盖
+- **目标覆盖率**: 核心逻辑 > 80%
+- **任务**:
+  - 创建测试目录结构 `backend/tests/`
+  - 配置 pytest fixtures (`conftest.py`)
+  - 编写认证服务测试 (`test_auth.py`)
+    - 密码哈希验证测试
+    - JWT 生成/验证测试
+    - 登录/注册流程测试
+  - 编写指标计算测试 (`test_metrics.py`)
+    - CAGR 计算准确性
+    - 最大回撤计算验证
+    - 波动率计算验证
+  - 编写 API 端点测试 (`test_etf_api.py`)
+  - 集成测试覆盖率报告
 
-## Solution Strategy
-
-### 1. Backend: Relax CORS Policy
--   **File**: `backend/app/core/config.py`
--   **Action**: Update `BACKEND_CORS_ORIGINS` to allow all origins (`["*"]`) during development. This ensures that requests from any device on the local network are accepted.
-
-### 2. Frontend: Centralize and Dynamic API Configuration
--   **File**: `frontend/lib/api.ts`
--   **Action**: 
-    -   Remove the hardcoded default `http://localhost:8000`.
-    -   Implement logic to determine the `API_BASE_URL` dynamically:
-        -   First, check for `process.env.NEXT_PUBLIC_API_URL`.
-        -   If not set, fallback to a dynamic check of `window.location.hostname`. If running on a LAN IP (e.g., `192.168.1.5:3000`), assume the backend is on port 8000 of the same IP (`http://192.168.1.5:8000/api/v1`).
-        -   Default fallback to `http://localhost:8000/api/v1` for server-side rendering or local dev.
-
-### 3. Frontend: Refactor Hardcoded Strings
--   **Files**:
-    -   `frontend/hooks/use-watchlist.ts`
-    -   `frontend/lib/auth-context.tsx`
-    -   `frontend/app/login/page.tsx`
-    -   `frontend/app/register/page.tsx`
-    -   `frontend/app/settings/password/page.tsx`
-    -   `frontend/hooks/use-settings.ts`
--   **Action**: Replace all occurrences of `http://localhost:8000...` with the imported `API_BASE_URL` from `@/lib/api`.
-
-## Verification
--   Start backend and frontend.
--   Access frontend via LAN IP (e.g., `http://192.168.1.5:3000`) on a mobile device.
--   Verify search functionality works without "Load failed" errors.
+#### 6. 前端测试框架
+- **问题**: 前端无测试配置
+- **当前状态**: 无测试框架
+- **目标覆盖率**: 组件 > 50%
+- **任务**:
+  - 安装测试依赖：`vitest`, `@testing-library/react`, `@testing-library/jest-dom`
+  - 配置 `vitest.config.ts`
+  - 编写组件测试
+    - StockCard 渲染测试
+    - ConfirmationDialog 交互测试
+    - 自选列表操作测试
+  - 编写 Hook 测试
+    - `use-watchlist` 逻辑测试
+    - `use-settings` 测试
+  - 设置测试脚本到 `package.json`
 
 ---
 
-# ETF 估值分位功能 (Valuation Feature)
+### 🟢 阶段三: 代码质量提升 (P2 - 持续优化)
 
-## 目标
-利用第三方（雪球/蛋卷）接口，为 ETF 提供“最近 10 年估值分位”展示，帮助用户判断当前价格的安全边际。
+**目标**: 重构代码，消除技术债务
 
-## 1. 数据映射 (Mapping)
-**文件**: `backend/app/data/etf_index_map.json` (新增)
-- **内容**: 建立常用 ETF 代码与雪球指数 ID 的映射。
-- **示例**: `{"510300": "SH000300", "159915": "SZ399006"}`.
+#### 7. 拆分过长函数
+- **问题识别**:
+  - `backend/app/api/v1/endpoints/etf.py::get_etf_metrics()` - 230 行
+  - `backend/app/services/akshare_service.py::fetch_all_etfs()` - 112 行
+  - `frontend/app/etf/[code]/page.tsx` - 355 行
+- **任务**:
+  - 创建 `backend/app/services/metrics_calculator.py`
+  - 将指标计算逻辑拆分为独立方法：
+    - `calculate_cagr()`
+    - `calculate_max_drawdown()`
+    - `calculate_volatility()`
+    - `find_drawdown_dates()`
+  - 使用数据类 (dataclass) 封装返回结果
+  - 前端拆分 ETF 详情页为更小的子组件
+  - 提取自定义 Hooks 封装数据获取逻辑
 
-## 2. 后端服务增强
-**文件**: `backend/app/services/valuation_service.py` (新增), `backend/app/api/v1/endpoints/etf.py`
+#### 8. 统一错误处理
+- **问题**: 
+  - 15 处使用 `except Exception`
+  - 前端仅 `console.error`，无用户提示
+  - 缺少全局异常处理
+- **任务**:
+  - 创建自定义异常类层次结构
+    - `ETFToolException` (基类)
+    - `DataFetchError`
+    - `CacheError`
+    - `AuthenticationError`
+  - 实现全局异常处理器（FastAPI middleware）
+  - 前端实现 Toast 通知系统
+  - 前端创建 Error Boundary 组件
+  - 统一错误响应格式
 
-- **ValuationService**:
-  - `fetch_valuation(index_code)`: 访问雪球 API 获取估值数据。
-  - **缓存**: 使用 `etf_cache` 或 `disk_cache` 缓存结果 (有效期 24h)。
-  - **Fallback**: 若映射不存在或接口失败，返回 None。
+#### 9. 类型安全改进
+- **后端任务**:
+  - 为所有函数添加完整类型注解
+  - 使用 Pydantic 模型替代 `Dict[str, Any]`
+  - 在 CI/CD 中集成 mypy 类型检查
+  - 减少泛化类型使用
+- **前端任务**:
+  - 消除所有 `any` 类型（当前 6 处）
+  - 为组件 Props 定义严格接口
+  - 使用 `unknown` 替代 `any` 在必要时
+  - 增强空值检查
 
-- **API 扩展**:
-  - `GET /etf/{code}/metrics`: 响应体增加 `valuation` 字段。
-    ```json
-    "valuation": {
-      "pe": 12.34,
-      "pe_percentile": 20.5,
-      "dist_view": "低估",
-      "index_name": "沪深300"
-    }
-    ```
+#### 10. 消除代码重复
+- **识别的重复模式**:
+  - 数据库操作的 try-except 块
+  - 缓存 get/set 逻辑
+  - API 错误处理
+- **任务**:
+  - 创建数据库操作装饰器/上下文管理器
+  - 封装缓存服务类统一缓存操作
+  - 提取公共错误处理逻辑为高阶函数
+  - 创建前端 API 请求封装函数
 
-## 3. 前端展示
-**文件**: `frontend/app/etf/[code]/page.tsx`, `frontend/components/ValuationCard.tsx` (新增)
+---
 
-- **ValuationCard**:
-  - 展示“当前市盈率(PE)”。
-  - **仪表盘/进度条**: 可视化展示分位点 (0% - 100%)。
-  - **区间颜色**: 0-30% (绿色/低估), 30-70% (黄色/适中), 70-100% (红色/高估)。
-  - **说明文本**: "当前估值低于历史 80% 的时间"。
+### 🚀 阶段四: 工程化提升 (P2 - 持续)
 
-## 4. 验证
-- 访问沪深300 ETF (510300)，确认显示估值卡片且数据合理。
-- 访问无映射的冷门 ETF，确认不显示卡片且不报错。
+**目标**: 建立现代化开发流程
+
+#### 11. CI/CD 流程建立
+- **任务**:
+  - 创建 GitHub Actions 工作流
+  - 后端流水线:
+    - 依赖安装
+    - Ruff 代码检查
+    - mypy 类型检查
+    - pytest 测试执行
+    - 覆盖率报告
+  - 前端流水线:
+    - 依赖安装
+    - ESLint 检查
+    - TypeScript 类型检查
+    - 单元测试执行
+    - 安全审计 (npm audit)
+  - 设置分支保护规则
+
+#### 12. 日志与监控
+- **任务**:
+  - 后端集成 `loguru` 结构化日志
+  - 配置日志轮转和保留策略
+  - 添加 Prometheus 指标暴露
+  - 前端集成错误监控（Sentry 或类似）
+  - 记录关键业务指标
+
+#### 13. 数据库迁移管理
+- **任务**:
+  - 安装配置 Alembic
+  - 初始化迁移环境
+  - 为现有数据库生成基线迁移
+  - 建立数据库版本管理流程
+  - 编写迁移最佳实践文档
+
+#### 14. API 文档增强
+- **任务**:
+  - 完善 FastAPI 端点文档字符串
+  - 添加请求/响应示例
+  - 为所有模型添加字段描述
+  - 配置 Swagger UI 和 ReDoc
+  - 生成 API 使用指南
+
+#### 15. 性能优化
+- **任务**:
+  - 分析并优化数据库查询（添加索引）
+  - 优化前端打包配置（代码分割）
+  - 实现 API 响应压缩
+  - 添加静态资源 CDN 配置
+  - 设置合理的缓存策略
+
+---
+
+## 📋 执行时间线
+
+### 第 1 周: 安全加固
+- [ ] Day 1-2: 环境变量配置和 SECRET_KEY 修复
+- [ ] Day 3: CORS 配置优化
+- [ ] Day 4: 修复依赖问题并生成 requirements.txt
+- [ ] Day 5: 添加速率限制
+
+**里程碑**: 所有 P0 安全问题修复完成
+
+### 第 2-3 周: 测试建立
+- [ ] Week 2 Day 1-2: 后端测试框架搭建
+- [ ] Week 2 Day 3-5: 编写核心功能测试（认证、指标计算）
+- [ ] Week 3 Day 1-2: 前端测试框架搭建
+- [ ] Week 3 Day 3-5: 编写组件和 Hook 测试
+
+**里程碑**: 核心功能测试覆盖率 > 60%
+
+### 第 4-6 周: 代码重构
+- [ ] Week 4: 拆分 `get_etf_metrics` 和相关服务
+- [ ] Week 5: 实现统一错误处理和类型安全改进
+- [ ] Week 6: 消除代码重复，前端组件拆分
+
+**里程碑**: 代码质量评分提升至 4/5
+
+### 持续进行
+- [ ] 建立 CI/CD 流程
+- [ ] 集成日志和监控系统
+- [ ] 配置数据库迁移管理
+- [ ] 完善 API 文档
+- [ ] 性能优化和监控
+
+---
+
+## 🎯 关键指标目标
+
+### 质量指标
+- **代码覆盖率**: 从 0% → 70%+
+- **类型安全**: Python 类型注解 100%, TypeScript `any` 使用 < 5 处
+- **代码异味**: 消除所有 200+ 行函数
+- **安全评分**: 从 1/5 → 4/5
+
+### 工程指标
+- **CI/CD 覆盖**: 100% PR 必须通过自动化检查
+- **部署频率**: 支持每日部署
+- **平均修复时间**: < 1 小时（P0 问题）
+- **文档覆盖**: 所有 API 端点有完整文档
+
+---
+
+## 💡 实施原则
+
+### 1. 安全优先
+在添加任何新功能前，必须先解决 P0 安全问题。不在脆弱的基础上构建。
+
+### 2. 测试驱动
+建立测试框架后，所有新功能必须遵循 TDD 原则：先写测试，再写实现。
+
+### 3. 渐进式重构
+避免大规模重写，采用小步快跑的方式逐步改进代码质量。
+
+### 4. 文档同步
+代码变更必须同步更新文档，保持文档与实现一致。
+
+### 5. 代码审查
+所有变更必须经过 Code Review，确保质量标准。
+
+---
+
+## 📚 参考资源
+
+### 最佳实践
+- [FastAPI Best Practices](https://fastapi.tiangolo.com/tutorial/)
+- [React Testing Library Guide](https://testing-library.com/docs/react-testing-library/intro/)
+- [Python Type Hints](https://docs.python.org/3/library/typing.html)
+- [OWASP Security Guidelines](https://owasp.org/)
+
+### 工具文档
+- [pytest Documentation](https://docs.pytest.org/)
+- [Vitest Guide](https://vitest.dev/guide/)
+- [Alembic Tutorial](https://alembic.sqlalchemy.org/en/latest/tutorial.html)
+- [GitHub Actions Workflow](https://docs.github.com/en/actions)
+
+---
+
+## 🔄 计划更新日志
+
+- **2026-01-24**: 初始版本，基于代码库质量分析生成
+- 未来更新将记录在此处
+
+---
+
+**注意**: 此计划为动态文档，随着项目进展和新问题发现将持续更新。执行前请确保团队对优先级和时间线达成共识。
