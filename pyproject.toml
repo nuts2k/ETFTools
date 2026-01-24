@@ -11,6 +11,12 @@ dependencies = [
     "numpy",
     "pydantic",
     "cachetools",
+    "sqlmodel",
+    "python-jose[cryptography]",
+    "passlib[bcrypt]",
+    "python-multipart",
+    "diskcache",
+    "requests",
 ]
 
 [project.optional-dependencies]

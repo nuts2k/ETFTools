@@ -4,6 +4,9 @@
 .vscode/
 *.log
 *.skill
+*.db
+.services.pid
+*.egg-info/
 
 # Python / Backend
 __pycache__/

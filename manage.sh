@@ -161,10 +161,10 @@ start_services() {
     mkdir -p "$(dirname "$FRONTEND_LOG")"
 
     log_info "Starting Backend..."
-    export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$(pwd)"
+    export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$(pwd)/backend"
     
     # Start Backend
-    nohup "$PYTHON_EXEC" -m etftool.main > "$BACKEND_LOG" 2>&1 &
+    nohup "$PYTHON_EXEC" -m app.main > "$BACKEND_LOG" 2>&1 &
     BACKEND_PID=$!
     echo $BACKEND_PID >> "$PID_FILE"
     log_info "Backend started (PID: $BACKEND_PID). Logs: $BACKEND_LOG"
