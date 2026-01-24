@@ -12,7 +12,7 @@ import urllib.request
 # 强制禁用代理，防止本地环境代理干扰
 urllib.request.getproxies = lambda: {}
 
-# 补丁 requests 增加默认 User-Agent
+# 补丁 requests 增加默认 User-Agent 并彻底禁用代理
 import requests
 _original_session_init = requests.Session.__init__
 def _patched_session_init(self, *args, **kwargs):
@@ -20,6 +20,9 @@ def _patched_session_init(self, *args, **kwargs):
     self.headers.update({
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     })
+    # 强制禁用系统代理环境变量，防止 transparent proxy 干扰
+    self.trust_env = False
+    self.proxies = {"http": None, "https": None}
 requests.Session.__init__ = _patched_session_init
 
 from app.core.cache import etf_cache
@@ -129,7 +132,35 @@ class AkShareService:
         except Exception as e:
             logger.error(f"Sina fetch failed: {e}")
 
-        # --- Attempt 3: Disk Cache ---
+        # --- Attempt 3: THS Fallback ---
+        logger.warning("Sina failed, trying THS fallback...")
+        try:
+            logger.info("Fetching ETF spot data from THS...")
+            df = ak.fund_etf_spot_ths()
+            if not df.empty:
+                # 字段映射
+                # 序号, 基金代码, 基金名称, 当前-单位净值, 最新-单位净值, 最新-累计净值, 基金类型, 查询日期
+                df = df.rename(columns={
+                    "基金代码": "code",
+                    "基金名称": "name",
+                    "当前-单位净值": "price"
+                })
+                # 填充缺失字段
+                df["change_pct"] = 0.0
+                df["volume"] = 0.0
+                
+                # 数据清洗
+                df["price"] = pd.to_numeric(df["price"], errors="coerce")
+                
+                records = df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records")
+                
+                logger.info(f"Successfully loaded {len(records)} ETFs from THS.")
+                disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
+                return records
+        except Exception as e:
+            logger.error(f"THS fetch failed: {e}")
+
+        # --- Attempt 4: Disk Cache ---
         logger.warning("All online fetches failed. Attempting to load from disk cache...")
         cached_list = disk_cache.get(ETF_LIST_CACHE_KEY)
         if cached_list and len(cached_list) > 20:
