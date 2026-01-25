@@ -62,19 +62,19 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
         </div>
         
         {/* Dual-line Metrics Display */}
-        <div className="flex items-center gap-3 mt-1.5 text-[10px] text-muted-foreground/80 font-medium tracking-tight">
-             <div className="flex items-center gap-1">
-                <span>ATR:</span>
-                <span className="text-foreground/90 tabular-nums">
+        <div className="flex items-center gap-4 mt-2 text-[11px] font-medium tracking-tight">
+             <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground/60 uppercase">ATR</span>
+                <span className="text-foreground/80 tabular-nums font-semibold">
                     {etf.atr !== undefined && etf.atr !== null ? etf.atr.toFixed(4) : "--"}
                 </span>
              </div>
-             <div className="w-[1px] h-2.5 bg-border/80" />
-             <div className="flex items-center gap-1">
-                <span>120日回撤:</span>
+             <div className="w-[1px] h-2.5 bg-border/60" />
+             <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground/60">120D回撤</span>
                 <span className={cn(
-                    "tabular-nums", 
-                    (etf.current_drawdown || 0) < 0 ? "text-down font-bold" : "text-foreground/90"
+                    "tabular-nums font-semibold", 
+                    (etf.current_drawdown || 0) < 0 ? "text-down" : "text-foreground/80"
                 )}>
                     {etf.current_drawdown !== undefined && etf.current_drawdown !== null 
                         ? `${(etf.current_drawdown * 100).toFixed(2)}%` 
@@ -85,20 +85,20 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
       </div>
       
       {!isEditing ? (
-        <div className="flex items-center gap-4">
-          <span className={cn("text-base font-bold tabular-nums tracking-tight", changeColor)}>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <span className={cn("text-lg font-bold tabular-nums tracking-tighter", changeColor)}>
             {etf.price?.toFixed(3)}
           </span>
           <div className={cn(
-              "min-w-[72px] flex items-center justify-center rounded-lg h-8 px-2 text-white text-sm font-bold shadow-sm",
+              "min-w-[64px] flex items-center justify-center rounded-md h-6 px-1.5 text-white text-[11px] font-bold shadow-sm transition-colors",
               badgeColor
           )}>
             {isUp ? "+" : ""}{etf.change_pct}%
           </div>
         </div>
       ) : (
-        <div className="flex items-center justify-center w-10 text-muted-foreground/50">
-           <GripVertical className="h-6 w-6" />
+        <div className="flex items-center justify-center w-10 text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+            <GripVertical className="h-5 w-5" />
         </div>
       )}
     </>
@@ -113,17 +113,17 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
       {...listeners}
       className={cn(
         "group flex items-center justify-between p-4 rounded-2xl bg-card border border-border/50 shadow-sm transition-all touch-none select-none",
-        isDragging ? "shadow-lg scale-[1.02] z-50 ring-2 ring-primary/20" : "hover:border-border/80"
+        isDragging ? "shadow-xl scale-[1.02] z-50 ring-2 ring-primary/30 bg-card/95 backdrop-blur-sm" : "hover:border-border/80"
       )}
     >
       <div 
-          className="mr-3 text-red-500 cursor-pointer active:scale-95 transition-transform p-2 -ml-2 rounded-full hover:bg-red-500/10"
+          className="mr-3 text-red-500/80 cursor-pointer active:scale-90 transition-all p-2 -ml-2 rounded-full hover:bg-red-500/10"
           onClick={(e) => {
-              e.stopPropagation(); // Prevent drag start if clicking remove
+              e.stopPropagation(); 
               onRemove(etf.code);
           }}
       >
-          <Trash2 className="h-5 w-5 fill-none" />
+          <Trash2 className="h-5 w-5" />
       </div>
       {content}
     </div>
@@ -134,7 +134,7 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
 return (
   <div 
     {...longPressHandlers}
-    className="group flex items-center justify-between p-4 rounded-2xl bg-card border border-border/50 shadow-sm active:scale-[0.98] transition-all cursor-pointer select-none mb-0"
+    className="group flex items-center justify-between p-4 rounded-2xl bg-card border border-border/40 shadow-sm active:scale-[0.97] active:bg-secondary/50 transition-all cursor-pointer select-none mb-0"
   >
     {content}
   </div>

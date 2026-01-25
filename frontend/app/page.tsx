@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Star, Edit3, Check, Search, X } from "lucide-react";
+import { Star, Edit3, Check, Search, X, RefreshCw, ArrowRight, MousePointer2 } from "lucide-react";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useDebounce } from "@/hooks/use-debounce";
 import { fetchClient, type ETFItem } from "@/lib/api";
@@ -29,6 +29,13 @@ import { SortableWatchlistItem } from "@/components/SortableWatchlistItem";
 export default function WatchlistPage() {
   const { watchlist, isLoaded, add, remove, reorder, isWatched } = useWatchlist();
   const [isEditing, setIsEditing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  useEffect(() => {
+    if (isLoaded && watchlist.length > 0) {
+      setLastUpdated(new Date());
+    }
+  }, [isLoaded, watchlist.length]);
   
   // Search state
   const [isSearchMode, setIsSearchMode] = useState(false);
@@ -213,24 +220,61 @@ export default function WatchlistPage() {
       {/* Main List Content - hidden when searching */}
       {!isSearchMode && (
         <>
+          {/* Status Bar */}
+          <div className="flex items-center justify-between px-6 py-2">
+            <div className="flex items-center gap-1.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-up animate-pulse" />
+              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                实时行情 {lastUpdated && `· ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+              </span>
+            </div>
+            {isEditing && (
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full animate-bounce">
+                排序模式
+              </span>
+            )}
+          </div>
+
           {/* Content */}
-          <div className="flex-1 mt-2">
+          <div className="flex-1 mt-1">
             {!isLoaded ? (
-              <div className="space-y-3 px-4">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-20 rounded-2xl bg-card/50 border border-border/50 animate-pulse" />
+              <div className="space-y-4 px-5">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-card/40 border border-border/40 animate-pulse">
+                    <div className="flex-1 space-y-3">
+                      <div className="h-4 bg-muted rounded-md w-1/3" />
+                      <div className="flex gap-2">
+                        <div className="h-3 bg-muted rounded-md w-12" />
+                        <div className="h-3 bg-muted rounded-md w-16" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="h-5 bg-muted rounded-md w-16" />
+                      <div className="h-5 bg-muted rounded-md w-20" />
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : watchlist.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                <Star className="h-12 w-12 mb-2 opacity-20" />
-                <p className="text-sm">暂无自选 ETF</p>
+              <div className="flex flex-col items-center justify-center min-h-[50vh] px-10 text-center">
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full" />
+                  <div className="relative flex items-center justify-center h-20 w-20 rounded-3xl bg-secondary/50 text-muted-foreground/30 border border-border/50">
+                    <Star className="h-10 w-10" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-2">开启你的自选列表</h3>
+                <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
+                  添加你关注的 ETF，实时掌握 QFQ 收益波动、ATR 风险及回撤数据。
+                </p>
                 {!isEditing && (
                     <button 
                       onClick={() => setIsSearchMode(true)} 
-                      className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+                      className="group flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-2xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                     >
-                    去搜索添加
+                      <Search className="h-4 w-4" />
+                      立即搜索添加
+                      <ArrowRight className="h-4 w-4 opacity-50 group-hover:translate-x-1 transition-transform" />
                     </button>
                 )}
               </div>
