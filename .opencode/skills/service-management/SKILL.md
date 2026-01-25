@@ -1,3 +1,8 @@
+---
+name: service-management
+description: 当任务涉及启动、停止、重启后端或前端服务，或者需要检查服务运行状态时使用。必须通过 ./manage.sh 进行操作。
+---
+
 # Service Management (服务管理)
 
 当任务涉及启动、停止、重启后端或前端服务，或者需要检查服务运行状态时，**必须**使用此 Skill。
