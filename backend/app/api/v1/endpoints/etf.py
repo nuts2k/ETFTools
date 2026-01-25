@@ -188,7 +188,7 @@ async def get_etf_metrics(code: str, period: str = "5y"):
     volatility = daily_returns.std() * np.sqrt(252)
     
     # 获取估值数据 (非阻塞或独立获取，不因估值失败影响指标)
-    # 此功能暂时关闭，如需开启请参考 AGENT.md
+    # 此功能暂时关闭，如需开启请参考 AGENTS.md
     valuation_data = None
     # try:
     #     valuation_data = valuation_service.get_valuation(code)
