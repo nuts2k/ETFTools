@@ -57,8 +57,8 @@ app.add_exception_handler(RateLimitExceeded, rate_limit_handler)
 # 支持局域网访问（仅开发环境支持正则匹配）
 allow_origin_regex = None
 if settings.is_development:
-    # 匹配 192.168.x.x 和 10.x.x.x
-    allow_origin_regex = r"http://(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+):3000"
+    # 匹配局域网 IP (192.168.x.x, 10.x.x.x, 172.16-31.x.x) 和常用端口
+    allow_origin_regex = r"http://(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+):(3000|8000)"
 
 app.add_middleware(
     CORSMiddleware,
