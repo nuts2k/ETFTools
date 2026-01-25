@@ -82,11 +82,77 @@ class AkShareService:
                 logger.error(f"EastMoney fetch failed: {e}")
                 time.sleep(2)
 
-        # --- Attempt 2: Disk Cache Fallback ---
+        # --- Attempt 2: Sina Fallback ---
+        logger.warning("EastMoney failed, trying Sina fallback...")
+        try:
+            sina_categories = ["ETF基金", "QDII基金", "封闭式基金"]
+            all_sina_records: List[Dict[str, Any]] = []
+            for cat in sina_categories:
+                try:
+                    logger.info(f"Fetching {cat} from Sina...")
+                    df = ak.fund_etf_category_sina(symbol=cat)
+                    if df is not None and not df.empty:
+                        col_map = {"代码": "code", "名称": "name", "最新价": "price", "涨跌幅": "change_pct", "成交额": "volume"}
+                        actual_map = {k: v for k, v in col_map.items() if k in df.columns}
+                        df = df.rename(columns=actual_map)
+                        
+                        if "code" in df.columns:
+                            df["code"] = df["code"].astype(str).str.replace("sh", "").str.replace("sz", "")
+                            for col in ["price", "change_pct", "volume"]:
+                                if col not in df.columns:
+                                    df[col] = 0.0
+                            
+                            subset = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
+                            all_sina_records.extend(subset)
+                except Exception as cat_e:
+                    logger.warning(f"Sina category {cat} failed: {cat_e}")
+            
+            if all_sina_records:
+                seen: set[str] = set()
+                deduped: List[Dict[str, Any]] = []
+                for r in all_sina_records:
+                    if r['code'] not in seen:
+                        deduped.append(r)
+                        seen.add(r['code'])
+                
+                logger.info(f"Successfully loaded {len(deduped)} ETFs from Sina.")
+                disk_cache.set(ETF_LIST_CACHE_KEY, deduped, expire=86400)
+                return deduped
+        except Exception as e:
+            logger.error(f"Sina fetch failed: {e}")
+
+        # --- Attempt 3: THS Fallback ---
+        logger.warning("Sina failed, trying THS fallback...")
+        try:
+            logger.info("Fetching ETF spot data from THS...")
+            df = ak.fund_etf_spot_ths()
+            if not df.empty:
+                df = df.rename(columns={
+                    "基金代码": "code",
+                    "基金名称": "name",
+                    "当前-单位净值": "price"
+                })
+                df["change_pct"] = 0.0
+                df["volume"] = 0.0
+                df["price"] = pd.to_numeric(df["price"], errors="coerce")
+                
+                records = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
+                
+                logger.info(f"Successfully loaded {len(records)} ETFs from THS.")
+                disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
+                return records
+        except Exception as e:
+            logger.error(f"THS fetch failed: {e}")
+
+        # --- Attempt 4: Disk Cache ---
+        logger.warning("All online fetches failed. Attempting to load from disk cache...")
         cached_list = cast(List[Dict[str, Any]], disk_cache.get(ETF_LIST_CACHE_KEY))
         if cached_list and len(cached_list) > 20:
+            logger.info(f"Restored {len(cached_list)} ETFs from disk cache.")
             return cached_list
         
+        # --- Attempt 5: Fallback JSON ---
+        logger.warning("Disk cache empty or stale. Loading fallback JSON...")
         return AkShareService.load_fallback_data()
 
     @staticmethod
