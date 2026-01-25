@@ -34,6 +34,7 @@ export default function ETFDetailPage() {
   const [metrics, setMetrics] = useState<ETFMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [metricsLoading, setMetricsLoading] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [error, setError] = useState("");
   const [period, setPeriod] = useState<Period>("5y");
 
@@ -77,6 +78,7 @@ export default function ETFDetailPage() {
             // Optionally clear metrics or show error in metrics section
         } finally {
             setMetricsLoading(false);
+            setIsInitialLoad(false);  // 首次加载完成后标记
         }
     }
     loadMetrics();
@@ -204,9 +206,9 @@ export default function ETFDetailPage() {
 
       <div className="flex flex-col px-4 py-6">
         {/* Valuation Card with Loading State */}
-        {(loading || metricsLoading || metrics?.valuation) && (
+        {(loading || (isInitialLoad && metricsLoading) || metrics?.valuation) && (
           <div className="mb-6">
-            {loading || metricsLoading ? (
+            {loading || (isInitialLoad && metricsLoading) ? (
                <div className="h-24 w-full bg-secondary/50 animate-pulse rounded-xl" />
             ) : metrics?.valuation ? (
                <ValuationCard data={metrics.valuation} />
@@ -217,13 +219,13 @@ export default function ETFDetailPage() {
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">核心指标</h3>
         <div className="grid grid-cols-2 gap-3">
            <MetricCard 
-             label="区间总收益" 
-             value={metrics ? `${(metrics.total_return * 100).toFixed(2)}%` : "--"}
-             subValue={metrics ? "相对指数 +0.0%" : ""}
-             color={metrics && metrics.total_return > 0 ? "text-up" : "text-down"}
-             icon={PieChart}
-             loading={metricsLoading || loading}
-           />
+              label="区间总收益" 
+              value={metrics ? `${(metrics.total_return * 100).toFixed(2)}%` : "--"}
+              subValue={metrics ? "相对指数 +0.0%" : ""}
+              color={metrics && metrics.total_return > 0 ? "text-up" : "text-down"}
+              icon={PieChart}
+              loading={isInitialLoad && (metricsLoading || loading)}
+            />
             <MetricCard 
               label="年化收益 (CAGR)" 
               value={metrics ? `${(metrics.cagr * 100).toFixed(2)}%` : "--"}
@@ -245,30 +247,30 @@ export default function ETFDetailPage() {
               })()}
               color={metrics && metrics.cagr >= 0 ? "text-up" : "text-down"}
               icon={TrendingUp}
-              loading={metricsLoading || loading}
+              loading={isInitialLoad && (metricsLoading || loading)}
             />
            <MetricCard 
-             label="最大回撤" 
-             value={metrics ? `${(metrics.max_drawdown * 100).toFixed(2)}%` : "--"}
-             subValue={metrics?.mdd_date}
-             color="text-down"
-             icon={ArrowDownCircle}
-             loading={metricsLoading || loading}
-           />
+              label="最大回撤" 
+              value={metrics ? `${(metrics.max_drawdown * 100).toFixed(2)}%` : "--"}
+              subValue={metrics?.mdd_date}
+              color="text-down"
+              icon={ArrowDownCircle}
+              loading={isInitialLoad && (metricsLoading || loading)}
+            />
            <MetricCard 
-             label="波动率" 
-             value={metrics ? `${(metrics.volatility * 100).toFixed(2)}%` : "--"}
-             subValue={metrics ? `风险等级: ${metrics.risk_level}` : ""}
-             icon={Activity}
-             loading={metricsLoading || loading}
-           />
+              label="波动率" 
+              value={metrics ? `${(metrics.volatility * 100).toFixed(2)}%` : "--"}
+              subValue={metrics ? `风险等级: ${metrics.risk_level}` : ""}
+              icon={Activity}
+              loading={isInitialLoad && (metricsLoading || loading)}
+            />
            <MetricCard 
-             label="ATR (14日)" 
-             value={metrics?.atr !== undefined && metrics.atr !== null ? metrics.atr.toFixed(4) : "--"}
-             subValue="平均真实波幅"
-             icon={Activity}
-             loading={metricsLoading || loading}
-           />
+              label="ATR (14日)" 
+              value={metrics?.atr !== undefined && metrics.atr !== null ? metrics.atr.toFixed(4) : "--"}
+              subValue="平均真实波幅"
+              icon={Activity}
+              loading={isInitialLoad && (metricsLoading || loading)}
+            />
            <MetricCard 
              label={
                  metrics?.effective_drawdown_days && metrics?.drawdown_days && metrics.effective_drawdown_days < metrics.drawdown_days
@@ -282,9 +284,9 @@ export default function ETFDetailPage() {
                   : "距区间最高点"
              }
              color={metrics && (metrics.current_drawdown || 0) < 0 ? "text-down" : "text-foreground"}
-             icon={TrendingDown}
-             loading={metricsLoading || loading}
-           />
+              icon={TrendingDown}
+              loading={isInitialLoad && (metricsLoading || loading)}
+            />
         </div>
       </div>
 
