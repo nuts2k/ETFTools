@@ -81,7 +81,7 @@ export function StockCard({ etf, isWatched, onToggleWatchlist, searchQuery }: St
                     onToggleWatchlist(e);
                 }}
                 className={cn(
-                    "relative z-30 flex items-center justify-center h-9 w-9 rounded-xl transition-all active:scale-90",
+                    "relative flex items-center justify-center h-9 w-9 rounded-xl transition-all active:scale-90",
                     isWatched 
                         ? "bg-secondary text-muted-foreground/50" 
                         : "bg-primary text-primary-foreground shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20"
