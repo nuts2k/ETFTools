@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { 
   AreaChart, 
   Area, 
@@ -78,6 +78,12 @@ function CustomAreaLabel(props: any) {
 export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChartProps) {
   const [data, setData] = useState<ETFHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // 记录上次渲染回撤区域时对应的 period，用于防止切换周期时闪烁
+  const [lastPeriodForDrawdown, setLastPeriodForDrawdown] = useState<Period>(period);
+  
+  // 追踪 drawdownInfo 的上一次引用，只有真正变化时才更新 lastPeriodForDrawdown
+  const prevDrawdownInfoRef = useRef(drawdownInfo);
 
   useEffect(() => {
     async function loadData() {
@@ -136,6 +142,20 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
     const indices = [0, Math.floor(filteredData.length / 4), Math.floor(2 * filteredData.length / 4), Math.floor(3 * filteredData.length / 4), filteredData.length - 1];
     return indices.map(i => filteredData[i].date);
   }, [filteredData]);
+
+  // 只有当 drawdownInfo 对象引用真正变化时才更新 lastPeriodForDrawdown
+  useEffect(() => {
+    if (drawdownInfo !== prevDrawdownInfoRef.current) {
+      prevDrawdownInfoRef.current = drawdownInfo;
+      if (drawdownInfo) {
+        setLastPeriodForDrawdown(period);
+      }
+    }
+  }, [drawdownInfo, period]);
+
+  // 只有当 period 与 lastPeriodForDrawdown 匹配且有有效数据时才显示回撤区域
+  // 这确保切换 period 后回撤区域立即隐藏，直到新的 drawdownInfo 到来
+  const shouldShowDrawdown = period === lastPeriodForDrawdown && !!drawdownInfo?.start && !!drawdownInfo?.trough;
 
   const chartColor = "hsl(var(--primary))";
 
@@ -212,11 +232,11 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
               {/* Dashed Grid Lines similar to design */}
               <CartesianGrid strokeDasharray="2 4" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.15} />
               
-              {/* Drawdown & Recovery Zones */}
-              {drawdownInfo?.start && drawdownInfo?.trough && (
+              {/* Drawdown & Recovery Zones - 只在 period 与数据同步时显示 */}
+              {shouldShowDrawdown && (
                   <ReferenceArea 
-                      x1={drawdownInfo.start} 
-                      x2={drawdownInfo.trough} 
+                      x1={drawdownInfo!.start} 
+                      x2={drawdownInfo!.trough} 
                       y1={min} 
                       y2={max}
                       fill="var(--down)" 
@@ -224,7 +244,7 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                       ifOverflow="extendDomain"
                       label={
                         <CustomAreaLabel 
-                          value={`回撤${(drawdownInfo.value ? drawdownInfo.value * 100 : 0).toFixed(1)}%`}
+                          value={`回撤${(drawdownInfo!.value ? drawdownInfo!.value * 100 : 0).toFixed(1)}%`}
                           labelPosition="insideBottom"
                           fill="var(--down)"
                           fontSize={12}
@@ -235,10 +255,10 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                   />
               )}
               
-              {drawdownInfo?.trough && (
+              {shouldShowDrawdown && (
                   <ReferenceArea 
-                      x1={drawdownInfo.trough} 
-                      x2={drawdownInfo.end || filteredData[filteredData.length - 1]?.date} 
+                      x1={drawdownInfo!.trough} 
+                      x2={drawdownInfo!.end || filteredData[filteredData.length - 1]?.date} 
                       y1={min} 
                       y2={max}
                       fill="var(--up)" 
@@ -246,9 +266,9 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                       ifOverflow="extendDomain"
                       label={
                         <CustomAreaLabel 
-                          value={drawdownInfo.end 
-                            ? `${calculateDaysDiff(drawdownInfo.trough, drawdownInfo.end)}天修复`
-                            : `修复中${calculateDaysDiff(drawdownInfo.trough, filteredData[filteredData.length - 1]?.date || new Date().toISOString())}天+`}
+                          value={drawdownInfo!.end 
+                            ? `${calculateDaysDiff(drawdownInfo!.trough!, drawdownInfo!.end)}天修复`
+                            : `修复中${calculateDaysDiff(drawdownInfo!.trough!, filteredData[filteredData.length - 1]?.date || new Date().toISOString())}天+`}
                           labelPosition="insideTop"
                           fill="var(--up)"
                           fontSize={12}

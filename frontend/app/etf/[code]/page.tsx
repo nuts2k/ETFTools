@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { 
@@ -110,6 +110,17 @@ export default function ETFDetailPage() {
     }
   };
 
+  // 稳定 drawdownInfo 引用，只有回撤相关字段变化时才更新
+  const drawdownInfo = useMemo(() => {
+    if (!metrics) return undefined;
+    return {
+      start: metrics.mdd_start,
+      trough: metrics.mdd_trough,
+      end: metrics.mdd_end,
+      value: metrics.max_drawdown
+    };
+  }, [metrics?.mdd_start, metrics?.mdd_trough, metrics?.mdd_end, metrics?.max_drawdown]);
+
   if (error && !info) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[100dvh] p-4 text-center bg-background">
@@ -193,12 +204,7 @@ export default function ETFDetailPage() {
             code={code} 
             period={period} 
             onPeriodChange={setPeriod}
-            drawdownInfo={metrics ? {
-                start: metrics.mdd_start,
-                trough: metrics.mdd_trough,
-                end: metrics.mdd_end,
-                value: metrics.max_drawdown
-            } : undefined}
+            drawdownInfo={drawdownInfo}
          />
       </div>
 
