@@ -34,7 +34,7 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
   const isUp = etf.change_pct > 0;
   const isDown = etf.change_pct < 0;
   const changeColor = isUp ? "text-up" : isDown ? "text-down" : "text-muted-foreground";
-  const badgeColor = isUp ? "bg-up" : isDown ? "bg-down" : "bg-muted";
+  const badgeColor = isUp ? "bg-up/10 text-up" : isDown ? "bg-down/10 text-down" : "bg-muted text-muted-foreground";
 
   // Long press handler for non-editing mode
   const longPressHandlers = useLongPress(
@@ -90,7 +90,7 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
             {etf.price?.toFixed(3)}
           </span>
           <div className={cn(
-              "min-w-[64px] flex items-center justify-center rounded-md h-6 px-1.5 text-white text-[11px] font-bold shadow-sm transition-colors",
+              "min-w-[64px] flex items-center justify-center rounded-full h-7 px-2 text-[12px] font-bold tracking-tight transition-colors",
               badgeColor
           )}>
             {isUp ? "+" : ""}{etf.change_pct}%
@@ -112,8 +112,8 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
       {...attributes}
       {...listeners}
       className={cn(
-        "group flex items-center justify-between p-4 rounded-2xl bg-card border border-border/50 shadow-sm transition-all touch-none select-none",
-        isDragging ? "shadow-xl scale-[1.02] z-50 ring-2 ring-primary/30 bg-card/95 backdrop-blur-sm" : "hover:border-border/80"
+        "group flex items-center justify-between p-4 rounded-2xl bg-card shadow-sm transition-all touch-none select-none",
+        isDragging ? "shadow-xl scale-[1.02] z-50 ring-1 ring-border/50 bg-card/95 backdrop-blur-sm" : ""
       )}
     >
       <div 
@@ -134,7 +134,7 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
 return (
   <div 
     {...longPressHandlers}
-    className="group flex items-center justify-between p-4 rounded-2xl bg-card border border-border/40 shadow-sm active:scale-[0.97] active:bg-secondary/50 transition-all cursor-pointer select-none mb-0"
+    className="group flex items-center justify-between p-4 rounded-2xl bg-card shadow-sm active:scale-[0.98] active:shadow-none transition-all cursor-pointer select-none mb-0"
   >
     {content}
   </div>

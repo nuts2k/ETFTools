@@ -47,14 +47,14 @@
     --radius: 0.5rem;
 
     /* Custom Colors */
-    --up: #ef4444; 
-    --down: #22c55e;
+    --up: #f43f5e; 
+    --down: #10b981;
   }
 
   .dark {
     /* Dark Mode Design System */
-    /* Background: #101822 */
-    --background: 213 36% 10%;
+    /* Background: Slate-900 #0f172a */
+    --background: 222 47% 11%;
     /* Foreground: White #ffffff */
     --foreground: 0 0% 100%;
 
@@ -99,6 +99,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "tnum";
   }
 }
 

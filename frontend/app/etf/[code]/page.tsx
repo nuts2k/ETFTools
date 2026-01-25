@@ -142,41 +142,47 @@ export default function ETFDetailPage() {
       </header>
 
       {/* Hero Section */}
-      <div className="flex flex-col items-center px-4 pt-6 pb-2 text-center">
+      <div className="flex flex-col items-center px-4 pt-4 pb-2 text-center">
+        <div className="flex items-center gap-2 mb-3">
+             <span className="px-2 py-0.5 rounded-md bg-secondary text-muted-foreground text-[10px] font-bold tracking-wider">
+                {info?.code.startsWith("5") ? "SH" : "SZ"}
+             </span>
+             <span className="px-2 py-0.5 rounded-md bg-secondary/50 text-muted-foreground/80 text-[10px] font-medium">
+                {info?.market || "已收盘"}
+             </span>
+        </div>
+
         {loading ? (
-            <div className="h-7 w-48 bg-secondary/50 animate-pulse rounded-lg mb-2" />
+            <div className="h-8 w-48 bg-secondary/50 animate-pulse rounded-lg mb-2" />
         ) : (
-            <h1 className="text-xl font-semibold leading-tight text-foreground/90">{info?.name}</h1>
+            <h1 className="text-xl font-medium text-muted-foreground">{info?.name}</h1>
         )}
         
-        <div className="mt-4 flex flex-col items-center">
+        <div className="mt-2 flex flex-col items-center">
           {loading ? (
-              <div className="h-10 w-32 bg-secondary/50 animate-pulse rounded-lg mb-2" />
+              <div className="h-12 w-40 bg-secondary/50 animate-pulse rounded-lg mb-2" />
           ) : (
-              <span className="text-[40px] font-bold tracking-tight leading-none text-foreground tabular-nums">
-                ¥{info?.price.toFixed(3)}
+              <span className="text-[48px] font-bold tracking-tighter leading-none text-foreground tabular-nums">
+                {info?.price.toFixed(3)}
               </span>
           )}
           
           {loading ? (
-              <div className="mt-2 h-7 w-24 bg-secondary/50 animate-pulse rounded-full" />
+              <div className="mt-3 h-7 w-24 bg-secondary/50 animate-pulse rounded-full" />
           ) : (
-              <div className={cn("mt-2 flex items-center gap-1 rounded-full px-3 py-1", bgColor)}>
-                {isUp ? <TrendingUp className={cn("h-4 w-4", iconColor)} /> : <TrendingDown className={cn("h-4 w-4", iconColor)} />}
-                <span className={cn("text-sm font-bold tabular-nums", changeColor)}>
-                  {isUp ? "+" : ""}{info?.change_pct}%
+              <div className="mt-3 flex items-center gap-2">
+                <div className={cn("flex items-center gap-1 rounded-full px-3 py-1 font-bold", bgColor)}>
+                    {isUp ? <TrendingUp className={cn("h-4 w-4", iconColor)} /> : <TrendingDown className={cn("h-4 w-4", iconColor)} />}
+                    <span className={cn("text-sm tabular-nums", changeColor)}>
+                    {isUp ? "+" : ""}{info?.change_pct}%
+                    </span>
+                </div>
+                <span className="text-xs text-muted-foreground/60 font-medium tabular-nums">
+                    {info?.update_time?.split(' ')[1] || "--:--"}
                 </span>
               </div>
           )}
         </div>
-        
-        {loading ? (
-            <div className="mt-3 h-4 w-40 bg-secondary/30 animate-pulse rounded mb-1" />
-        ) : (
-            <p className="mt-3 text-xs text-muted-foreground">
-                {info?.update_time} • {info?.market || "已收盘"}
-            </p>
-        )}
       </div>
 
       {/* Chart Section */}
@@ -282,23 +288,21 @@ export default function ETFDetailPage() {
         </div>
       </div>
 
-      {/* Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full bg-background/95 backdrop-blur-md border-t border-border pb-safe transform-gpu backface-hidden">
-        {/* Action Button */}
-        <div className="px-4 py-3">
+      {/* Bottom Action Bar - Floating */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
           <button 
             onClick={toggleWatchlist}
             className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-[15px] font-bold shadow-lg transition-all active:scale-[0.98]",
+                "flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-bold shadow-2xl transition-all active:scale-95 ring-1 ring-white/10 backdrop-blur-xl",
                 watched 
-                    ? "bg-secondary text-foreground hover:bg-secondary/80" 
-                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/25"
+                    ? "bg-secondary/90 text-foreground hover:bg-secondary border border-border/50" 
+                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/40"
             )}
           >
             {watched ? (
                 <>
                     <Check className="h-5 w-5" />
-                    <span>已添加自选</span>
+                    <span>已关注</span>
                 </>
             ) : (
                 <>
@@ -307,23 +311,6 @@ export default function ETFDetailPage() {
                 </>
             )}
           </button>
-        </div>
-
-        {/* Static Nav Links */}
-        <div className="grid grid-cols-3 h-14 border-t border-border/10 pb-2">
-            <Link href="/" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">
-                <Star className="h-6 w-6" />
-                <span className="text-[10px] font-medium">自选</span>
-            </Link>
-            <Link href="/search" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">
-                <Search className="h-6 w-6" />
-                <span className="text-[10px] font-medium">搜索</span>
-            </Link>
-            <Link href="/settings" className="flex flex-col items-center justify-center gap-1 text-muted-foreground hover:text-primary transition-colors">
-                <Settings className="h-6 w-6" />
-                <span className="text-[10px] font-medium">设置</span>
-            </Link>
-        </div>
       </div>
     </div>
   );
@@ -331,25 +318,25 @@ export default function ETFDetailPage() {
 
 function MetricCard({ label, value, subValue, color, icon: Icon, loading }: any) {
   return (
-    <div className="flex flex-col rounded-xl bg-card p-4 shadow-sm ring-1 ring-border/50">
-      <div className="flex items-center gap-1.5 mb-2">
-        {Icon && <Icon className="h-3 w-3 text-muted-foreground" />}
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+    <div className="flex flex-col rounded-2xl bg-card p-5 shadow-sm transition-all hover:shadow-md">
+      <div className="flex items-center gap-2 mb-3">
+        {Icon && <div className="p-1.5 rounded-md bg-secondary/50"><Icon className="h-3.5 w-3.5 text-muted-foreground" /></div>}
+        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{label}</span>
       </div>
-      <div className="mt-1 flex items-baseline gap-1">
+      <div className="mt-auto">
         {loading ? (
-            <div className="h-7 w-20 bg-secondary/50 animate-pulse rounded" />
+            <div className="h-8 w-24 bg-secondary/50 animate-pulse rounded mb-1" />
         ) : (
-            <span className={cn("text-xl font-bold tracking-tight tabular-nums", color || "text-foreground")}>
+            <span className={cn("text-2xl font-bold tracking-tight tabular-nums block", color || "text-foreground")}>
                 {value}
             </span>
         )}
+        {subValue && !loading && (
+            <span className="text-[11px] font-medium text-muted-foreground/60 mt-1 block truncate">
+                {subValue}
+            </span>
+        )}
       </div>
-      {subValue && !loading && (
-        <span className="text-[10px] text-muted-foreground/80 mt-1 truncate">
-            {subValue}
-        </span>
-      )}
     </div>
   );
 }

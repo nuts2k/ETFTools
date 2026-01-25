@@ -119,10 +119,10 @@ export default function WatchlistPage() {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background pb-20">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transform-gpu backface-hidden">
-        <div className="flex h-14 items-center justify-between px-5">
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl pt-safe border-b border-border/40 transition-all">
+        <div className="flex h-14 items-center justify-between px-4 gap-3">
           {isSearchMode ? (
-            <div className="flex flex-1 items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-200">
+            <div className="flex flex-1 items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-200">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
@@ -131,12 +131,12 @@ export default function WatchlistPage() {
                   placeholder="搜索代码或名称"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full h-9 pl-9 pr-4 rounded-full bg-secondary text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full h-9 pl-9 pr-4 rounded-xl bg-secondary text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 />
                 {searchQuery && (
                   <button 
                     onClick={() => setSearchQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full hover:bg-background/50"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -148,38 +148,36 @@ export default function WatchlistPage() {
                   setSearchQuery("");
                   setSearchResults([]);
                 }}
-                className="text-sm font-medium text-primary whitespace-nowrap px-1"
+                className="text-sm font-medium text-primary whitespace-nowrap px-2"
               >
                 取消
               </button>
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-bold tracking-tight">自选</h1>
-              <div className="flex items-center gap-1 -mr-2">
-                <button
-                  onClick={() => setIsSearchMode(true)}
-                  className="flex items-center justify-center h-10 w-10 rounded-full text-muted-foreground hover:bg-secondary transition-colors"
-                >
-                  <Search className="h-6 w-6" />
-                </button>
-                <button 
-                  onClick={() => setIsEditing(!isEditing)}
-                  className={cn(
-                      "flex items-center justify-center h-10 px-3 rounded-full transition-colors text-sm font-medium",
-                      isEditing ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-secondary"
-                  )}
-                >
-                  {isEditing ? (
-                      <>
-                          <Check className="h-4 w-4 mr-1" />
-                          完成
-                      </>
-                  ) : (
-                      <Edit3 className="h-6 w-6" />
-                  )}
-                </button>
-              </div>
+              <h1 className="text-xl font-bold tracking-tight shrink-0">自选</h1>
+              
+              <button
+                onClick={() => setIsSearchMode(true)}
+                className="flex-1 flex items-center gap-2 h-9 px-3 rounded-xl bg-secondary/50 text-muted-foreground transition-all hover:bg-secondary active:scale-[0.98]"
+              >
+                <Search className="h-4 w-4 opacity-50" />
+                <span className="text-sm opacity-50 font-medium">搜索代码...</span>
+              </button>
+
+              <button 
+                onClick={() => setIsEditing(!isEditing)}
+                className={cn(
+                    "flex items-center justify-center h-9 w-9 rounded-full transition-colors",
+                    isEditing ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-secondary"
+                )}
+              >
+                {isEditing ? (
+                    <Check className="h-5 w-5" />
+                ) : (
+                    <Edit3 className="h-5 w-5" />
+                )}
+              </button>
             </>
           )}
         </div>
@@ -202,6 +200,7 @@ export default function WatchlistPage() {
                   etf={etf}
                   isWatched={isWatched(etf.code)}
                   onToggleWatchlist={(e) => handleToggleWatchlist(e, etf)}
+                  searchQuery={searchQuery}
                 />
               ))
             ) : searchQuery ? (
@@ -229,7 +228,7 @@ export default function WatchlistPage() {
               </span>
             </div>
             {isEditing && (
-              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full animate-bounce">
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full animate-in fade-in zoom-in duration-200">
                 排序模式
               </span>
             )}
@@ -279,7 +278,7 @@ export default function WatchlistPage() {
                 )}
               </div>
             ) : (
-              <div className="flex flex-col space-y-3 px-4 pb-safe">
+              <div className="flex flex-col gap-3 px-4 pb-safe">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}

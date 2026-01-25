@@ -174,22 +174,24 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
 
   return (
     <div className="w-full">
-      {/* Period Switcher */}
-      <div className="grid grid-cols-4 w-full px-4 mb-4 justify-items-center">
-        {(["1y", "3y", "5y", "all"] as Period[]).map((p) => (
-          <button
-            key={p}
-            onClick={() => onPeriodChange(p)}
-            className={cn(
-              "text-sm font-medium transition-all",
-              period === p 
-                ? "rounded-full bg-primary/10 px-4 py-1 font-bold text-primary" 
-                : "text-muted-foreground hover:text-primary px-2 py-1"
-            )}
-          >
-            {p === "all" ? "全部" : p.replace("y", "年")}
-          </button>
-        ))}
+      {/* Period Switcher - Segmented Control */}
+      <div className="flex w-full px-4 mb-6 justify-center">
+        <div className="flex w-full max-w-[320px] bg-secondary/40 rounded-xl p-1.5">
+          {(["1y", "3y", "5y", "all"] as Period[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => onPeriodChange(p)}
+              className={cn(
+                "flex-1 text-xs font-bold py-1.5 rounded-lg transition-all",
+                period === p 
+                  ? "bg-background text-foreground shadow-sm scale-[1.02]" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {p === "all" ? "全部" : p.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Chart */}
@@ -203,12 +205,12 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
             <AreaChart data={filteredData} margin={{ top: 10, right: 5, left: 5, bottom: 20 }}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={chartColor} stopOpacity={0.2}/>
+                  <stop offset="5%" stopColor={chartColor} stopOpacity={0.35}/>
                   <stop offset="95%" stopColor={chartColor} stopOpacity={0}/>
                 </linearGradient>
               </defs>
               {/* Dashed Grid Lines similar to design */}
-              <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.1} />
+              <CartesianGrid strokeDasharray="2 4" vertical={false} stroke="hsl(var(--muted-foreground))" opacity={0.15} />
               
               {/* Drawdown & Recovery Zones */}
               {drawdownInfo?.start && drawdownInfo?.trough && (
@@ -275,12 +277,13 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                 width={40}
               />
               <Tooltip
+                cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1, strokeDasharray: '4 4' }}
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-popover border border-border/50 px-3 py-2 rounded-lg shadow-xl text-xs ring-1 ring-black/5">
+                      <div className="bg-popover/90 backdrop-blur-md border border-border/50 px-3 py-2 rounded-xl shadow-xl text-xs ring-1 ring-black/5">
                         <p className="text-muted-foreground mb-1">{label}</p>
-                        <p className="font-bold font-mono text-base text-foreground">
+                        <p className="font-bold font-mono text-base text-foreground tracking-tight">
                           ¥{Number(payload[0].value).toFixed(3)}
                         </p>
                       </div>
@@ -293,7 +296,7 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                 type="monotone" 
                 dataKey="close" 
                 stroke={chartColor} 
-                strokeWidth={1}
+                strokeWidth={2}
                 fillOpacity={1} 
                 fill="url(#colorPrice)" 
                 isAnimationActive={false} 
