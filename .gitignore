@@ -5,6 +5,7 @@
 *.log
 *.skill
 *.db
+*.pid
 .services.pid
 *.egg-info/
 
