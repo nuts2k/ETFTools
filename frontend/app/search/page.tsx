@@ -48,38 +48,27 @@ export default function SearchPage() {
 
   return (
     <div className="flex flex-col min-h-[100dvh] bg-background pb-20">
-      {/* Header */}
-      <header className="sticky top-0 z-20 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transform-gpu backface-hidden">
-        <div className="flex h-14 items-center justify-between px-5">
-          <h1 className="text-2xl font-bold tracking-tight">搜索</h1>
+      {/* Header with Search */}
+      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl pt-safe border-b border-border/40 transition-all">
+        <div className="flex flex-col px-4 pb-3">
+          <div className="flex h-12 items-center">
+            <h1 className="text-xl font-bold tracking-tight">搜索</h1>
+          </div>
+          <div className="relative">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input 
+              className="w-full h-10 pl-10 pr-4 rounded-xl bg-secondary text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" 
+              placeholder="输入代码或名称 (如 沪深300)" 
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
         </div>
       </header>
 
-      {/* Search Section */}
-      <section className="px-5 py-4">
-        <div className="relative">
-          <label className="flex flex-col w-full">
-            <div className="relative flex w-full items-center rounded-xl h-12 bg-card shadow-sm border border-border focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
-              <div className="absolute left-4 flex items-center justify-center text-muted-foreground">
-                <SearchIcon className="h-5 w-5" />
-              </div>
-              <input 
-                className="h-full w-full bg-transparent rounded-xl border-none pl-11 pr-4 text-base placeholder:text-muted-foreground focus:ring-0 focus:outline-none" 
-                placeholder="输入代码或名称 (如 300)" 
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
-          </label>
-        </div>
-        {!query && (
-            <p className="mt-2 text-xs text-muted-foreground px-1">尝试搜索 “沪深300” 或 “半导体”</p>
-        )}
-      </section>
-
       {/* Results Section */}
-      <section className="flex flex-col flex-1 px-5">
+      <section className="flex flex-col flex-1 px-4 pt-4">
         {query && (
             <div className="flex items-center justify-between pb-3 pt-1">
                 <h3 className="text-lg font-bold leading-tight tracking-tight">搜索结果</h3>
