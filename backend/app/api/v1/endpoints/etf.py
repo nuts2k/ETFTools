@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from typing import List, Dict, Optional
 import numpy as np
 import pandas as pd
@@ -8,6 +8,7 @@ from app.core.cache import etf_cache
 from app.services.akshare_service import ak_service
 from app.services.valuation_service import valuation_service
 from app.core.config_loader import metric_config
+from app.middleware.rate_limit import limiter
 
 router = APIRouter()
 
@@ -35,7 +36,11 @@ def get_market_status() -> str:
     return "已收盘"
 
 @router.get("/search", response_model=List[Dict])
-async def search_etf(q: str = Query(..., min_length=1, description="ETF代码或名称关键字")):
+@limiter.limit("30/minute")  # 限制搜索频率
+async def search_etf(
+    request: Request,
+    q: str = Query(..., min_length=1, description="ETF代码或名称关键字")
+):
     """
     搜索 ETF
     """

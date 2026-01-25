@@ -1,14 +1,98 @@
-import os
-from pydantic import BaseModel
+"""
+ETFTool 应用配置管理
 
-class Settings(BaseModel):
+使用 pydantic-settings 从环境变量和 .env 文件加载配置。
+配置优先级: 环境变量 > .env 文件 > 默认值
+"""
+
+import os
+from typing import List, Union
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """应用配置模型"""
+    
+    # 基础配置
     PROJECT_NAME: str = "ETFTool"
     API_V1_STR: str = "/api/v1"
+    ENVIRONMENT: str = "development"
     
-    # 允许的前端来源
-    BACKEND_CORS_ORIGINS: list[str] = ["*"]
+    # 安全配置
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7天
+    
+    # CORS 配置
+    BACKEND_CORS_ORIGINS: Union[str, List[str]] = "http://localhost:3000,http://127.0.0.1:3000"
+    
+    # 服务器配置
+    BACKEND_HOST: str = "0.0.0.0"
+    BACKEND_PORT: int = 8000
+    
+    # 数据库配置
+    DATABASE_URL: str = "sqlite:///./etftool.db"
+    
+    # 缓存配置
+    CACHE_DIR: str = "./cache"
+    CACHE_TTL: int = 3600
+    
+    # 速率限制配置
+    ENABLE_RATE_LIMIT: bool = False
+    
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True,
+        extra="ignore"
+    )
+    
+    @property
+    def is_development(self) -> bool:
+        """判断是否为开发环境"""
+        return self.ENVIRONMENT == "development"
+    
+    @property
+    def cors_origins(self) -> List[str]:
+        """处理 CORS 来源配置，支持字符串和列表格式"""
+        if isinstance(self.BACKEND_CORS_ORIGINS, str):
+            if self.BACKEND_CORS_ORIGINS == "*":
+                return ["*"]
+            return [origin.strip() for origin in self.BACKEND_CORS_ORIGINS.split(",")]
+        return self.BACKEND_CORS_ORIGINS
+    
+    def validate_security_config(self) -> None:
+        """启动时验证安全配置"""
+        # SECRET_KEY 长度检查
+        if len(self.SECRET_KEY) < 32:
+            raise ValueError(
+                "SECRET_KEY must be at least 32 characters. "
+                "Generate one using: python scripts/generate_secret.py"
+            )
+        
+        # CORS 安全检查
+        if not self.is_development and "*" in self.cors_origins:
+            raise ValueError(
+                "CORS cannot be '*' in production environment. "
+                "Please specify allowed origins explicitly."
+            )
+        
+        if self.is_development and "*" in self.cors_origins:
+            print("⚠️  WARNING: CORS set to '*' - convenient but not recommended for security")
+        
+        # 局域网访问提示
+        if self.BACKEND_HOST == "0.0.0.0":
+            print(f"ℹ️  Server listening on all interfaces (0.0.0.0:{self.BACKEND_PORT})")
+            print(f"ℹ️  Accessible via LAN at http://<your-local-ip>:{self.BACKEND_PORT}")
+        
+        print(f"✅ Configuration validated (environment: {self.ENVIRONMENT})")
 
-    class Config:
-        case_sensitive = True
 
-settings = Settings()
+# 获取 .env 文件的绝对路径（相对于 backend 目录）
+_env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
+
+# 创建全局配置实例
+settings = Settings(_env_file=_env_file if os.path.exists(_env_file) else None)
+
+# 启动时验证配置
+settings.validate_security_config()

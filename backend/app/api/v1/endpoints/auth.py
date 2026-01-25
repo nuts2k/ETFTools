@@ -1,14 +1,16 @@
 from datetime import timedelta
-from typing import Annotated, Dict, Any
+from typing import Annotated, Dict, Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlmodel import Session
 from jose import JWTError, jwt
 
 from app.core.database import get_session
-from app.services.auth_service import AuthService, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
+from app.services.auth_service import AuthService
 from app.models.user import User, UserCreate, UserRead, UserPasswordUpdate
+from app.core.config import settings
+from app.middleware.rate_limit import limiter
 
 router = APIRouter()
 
@@ -21,8 +23,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], sessio
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
+        # 使用 settings 中的配置
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        username: Optional[str] = payload.get("sub")
         if username is None:
             raise credentials_exception
     except JWTError:
@@ -34,14 +37,21 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], sessio
     return user
 
 @router.post("/register", response_model=UserRead)
-def register(user_in: UserCreate, session: Session = Depends(get_session)):
+@limiter.limit("3/hour")  # 限制注册频率
+def register(
+    request: Request, 
+    user_in: UserCreate, 
+    session: Session = Depends(get_session)
+):
     db_user = AuthService.get_user_by_username(session, user_in.username)
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     return AuthService.create_user(session, user_in)
 
 @router.post("/token")
+@limiter.limit("5/minute")  # 限制登录频率
 def login_for_access_token(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Session = Depends(get_session)
 ):
@@ -52,7 +62,8 @@ def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    # 使用 settings 中的过期时间
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = AuthService.create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
