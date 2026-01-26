@@ -7,8 +7,6 @@ import {
   ArrowLeft, 
   TrendingUp, 
   TrendingDown, 
-  Plus, 
-  Check, 
   Search, 
   Star, 
   Settings,
@@ -142,7 +140,7 @@ export default function ETFDetailPage() {
   const iconColor = isUp ? "text-up" : isDown ? "text-down" : "text-muted-foreground";
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-48 relative">
+    <div className="min-h-[100dvh] bg-background pb-12 relative">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transition-all transform-gpu backface-hidden">
         <div className="flex h-14 items-center justify-center relative px-5">
@@ -153,6 +151,17 @@ export default function ETFDetailPage() {
             <ArrowLeft className="h-6 w-6" />
           </button>
           <h2 className="text-lg font-bold tracking-tight text-foreground">{code}</h2>
+          <button 
+            onClick={toggleWatchlist}
+            className="absolute right-4 flex w-10 h-10 items-center justify-center rounded-full text-foreground hover:bg-secondary transition-colors -mr-2 active:scale-90"
+          >
+            <Star 
+              className={cn(
+                "h-6 w-6 transition-all", 
+                watched ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+              )} 
+            />
+          </button>
         </div>
       </header>
 
@@ -296,31 +305,6 @@ export default function ETFDetailPage() {
               loading={isInitialLoad && (metricsLoading || loading)}
             />
         </div>
-      </div>
-
-      {/* Bottom Action Bar - Floating */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-          <button 
-            onClick={toggleWatchlist}
-            className={cn(
-                "flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-[15px] font-bold shadow-2xl transition-all active:scale-95 ring-1 ring-white/10 backdrop-blur-xl",
-                watched 
-                    ? "bg-secondary/90 text-foreground hover:bg-secondary border border-border/50" 
-                    : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-primary/40"
-            )}
-          >
-            {watched ? (
-                <>
-                    <Check className="h-5 w-5" />
-                    <span>已关注</span>
-                </>
-            ) : (
-                <>
-                    <Plus className="h-5 w-5" />
-                    <span>加入自选</span>
-                </>
-            )}
-          </button>
       </div>
     </div>
   );
