@@ -33,7 +33,6 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
 
   const isUp = etf.change_pct > 0;
   const isDown = etf.change_pct < 0;
-  const changeColor = isUp ? "text-up" : isDown ? "text-down" : "text-muted-foreground";
   const badgeColor = isUp ? "bg-up/10 text-up" : isDown ? "bg-down/10 text-down" : "bg-muted text-muted-foreground";
 
   // Long press handler for non-editing mode
@@ -85,12 +84,12 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
       </div>
       
       {!isEditing ? (
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className={cn("text-lg font-bold tabular-nums tracking-tighter", changeColor)}>
+        <div className="flex flex-col items-center justify-center gap-1 min-w-[84px] shrink-0">
+          <span className="text-[17px] font-bold tabular-nums tracking-tight text-foreground">
             {etf.price?.toFixed(3)}
           </span>
           <div className={cn(
-              "min-w-[64px] flex items-center justify-center rounded-full h-7 px-2 text-[12px] font-bold tracking-tight transition-colors",
+              "w-[72px] flex items-center justify-center rounded-lg h-[26px] text-[13px] font-bold tabular-nums transition-colors",
               badgeColor
           )}>
             {isUp ? "+" : ""}{etf.change_pct}%

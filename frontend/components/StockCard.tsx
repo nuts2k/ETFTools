@@ -35,7 +35,6 @@ function HighlightText({ text, highlight }: { text: string; highlight?: string }
 export function StockCard({ etf, isWatched, onToggleWatchlist, searchQuery }: StockCardProps) {
   const isUp = etf.change_pct > 0;
   const isDown = etf.change_pct < 0;
-  const changeColor = isUp ? "text-up" : isDown ? "text-down" : "text-muted-foreground";
   const badgeColor = isUp ? "bg-up/10 text-up" : isDown ? "bg-down/10 text-down" : "bg-muted text-muted-foreground";
   const market = etf.code.startsWith("5") ? "SH" : "SZ";
 
@@ -58,13 +57,13 @@ export function StockCard({ etf, isWatched, onToggleWatchlist, searchQuery }: St
         </div>
       </Link>
 
-      <div className="flex items-center gap-4 shrink-0">
-        <div className="flex flex-col items-end gap-1">
-          <p className="text-base font-bold tabular-nums text-foreground tracking-tight">
+      <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-col items-center justify-center gap-1 min-w-[84px]">
+          <p className="text-[17px] font-bold tabular-nums text-foreground tracking-tight leading-none">
             {etf.price?.toFixed(3)}
           </p>
           <div className={cn(
-            "min-w-[64px] flex items-center justify-center rounded-full h-7 px-2 text-[12px] font-bold tracking-tight transition-colors",
+            "w-[72px] flex items-center justify-center rounded-lg h-[26px] text-[13px] font-bold tabular-nums transition-colors",
             badgeColor
           )}>
             {isUp ? "+" : ""}{etf.change_pct}%
