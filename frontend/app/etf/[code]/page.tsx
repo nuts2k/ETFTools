@@ -110,7 +110,9 @@ export default function ETFDetailPage() {
     }
   };
 
-  // 稳定 drawdownInfo 引用，只有回撤相关字段变化时才更新
+  // 稳定 drawdownInfo 引用，当回撤相关字段或 period 变化时更新
+  // 注意：必须包含 period，否则当 ETF 历史数据不足时，不同周期返回相同的回撤日期，
+  // useMemo 不会生成新引用，导致 ETFChart 中的 lastPeriodForDrawdown 不更新，回撤区域不渲染
   const drawdownInfo = useMemo(() => {
     if (!metrics) return undefined;
     return {
@@ -119,7 +121,7 @@ export default function ETFDetailPage() {
       end: metrics.mdd_end,
       value: metrics.max_drawdown
     };
-  }, [metrics?.mdd_start, metrics?.mdd_trough, metrics?.mdd_end, metrics?.max_drawdown]);
+  }, [metrics?.mdd_start, metrics?.mdd_trough, metrics?.mdd_end, metrics?.max_drawdown, period]);
 
   if (error && !info) {
     return (
