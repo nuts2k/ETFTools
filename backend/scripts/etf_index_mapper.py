@@ -141,36 +141,79 @@ def fetch_chinabond_indices() -> List[Dict]:
         return []
 
 
+def fetch_cni_indices_direct() -> pd.DataFrame:
+    """直接从国证官网获取指数列表（避免 akshare 解析崩溃）"""
+    print("  - 正在直接从国证官网获取指数...")
+    url = "https://www.cnindex.com.cn/index/indexList"
+    params = {
+        "channelCode": "-1",
+        "rows": "2000",
+        "pageNum": "1",
+    }
+    headers = {"User-Agent": random.choice(USER_AGENTS)}
+    
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        
+        rows = data.get("data", {}).get("rows", [])
+        if not rows:
+            return pd.DataFrame()
+            
+        indices = []
+        for row in rows:
+            # 优先使用全称 indexfullcname，其次简称 indexname
+            name = row.get("indexfullcname") or row.get("indexname")
+            code = row.get("indexcode")
+            if code and name:
+                indices.append({
+                    "index_code": code,
+                    "display_name": name
+                })
+                
+        return pd.DataFrame(indices)
+    except Exception as e:
+        print(f"  - 国证官网获取失败: {e}")
+        return pd.DataFrame()
+
+
 def update_index_database() -> None:
     """从 AkShare 和中债网站获取全量指数并保存到本地 JSON"""
     print("[INFO] 正在更新指数数据库...")
     frames = []
     
-    # 1. 上证/深证基础指数
-    try:
-        df1 = ak.index_stock_info()[['index_code', 'display_name']]
-        frames.append(df1)
-        print(f"  - index_stock_info: {len(df1)} 条")
-    except Exception as e:
-        print(f"  - index_stock_info 失败: {e}")
+    # 优先级: 
+    # 1. 中证 (CSI) - 数据全，通常有全称
+    # 2. 国证 (CNI) - 新增直接获取，有全称
+    # 3. 上证/深证 (Exchange) - 只有简称，但权威
+    # 4. 其他 (中债, 港股, 全球, 美股)
     
-    # 2. 中证全量指数（使用全称匹配）
+    # 1. 中证全量指数（使用全称匹配）
     try:
-        df2 = ak.index_csindex_all()[['指数代码', '指数全称']]
-        df2.columns = ['index_code', 'display_name']
-        frames.append(df2)
-        print(f"  - index_csindex_all: {len(df2)} 条")
+        df1 = ak.index_csindex_all()[['指数代码', '指数全称']]
+        df1.columns = ['index_code', 'display_name']
+        frames.append(df1)
+        print(f"  - index_csindex_all (中证): {len(df1)} 条")
     except Exception as e:
         print(f"  - index_csindex_all 失败: {e}")
-    
-    # 3. 国证指数
+
+    # 2. 国证指数 (CNI) - 使用新函数
     try:
-        df3 = ak.index_all_cni()[['指数代码', '指数简称']]
-        df3.columns = ['index_code', 'display_name']
-        frames.append(df3)
-        print(f"  - index_all_cni: {len(df3)} 条")
+        df2 = fetch_cni_indices_direct()
+        if not df2.empty:
+            frames.append(df2)
+            print(f"  - fetch_cni_indices_direct (国证): {len(df2)} 条")
     except Exception as e:
-        print(f"  - index_all_cni 失败: {e}")
+        print(f"  - fetch_cni_indices_direct 失败: {e}")
+    
+    # 3. 上证/深证基础指数
+    try:
+        df3 = ak.index_stock_info()[['index_code', 'display_name']]
+        frames.append(df3)
+        print(f"  - index_stock_info (交易所): {len(df3)} 条")
+    except Exception as e:
+        print(f"  - index_stock_info 失败: {e}")
     
     # 4. 中债指数（从中债网站获取）
     try:
@@ -215,6 +258,7 @@ def update_index_database() -> None:
         print("[ERROR] 所有指数数据源均失败")
         sys.exit(1)
     
+    # 按顺序合并，前面的优先保留
     merged = pd.concat(frames, ignore_index=True)
     merged = merged.drop_duplicates(subset='index_code', keep='first')
     print(f"[INFO] 合并去重后共 {len(merged)} 条指数")
