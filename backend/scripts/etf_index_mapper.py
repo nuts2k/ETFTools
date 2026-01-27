@@ -134,7 +134,10 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     if not source_name or pd.isna(source_name):
         return None
     
-    source_clean = source_name.replace("指数", "").strip()
+    # 清理源名称：去除括号及其内容、去除「指数」后缀
+    import re
+    source_clean = re.sub(r'\([^)]*\)', '', source_name)  # 去除 (价格) 等
+    source_clean = source_clean.replace("指数", "").strip()
     
     # 精确匹配
     exact = index_db[index_db["display_name"] == source_name]
@@ -146,8 +149,8 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     if not clean_match.empty:
         return _select_best_match(clean_match)
     
-    # 包含匹配
-    contains = index_db[index_db["display_name"].str.contains(source_clean, na=False)]
+    # 包含匹配（使用 regex=False 避免警告）
+    contains = index_db[index_db["display_name"].str.contains(source_clean, na=False, regex=False)]
     if not contains.empty:
         return _select_best_match(contains)
     
