@@ -500,8 +500,11 @@ def main():
         stats[result] += 1
         
         # 从 pending 中移除已处理的
-        if code in data["pending"] and result != "PENDING":
+        if code in data["pending"]:
             data["pending"].remove(code)
+            # 如果仍然是 PENDING，移到列表末尾（轮询机制）
+            if result == "PENDING":
+                data["pending"].append(code)
         
         # 请求间隔
         if i < len(codes_to_process):
