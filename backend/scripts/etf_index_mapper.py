@@ -125,7 +125,7 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     匹配指数名称到指数代码
     
     优先级:
-    1. 精确匹配 index_name
+    1. 精确匹配 display_name
     2. 去除「指数」后缀后匹配
     3. 模糊匹配简称
     
@@ -137,17 +137,17 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     source_clean = source_name.replace("指数", "").strip()
     
     # 精确匹配
-    exact = index_db[index_db["index_name"] == source_name]
+    exact = index_db[index_db["display_name"] == source_name]
     if not exact.empty:
         return _select_best_match(exact)
     
     # 去除「指数」后匹配
-    clean_match = index_db[index_db["index_name"] == source_clean]
+    clean_match = index_db[index_db["display_name"] == source_clean]
     if not clean_match.empty:
         return _select_best_match(clean_match)
     
     # 包含匹配
-    contains = index_db[index_db["index_name"].str.contains(source_clean, na=False)]
+    contains = index_db[index_db["display_name"].str.contains(source_clean, na=False)]
     if not contains.empty:
         return _select_best_match(contains)
     
@@ -168,8 +168,62 @@ def _select_best_match(df: pd.DataFrame) -> Dict:
     best = df.sort_values("priority").iloc[0]
     return {
         "index_code": best["index_code"],
-        "index_name": best["index_name"]
+        "index_name": best["display_name"]
     }
+
+
+def process_etf(
+    etf_code: str, 
+    index_db: pd.DataFrame,
+    data: Dict
+) -> str:
+    """
+    处理单个 ETF，返回处理结果类型: MAPPED / UNMAPPABLE / PENDING
+    """
+    today = date.today().isoformat()
+    
+    # 爬取跟踪标的
+    source_name = fetch_tracking_index(etf_code)
+    
+    if not source_name:
+        # 无跟踪标的 -> 可能是主动管理型基金
+        data["unmappable"][etf_code] = {
+            "reason": "无跟踪标的（主动管理型/LOF）",
+            "source_name": None,
+            "updated_at": today
+        }
+        return "UNMAPPABLE"
+    
+    print(f"  → 跟踪标的: {source_name}")
+    
+    # 检测跨境 ETF
+    cross_border_keywords = ["纳斯达克", "标普", "恒生", "道琼斯", "日经", "法兰克福", "纳指", "美股"]
+    if any(kw in source_name for kw in cross_border_keywords):
+        data["unmappable"][etf_code] = {
+            "reason": "跨境ETF",
+            "source_name": source_name,
+            "updated_at": today
+        }
+        return "UNMAPPABLE"
+    
+    # 匹配指数
+    match = match_index(source_name, index_db)
+    
+    if match:
+        data["mapped"][etf_code] = {
+            "index_code": match["index_code"],
+            "index_name": match["index_name"],
+            "source_name": source_name,
+            "updated_at": today
+        }
+        print(f"  → 匹配结果: {match['index_code']} ({match['index_name']}) ✓")
+        return "MAPPED"
+    else:
+        # 匹配失败，保留在 pending
+        if etf_code not in data["pending"]:
+            data["pending"].append(etf_code)
+        print(f"  → 匹配结果: 无精确匹配 → PENDING")
+        return "PENDING"
 
 
 def main():
@@ -207,6 +261,41 @@ def main():
         return
     
     print(f"[INFO] 本次将处理 {len(codes_to_process)} 个 ETF")
+
+    # 加载指数数据库
+    index_db = load_index_database()
+    
+    # 统计
+    stats = {"MAPPED": 0, "UNMAPPABLE": 0, "PENDING": 0}
+    
+    # 处理循环
+    for i, code in enumerate(codes_to_process, 1):
+        print(f"\n[{i}/{len(codes_to_process)}] {code}")
+        
+        result = process_etf(code, index_db, data)
+        stats[result] += 1
+        
+        # 从 pending 中移除已处理的
+        if code in data["pending"] and result != "PENDING":
+            data["pending"].remove(code)
+        
+        # 请求间隔
+        if i < len(codes_to_process):
+            delay = random.uniform(*REQUEST_DELAY)
+            print(f"  [等待 {delay:.1f}s]")
+            time.sleep(delay)
+    
+    # 输出摘要
+    print("\n" + "=" * 40)
+    print("执行摘要")
+    print("=" * 40)
+    print(f"成功匹配: {stats['MAPPED']}")
+    print(f"无法匹配: {stats['UNMAPPABLE']}")
+    print(f"待人工确认: {stats['PENDING']}")
+    
+    # 保存
+    if not args.dry_run:
+        save_mapping(data)
 
 
 if __name__ == "__main__":
