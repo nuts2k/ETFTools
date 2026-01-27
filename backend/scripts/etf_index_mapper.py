@@ -50,6 +50,70 @@ def fetch_all_etf_codes() -> List[str]:
         sys.exit(1)
 
 
+def load_index_database() -> pd.DataFrame:
+    """加载全量指数列表用于匹配"""
+    print("[INFO] 正在从 AKShare 加载指数数据库...")
+    try:
+        df = ak.index_stock_info()
+        print(f"[INFO] 加载 {len(df)} 条指数数据")
+        return df
+    except Exception as e:
+        print(f"[ERROR] 加载指数数据库失败: {e}")
+        sys.exit(1)
+
+
+def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
+    """
+    匹配指数名称到指数代码
+    
+    优先级:
+    1. 精确匹配 index_name
+    2. 去除「指数」后缀后匹配
+    3. 模糊匹配简称
+    
+    代码优先级: 000xxx/399xxx > H3xxxx > 其他
+    """
+    if not source_name or pd.isna(source_name):
+        return None
+    
+    source_clean = source_name.replace("指数", "").strip()
+    
+    # 精确匹配
+    exact = index_db[index_db["index_name"] == source_name]
+    if not exact.empty:
+        return _select_best_match(exact)
+    
+    # 去除「指数」后匹配
+    clean_match = index_db[index_db["index_name"] == source_clean]
+    if not clean_match.empty:
+        return _select_best_match(clean_match)
+    
+    # 包含匹配
+    contains = index_db[index_db["index_name"].str.contains(source_clean, na=False)]
+    if not contains.empty:
+        return _select_best_match(contains)
+    
+    return None
+
+
+def _select_best_match(df: pd.DataFrame) -> Dict:
+    """从多个候选中选择最佳匹配（按代码优先级）"""
+    def priority(code: str) -> int:
+        if code.startswith(("000", "399")):
+            return 0
+        if code.startswith("H3"):
+            return 1
+        return 2
+    
+    df = df.copy()
+    df["priority"] = df["index_code"].apply(priority)
+    best = df.sort_values("priority").iloc[0]
+    return {
+        "index_code": best["index_code"],
+        "index_name": best["index_name"]
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description="ETF 指数自动映射脚本")
     parser.add_argument("--codes", type=str, help="指定 ETF 代码（逗号分隔）")
