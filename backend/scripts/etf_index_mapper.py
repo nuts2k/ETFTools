@@ -293,12 +293,12 @@ def process_etf(
     
     print(f"  → 跟踪标的: {source_name}" + (f" (简称: {short_name})" if short_name else ""))
     
-    # 检测跨境 ETF
-    cross_border_keywords = ["纳斯达克", "标普", "恒生", "道琼斯", "日经", "法兰克福", "纳指", "美股"]
+    # 检测跨境/MSCI ETF（无法从国内数据源匹配）
+    cross_border_keywords = ["纳斯达克", "标普", "恒生", "道琼斯", "日经", "法兰克福", "纳指", "美股", "MSCI"]
     if any(kw in source_name for kw in cross_border_keywords):
-        print(f"  → 匹配结果: 跨境ETF → UNMAPPABLE")
+        print(f"  → 匹配结果: 跨境/MSCI指数 → UNMAPPABLE")
         data["unmappable"][etf_code] = {
-            "reason": "跨境ETF",
+            "reason": "跨境/MSCI指数",
             "source_name": source_name,
             "updated_at": today
         }
