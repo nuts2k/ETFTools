@@ -1,0 +1,24 @@
+{
+  "mapped": {
+    "510300": {
+      "index_code": "000300",
+      "index_name": "沪深300",
+      "source_name": "沪深300指数",
+      "updated_at": "2026-01-27"
+    },
+    "159915": {
+      "index_code": "399006",
+      "index_name": "创业板指",
+      "source_name": "创业板指数(价格)",
+      "updated_at": "2026-01-27"
+    }
+  },
+  "unmappable": {
+    "513100": {
+      "reason": "跨境ETF",
+      "source_name": "纳斯达克100指数",
+      "updated_at": "2026-01-27"
+    }
+  },
+  "pending": []
+}
