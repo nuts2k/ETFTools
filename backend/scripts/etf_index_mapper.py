@@ -87,9 +87,34 @@ def load_index_database() -> pd.DataFrame:
     return df
 
 
+def fetch_chinabond_indices() -> List[Dict]:
+    """从中债网站获取全量中债指数列表"""
+    url = "https://yield.chinabond.com.cn/cbweb-mn/indices/queryTree"
+    params = {"locale": "zh_CN"}
+    headers = {"User-Agent": random.choice(USER_AGENTS)}
+    
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+        
+        # 只保留叶子节点（实际指数，非分类）
+        indices = []
+        for item in data:
+            if item.get("isParent") == "false":
+                indices.append({
+                    "index_code": item["id"],  # UUID 格式
+                    "display_name": item["name"]
+                })
+        return indices
+    except Exception as e:
+        print(f"  - 中债指数获取失败: {e}")
+        return []
+
+
 def update_index_database() -> None:
-    """从 AkShare 获取全量指数并保存到本地 JSON"""
-    print("[INFO] 正在从 AkShare 更新指数数据库...")
+    """从 AkShare 和中债网站获取全量指数并保存到本地 JSON"""
+    print("[INFO] 正在更新指数数据库...")
     frames = []
     
     # 1. 上证/深证基础指数
@@ -117,6 +142,16 @@ def update_index_database() -> None:
         print(f"  - index_all_cni: {len(df3)} 条")
     except Exception as e:
         print(f"  - index_all_cni 失败: {e}")
+    
+    # 4. 中债指数（从中债网站获取）
+    try:
+        chinabond_indices = fetch_chinabond_indices()
+        if chinabond_indices:
+            df4 = pd.DataFrame(chinabond_indices)
+            frames.append(df4)
+            print(f"  - chinabond (中债): {len(df4)} 条")
+    except Exception as e:
+        print(f"  - chinabond 失败: {e}")
     
     if not frames:
         print("[ERROR] 所有指数数据源均失败")
@@ -202,8 +237,9 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     优先级:
     1. 精确匹配 display_name
     2. 去除「指数」后缀后匹配
-    3. 包含匹配
-    4. 去除通用词后模糊匹配
+    3. 中债指数特殊处理（去除财富/全价/净价等后缀）
+    4. 包含匹配
+    5. 去除通用词后模糊匹配
     
     代码优先级: 000xxx/399xxx > H3xxxx > 其他
     """
@@ -213,6 +249,10 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     # 清理源名称：去除括号及其内容、去除「指数」后缀
     source_clean = re.sub(r'\([^)]*\)', '', source_name)  # 去除 (价格) 等
     source_clean = source_clean.replace("指数", "").strip()
+    
+    # 中债指数特殊处理：去除「财富/全价/净价(总值)指数」等后缀
+    # 例如: 中债-30年期国债财富(总值)指数 -> 中债-30年期国债指数
+    chinabond_clean = re.sub(r'(财富|全价|净价)?\(?总值\)?指数$', '指数', source_name)
     
     # 空字符串检查，避免 str.contains("") 匹配所有行
     if not source_clean:
@@ -228,12 +268,18 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     if not clean_match.empty:
         return _select_best_match(clean_match)
     
-    # 3. 包含匹配（使用 regex=False 避免警告）
+    # 3. 中债指数特殊匹配（去除财富/全价/净价等后缀后精确匹配）
+    if chinabond_clean != source_name:
+        chinabond_match = index_db[index_db["display_name"] == chinabond_clean]
+        if not chinabond_match.empty:
+            return _select_best_match(chinabond_match)
+    
+    # 4. 包含匹配（使用 regex=False 避免警告）
     contains = index_db[index_db["display_name"].str.contains(source_clean, na=False, regex=False)]
     if not contains.empty:
         return _select_best_match(contains)
     
-    # 4. 去除通用词后模糊匹配
+    # 5. 去除通用词后模糊匹配
     common_words = ["中证", "中国", "国证", "上证", "深证", "板"]
     source_fuzzy = source_clean
     for word in common_words:

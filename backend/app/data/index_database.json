@@ -11344,4415 +11344,1963 @@
     "display_name": "中证恒生沪港通AH股精明指数"
   },
   {
-    "index_code": "399262",
-    "display_name": "数字经济"
+    "index_code": "8a8b2c8f581cfb2f01581db3fd830001",
+    "display_name": "中债-中国高等级债券指数(美元)"
   },
   {
-    "index_code": "399263",
-    "display_name": "创业数字"
+    "index_code": "2c908188111fac07011125068f91044d",
+    "display_name": "中债-国开行债券总指数"
   },
   {
-    "index_code": "399264",
-    "display_name": "创业软件"
+    "index_code": "8a8b2cef6e1ee681016e200a8aa50400",
+    "display_name": "中债-工行关键期限国债指数"
   },
   {
-    "index_code": "39926401",
-    "display_name": "创业软件R"
+    "index_code": "GB00BGFPR228_hbzs",
+    "display_name": "iBoxx ChinaBond Government & Policy Banks Bond Index"
   },
   {
-    "index_code": "399265",
-    "display_name": "创新药械"
+    "index_code": "8a8b2c836308e88d01630b7cc6e701e8_sczs",
+    "display_name": "中债-SDR人民币三个月固定期限利率指数"
   },
   {
-    "index_code": "399266",
-    "display_name": "创新能源"
+    "index_code": "8a8b2ca0332abed20134ea76d8885831",
+    "display_name": "中债-新综合指数"
   },
   {
-    "index_code": "399267",
-    "display_name": "专精特新"
+    "index_code": "8a962d8c69c31e1e016a0f26a9c0010a",
+    "display_name": "中债-投资级中资美元债指数"
   },
   {
-    "index_code": "39926701",
-    "display_name": "专精特新R"
+    "index_code": "8a8b2cef6b29dfac016b2bc115460040",
+    "display_name": "中债-长三角债券综合指数"
   },
   {
-    "index_code": "39926801",
-    "display_name": "深小巨人R"
+    "index_code": "8a8b2cef7aa21a08017aa48317a73dfd_tpfzs",
+    "display_name": "中债-中国碳排放配额现货综合价格指数"
   },
   {
-    "index_code": "399297",
-    "display_name": "新浪100"
+    "index_code": "8a8b2c8f60be43600160bede8bd80002",
+    "display_name": "中债-0-3个月国债指数"
   },
   {
-    "index_code": "39936201",
-    "display_name": "民企100R"
+    "index_code": "2c9081e50e8767dc010e87a3326c0039",
+    "display_name": "中债-银行间债券总指数"
   },
   {
-    "index_code": "39936301",
-    "display_name": "国证算力R"
+    "index_code": "8a8b2cef6dcc80c0016dcf2444650bb7",
+    "display_name": "中债-离岸人民币中国主权及政策性金融债指数"
   },
   {
-    "index_code": "39936501",
-    "display_name": "国证粮食R"
+    "index_code": "b017c9c53c7ad6586b3446129c152616",
+    "display_name": "中债-AAA评级债券综合指数"
   },
   {
-    "index_code": "399422",
-    "display_name": "中关村A"
+    "index_code": "8a8b2ca03de1b1db013de91f3a6f2aee",
+    "display_name": "中债-中债信用增进公司增信债券指数"
   },
   {
-    "index_code": "39943901",
-    "display_name": "国证油气R"
+    "index_code": "984c68bfc0b9263aaad7bd9af36888a3",
+    "display_name": "中债-投资优选绿色债券指数"
   },
   {
-    "index_code": "970006",
-    "display_name": "创业板指(港币)(CNH)"
+    "index_code": "60bb107af9b99b8fb7c6a28ef4b171da",
+    "display_name": "中债-金融高质量发展主题债券综合指数"
   },
   {
-    "index_code": "970007",
-    "display_name": "创业板指（美元）（CNH）"
+    "index_code": "2c9081e50e8767dc010e87954b780011",
+    "display_name": "中债-固定利率债券指数"
   },
   {
-    "index_code": "970026",
-    "display_name": "深指ESG"
+    "index_code": "2c90818810a653dd0110a6664abd0002",
+    "display_name": "中债-短融50指数"
   },
   {
-    "index_code": "970027",
-    "display_name": "100ESG"
+    "index_code": "8a8b2cef71709fc9017170dd8daa000c",
+    "display_name": "中债-3年恒定久期政策性金融债指数"
   },
   {
-    "index_code": "970028",
-    "display_name": "创指ESG"
+    "index_code": "8a8b2cef73c6017e0173c882dd1c7801",
+    "display_name": "中债-制造行业信用债指数"
   },
   {
-    "index_code": "970029",
-    "display_name": "深指ESG领先"
+    "index_code": "8a8b2c836775df9801677851e4360d74",
+    "display_name": "中债-市场隐含评级AAA+信用债指数"
   },
   {
-    "index_code": "970030",
-    "display_name": "100ESG领先"
+    "index_code": "f2f0cc574cf5a1b8aac3e8d3f57abb0c_dzc",
+    "display_name": "中债-股债恒定组合5/95指数"
   },
   {
-    "index_code": "970031",
-    "display_name": "创指ESG领先"
+    "index_code": "2c9081e50e8767dc010e87b6e26c0080",
+    "display_name": "中债-七年期国债指数"
   },
   {
-    "index_code": "970032",
-    "display_name": "深指ESG增强"
+    "index_code": "8a8b2cef75860ac0017587c644a02fde",
+    "display_name": "中债-ESG优选信用债指数"
   },
   {
-    "index_code": "970033",
-    "display_name": "100ESG增强"
+    "index_code": "8a8b2c836775df980167785153790d6b",
+    "display_name": "中债-市场隐含评级AAA信用债指数"
   },
   {
-    "index_code": "970034",
-    "display_name": "创指ESG增强"
+    "index_code": "8a8b2ca0540790160154091b513d370e",
+    "display_name": "中债-农发行债券总指数"
   },
   {
-    "index_code": "970035",
-    "display_name": "深证光伏"
+    "index_code": "8a8b2cef70bc61380170be069828032b",
+    "display_name": "中债-0-1年国债指数"
   },
   {
-    "index_code": "970036",
-    "display_name": "深证储能"
+    "index_code": "8a8b2cef6e240cdb016e258eeb133878",
+    "display_name": "中债-工行1-5年期关键期限政策性金融债指数"
   },
   {
-    "index_code": "970037",
-    "display_name": "深证高装"
+    "index_code": "85f86947411dd367018d7f8fde1dc295",
+    "display_name": "中债-绿色债券综合指数"
   },
   {
-    "index_code": "970038",
-    "display_name": "生物经济"
+    "index_code": "8a8b2cef7194ac4e017196d186c6008e",
+    "display_name": "中债-5年恒定久期政策性金融债指数"
   },
   {
-    "index_code": "970039",
-    "display_name": "创新材料"
+    "index_code": "2c9081e918ad26f40118e90afbee66ae",
+    "display_name": "中债-货币市场基金可投资债券指数"
   },
   {
-    "index_code": "970040",
-    "display_name": "创业高装"
+    "index_code": "8a8b2ca055eba5e10155ed6ebc530895",
+    "display_name": "中债-银行间资产支持证券指数"
   },
   {
-    "index_code": "970041",
-    "display_name": "创新消费"
+    "index_code": "20e35c92ef7b9a439fcaa8fce5835ea5",
+    "display_name": "中债-金融高质量发展主题信用债指数"
   },
   {
-    "index_code": "970042",
-    "display_name": "新材料50"
+    "index_code": "f0a558e12cff880b83185f001453d23d_tpfzs",
+    "display_name": "中债-中国碳排放配额现货挂牌协议价格指数"
   },
   {
-    "index_code": "970043",
-    "display_name": "新能装备"
+    "index_code": "2c90818811afed8d0111c0c672b31578",
+    "display_name": "中债-综合指数"
   },
   {
-    "index_code": "970046",
-    "display_name": "深证XR"
+    "index_code": "8a8b2c836303c237016304feb2160006",
+    "display_name": "中债-长三角地方政府债指数"
   },
   {
-    "index_code": "970047",
-    "display_name": "数字文化"
+    "index_code": "8a8b2c836308e88d01630b7f2e0b01e9_sczs",
+    "display_name": "中债-金融机构人民币超额存款准备金利率指数"
   },
   {
-    "index_code": "970048",
-    "display_name": "新型显示"
+    "index_code": "GB00BGFQ2C03_hbzs",
+    "display_name": "iBoxx ChinaBond Government & Policy Banks Bond Index (EU EOD) (USD Hedged)"
   },
   {
-    "index_code": "970049",
-    "display_name": "深证数字交通"
+    "index_code": "e64577b1837d486249264f7fe793091a",
+    "display_name": "中债-短融AAA指数"
   },
   {
-    "index_code": "970050",
-    "display_name": "深证卫星导航"
+    "index_code": "2c9081e50e8767dc010e8797a5d70019",
+    "display_name": "中债-浮动利率债券指数"
   },
   {
-    "index_code": "970051",
-    "display_name": "深证算力"
+    "index_code": "5cc7a4278c0c1cc0f82dc018c3c15fd1",
+    "display_name": "中债-电力行业信用债指数"
   },
   {
-    "index_code": "970052",
-    "display_name": "深证数字安全"
+    "index_code": "978a5b988dfe640d0d083981803d0675_dzc",
+    "display_name": "中债-股债恒定组合10/90指数"
   },
   {
-    "index_code": "970053",
-    "display_name": "深证数据要素"
+    "index_code": "8a8b2cef7832f8920178350801470014",
+    "display_name": "中债-0-10年国债指数"
   },
   {
-    "index_code": "970054",
-    "display_name": "深证智能电网"
+    "index_code": "2c9081e918ad26f40118adc37a600c0d",
+    "display_name": "中债-短融AA指数"
   },
   {
-    "index_code": "970055",
-    "display_name": "深证国企ESG"
+    "index_code": "0af700ba10feefc9a5191983eaadfc51",
+    "display_name": "中债-建筑工程行业信用债指数"
   },
   {
-    "index_code": "970056",
-    "display_name": "深证民企ESG"
+    "index_code": "2c9081e50e8767dc010e87b559ee0078",
+    "display_name": "中债-银行间国债指数"
   },
   {
-    "index_code": "970057",
-    "display_name": "深证民企50"
+    "index_code": "947d07b68357a6e40c93bf839efc2187",
+    "display_name": "中债-电力行业优质转型企业信用债指数"
   },
   {
-    "index_code": "970058",
-    "display_name": "深证民企治理"
+    "index_code": "919b67003f58136c9f8949e0576443ad_dzc",
+    "display_name": "中债-股债恒定组合20/80指数"
   },
   {
-    "index_code": "970059",
-    "display_name": "深证民企科技"
+    "index_code": "8a8b2cef74419a1a017441efb9630004",
+    "display_name": "中债-工行1-10年国债及政策性金融债指数"
   },
   {
-    "index_code": "970060",
-    "display_name": "深证ESG成长"
+    "index_code": "8a8b2ca054ef4e4e0154f0c515eb0002",
+    "display_name": "中债-进出口行债券总指数"
   },
   {
-    "index_code": "970061",
-    "display_name": "深证ESG价值"
+    "index_code": "2c9081e50e8767dc010e87a6a60b0050",
+    "display_name": "中债-固定利率国债指数"
   },
   {
-    "index_code": "970062",
-    "display_name": "深红利300"
+    "index_code": "GB00BGFQ2F34_hbzs",
+    "display_name": "iBoxx ChinaBond Government & Policy Banks Bond Index (EU EOD) (USD Unhedged)"
   },
   {
-    "index_code": "970063",
-    "display_name": "深证回购"
+    "index_code": "8a8b2ca054079016015408674cce0017",
+    "display_name": "中债-中国绿色债券指数"
   },
   {
-    "index_code": "970064",
-    "display_name": "深证国企股东回报"
+    "index_code": "430a7631f7ea66036a91f37e8b4b1c9c",
+    "display_name": "中债-共同富裕主题债券指数"
   },
   {
-    "index_code": "970065",
-    "display_name": "深证优质信披"
+    "index_code": "8a8b2cef73a1f4f80173a2c0b2a4000e",
+    "display_name": "中债-信用债价值因子精选策略指数"
   },
   {
-    "index_code": "970066",
-    "display_name": "深证氢能"
+    "index_code": "8a8b2cef6b90dedb016b91a8684a0006",
+    "display_name": "中债-0-3年长三角地方政府债指数"
   },
   {
-    "index_code": "970067",
-    "display_name": "深证专利"
+    "index_code": "2c9081e50e8767dc010e879387370009",
+    "display_name": "中债-总指数"
   },
   {
-    "index_code": "970068",
-    "display_name": "创业专利"
+    "index_code": "8a8b2c836775df980167785085850d62",
+    "display_name": "中债-市场隐含评级AAA-信用债指数"
   },
   {
-    "index_code": "970069",
-    "display_name": "深证绿色制造"
+    "index_code": "2c9081e50e8767dc010e879acb220021",
+    "display_name": "中债-国债总指数"
   },
   {
-    "index_code": "970070",
-    "display_name": "创业板人工智能"
+    "index_code": "33b0248b4ad13542a5e9e6f31eee148e",
+    "display_name": "中债-短债AAA指数"
   },
   {
-    "index_code": "970071",
-    "display_name": "深证民企成长"
+    "index_code": "2c9081e50e8767dc010e87a4bdd20041",
+    "display_name": "中债-交易所国债指数"
   },
   {
-    "index_code": "970072",
-    "display_name": "深证民企价值"
+    "index_code": "8a8b2cef7823857e01782469e9210080",
+    "display_name": "中债-碳中和绿色债券指数"
   },
   {
-    "index_code": "970073",
-    "display_name": "深证绿色农牧"
+    "index_code": "8a8b2ca04bf69582014c10b60f376c77",
+    "display_name": "中债-3-5年期国债指数"
   },
   {
-    "index_code": "970074",
-    "display_name": "深证智能穿戴"
+    "index_code": "2c9081e50e8767dc010e87ad08140068",
+    "display_name": "中债-固定利率金融债指数"
   },
   {
-    "index_code": "970075",
-    "display_name": "深证AIGC"
+    "index_code": "8a8b2cef7422b3f30174234f30fd0005",
+    "display_name": "中债-信用债价值因子权重调整策略指数"
   },
   {
-    "index_code": "970076",
-    "display_name": "深证绿色化工"
+    "index_code": "8a8b2cef6e1ee681016e20e4245705a6",
+    "display_name": "中债-工行3-5年信用债指数"
   },
   {
-    "index_code": "970077",
-    "display_name": "深证绿色建材"
+    "index_code": "3b9c19a3dd638fd2672c0728fce892a0_dzc",
+    "display_name": "中债-黄金保值债券风险平价指数"
   },
   {
-    "index_code": "970080",
-    "display_name": "科技50"
+    "index_code": "8a8b2cef6e19c025016e1bc012e001f3",
+    "display_name": "中债-0-5年长三角地方政府债指数"
   },
   {
-    "index_code": "970081",
-    "display_name": "创业板电池"
+    "index_code": "GB00BGFQ2759_hbzs",
+    "display_name": "iBoxx ChinaBond Government & Policy Banks Bond Index (EU EOD) (EUR Hedged)"
   },
   {
-    "index_code": "970082",
-    "display_name": "创业板医疗"
+    "index_code": "8a8b2c836775df980167784a77520d4b",
+    "display_name": "中债-市场隐含评级AA+信用债指数"
   },
   {
-    "index_code": "970083",
-    "display_name": "创业板算力"
+    "index_code": "8a8b2cef73bbb4c60173bc59a0c90006",
+    "display_name": "中债-煤炭行业信用债指数"
   },
   {
-    "index_code": "970084",
-    "display_name": "创业板传媒"
+    "index_code": "2e8da3759b4f83e0f0752147738f7fc9",
+    "display_name": "中债-进出口行新发关键期限债券指数"
   },
   {
-    "index_code": "970085",
-    "display_name": "创业板金融科技"
+    "index_code": "49f1330d071d23c066381eb1a708c0b6",
+    "display_name": "中债-0-3年AAA科技创新债券指数"
   },
   {
-    "index_code": "971001",
-    "display_name": "深成地产"
+    "index_code": "8a8b2ca03a3feea1013a44b98fc533f5",
+    "display_name": "中债-5年期国债指数"
   },
   {
-    "index_code": "971002",
-    "display_name": "中小地产"
+    "index_code": "8a8b2ca0447ffe14014486b77f2a0002",
+    "display_name": "中债-地方政府债指数"
   },
   {
-    "index_code": "971004",
-    "display_name": "创业板战略科技"
+    "index_code": "b099abb287eebad09994ab481fe67f24_dzc",
+    "display_name": "中债-黄金保值信用债风险平价指数"
   },
   {
-    "index_code": "980001",
-    "display_name": "湾创100"
+    "index_code": "2c9081e50e8767dc010e87b3b1d60070",
+    "display_name": "中债-浮动利率金融债指数"
   },
   {
-    "index_code": "980002",
-    "display_name": "湾创100(港币)"
+    "index_code": "8a8b2c8f5bea4d1b015bebe640530038",
+    "display_name": "中债-中国铁路债券指数"
   },
   {
-    "index_code": "980003",
-    "display_name": "湾区综指"
+    "index_code": "91a9f1103654bc449cf0db6d7aa39325",
+    "display_name": "中债-交易所短债AAA指数"
   },
   {
-    "index_code": "980004",
-    "display_name": "湾区综指(港币)"
+    "index_code": "31d4a4934ca82e11892f6bbb9be0ea04",
+    "display_name": "中债-工行绿色债券指数"
   },
   {
-    "index_code": "980006",
-    "display_name": "港股通自由现金流"
+    "index_code": "GB00BGFQ2973_hbzs",
+    "display_name": "iBoxx ChinaBond Government & Policy Banks Bond Index (EU EOD) (EUR Unhedged)"
   },
   {
-    "index_code": "98000600",
-    "display_name": "港股通自由现金流（人民币）"
+    "index_code": "8a8b2c8364aa0bb20164abfd957f000f",
+    "display_name": "中债-长三角绿色债券指数"
   },
   {
-    "index_code": "980007",
-    "display_name": "湾区新兴"
+    "index_code": "d315c488f915dd2e87cf41f4ffac4466",
+    "display_name": "中债-1-3年AAA科技创新债券指数"
   },
   {
-    "index_code": "980008",
-    "display_name": "湾区新兴(港币)"
+    "index_code": "8a8b2ca047bd1dfe0147d317b62e2158",
+    "display_name": "中债-中国高等级债券指数"
   },
   {
-    "index_code": "980009",
-    "display_name": "湾区制造"
+    "index_code": "8a8b2cef6ab893c2016aba4c8ee7009f",
+    "display_name": "中债-市场隐含评级AA信用债指数"
   },
   {
-    "index_code": "980010",
-    "display_name": "湾区制造(港币)"
+    "index_code": "8a8b2ca03d393e7c013d39c667963351",
+    "display_name": "中债-高信用等级中期票据指数"
   },
   {
-    "index_code": "980011",
-    "display_name": "湾区服务"
+    "index_code": "8a8b2cef73c0db220173c140495c0058",
+    "display_name": "中债-钢铁行业信用债指数"
   },
   {
-    "index_code": "980012",
-    "display_name": "湾区服务(港币)"
+    "index_code": "562d8e2d9d331c99a7a9f9fefded6907",
+    "display_name": "中债-中高等级绿色金融债券指数"
   },
   {
-    "index_code": "980013",
-    "display_name": "湾区医药"
+    "index_code": "8a8b2c8f5a492a01015a4ac986480043",
+    "display_name": "中债-7-10年国债指数"
   },
   {
-    "index_code": "980014",
-    "display_name": "湾区医药（港币）"
+    "index_code": "8a8b2ca04b1e4a5b014b2a23197c72c5",
+    "display_name": "中债-关键期限国债指数"
   },
   {
-    "index_code": "980015",
-    "display_name": "疫苗生科"
+    "index_code": "2c9081e50e8767dc010e87a9d5650060",
+    "display_name": "中债-金融债券总指数"
   },
   {
-    "index_code": "980016",
-    "display_name": "医疗健康"
+    "index_code": "9bef82be8d6a72b2f164059a759a6607",
+    "display_name": "中债-交易所中短债AAA指数"
   },
   {
-    "index_code": "980017",
-    "display_name": "国证芯片"
+    "index_code": "GB00BQNB2T41_hbzs",
+    "display_name": "iBoxx ChinaBond Asian High Yield (USD Unhedged)"
   },
   {
-    "index_code": "980018",
-    "display_name": "卫星通信"
+    "index_code": "a7203b1a1cd42811409204ee8236d232",
+    "display_name": "中债-0-1年高信用等级中票短融指数"
   },
   {
-    "index_code": "980019",
-    "display_name": "湾区海洋"
+    "index_code": "8a8b2cef73b68e6a0173b92f5e1774c5",
+    "display_name": "中债-房地产行业信用债指数"
   },
   {
-    "index_code": "980020",
-    "display_name": "湾区海洋(港币)"
+    "index_code": "2c9081e918ad26f401195c3a76a7210f",
+    "display_name": "中债-商业银行债券指数"
   },
   {
-    "index_code": "980021",
-    "display_name": "碳中和50"
+    "index_code": "8a8b2cef734f8f3701735061131b014a",
+    "display_name": "中债-市场隐含评级AA+及以上信用债指数"
   },
   {
-    "index_code": "980022",
-    "display_name": "机器人产业"
+    "index_code": "2c9081e918ad26f40118adb5d6910004",
+    "display_name": "中债-固定利率企业债指数"
   },
   {
-    "index_code": "980023",
-    "display_name": "南山50"
+    "index_code": "8a8b2ca053fd435d0153fefc94100001",
+    "display_name": "中债-中国绿色债券精选指数"
   },
   {
-    "index_code": "980024",
-    "display_name": "南山50(港币)"
+    "index_code": "0f44dbc6f529625148ca02a771277f6b",
+    "display_name": "中债-0-5年AAA科技创新债券指数"
   },
   {
-    "index_code": "980026",
-    "display_name": "风光装备"
+    "index_code": "8a8b2c83649fbee90164a24dbbc00013",
+    "display_name": "中债-长三角公司信用类债券指数"
   },
   {
-    "index_code": "980027",
-    "display_name": "新能源电池"
+    "index_code": "806f9278922270298ee3e12c6d624ee5_dzc",
+    "display_name": "中债-黄金保值国开行债券风险平价指数"
   },
   {
-    "index_code": "980028",
-    "display_name": "龙头家电"
+    "index_code": "738751b4c9e76c9b7701fb0c201b70f1",
+    "display_name": "中债-工行熊猫债AAA指数"
   },
   {
-    "index_code": "980029",
-    "display_name": "新基建"
+    "index_code": "67525a67987a6abda4e6b7ee5fbcdec9",
+    "display_name": "中债-0-1年中票短融AAA指数"
   },
   {
-    "index_code": "980030",
-    "display_name": "消费电子"
+    "index_code": "d8fbee7a51ae5901ea48aa7948bda83f",
+    "display_name": "中债-高等级绿色公司信用类债券指数"
   },
   {
-    "index_code": "980031",
-    "display_name": "国证白酒"
+    "index_code": "594b0c6f18d6dd3c6af0830d784058fa",
+    "display_name": "中债-金融行业信用债指数"
   },
   {
-    "index_code": "980032",
-    "display_name": "新能电池"
+    "index_code": "8a8b2ca04b666362014b723482bc4f49",
+    "display_name": "中债-10年期国债指数"
   },
   {
-    "index_code": "980033",
-    "display_name": "自主科技"
+    "index_code": "db78a8ddda8a6ac88bc193055906740a",
+    "display_name": "中债-挂钩DR浮动利率政策性银行债指数"
   },
   {
-    "index_code": "980034",
-    "display_name": "工业软件"
+    "index_code": "c511c7a1a872fb2ca258474e95a45ab8",
+    "display_name": "中债-商业银行二级资本债券市场隐含评级AA指数"
   },
   {
-    "index_code": "980035",
-    "display_name": "化肥农药"
+    "index_code": "928c2552e9b15d784f02b13b53392d53",
+    "display_name": "中债-系统重要性银行债券指数"
   },
   {
-    "index_code": "980036",
-    "display_name": "创新龙头"
+    "index_code": "8a8b2cef6b4dec2d016b4fc04e286e57",
+    "display_name": "中债-长三角中高等级信用债指数"
   },
   {
-    "index_code": "980037",
-    "display_name": "创新龙头（港币）"
+    "index_code": "bb6b88337b46d0466447114a7d18f8f1",
+    "display_name": "中债-1-5年AAA科技创新债券指数"
   },
   {
-    "index_code": "980038",
-    "display_name": "深圳高新"
+    "index_code": "eae41b72f13a22c9b24a0a5887789000",
+    "display_name": "中债-银行金融债券指数"
   },
   {
-    "index_code": "980039",
-    "display_name": "深圳高新（港币）"
+    "index_code": "8a8b2cef700d48ff01700ed16d2b0023",
+    "display_name": "中债-10年期政策性金融债策略指数"
   },
   {
-    "index_code": "980043",
-    "display_name": "工业金属"
+    "index_code": "05f743ba6a11b907de8307b89c4fc618",
+    "display_name": "中债-交易所信用债AAA指数"
   },
   {
-    "index_code": "980046",
-    "display_name": "文化创意"
+    "index_code": "GB00BQNB2R27_hbzs",
+    "display_name": "iBoxx ChinaBond Asian High Yield (USD Hedged)"
   },
   {
-    "index_code": "980047",
-    "display_name": "文化创意（港币）"
+    "index_code": "9eee3a194d1f035ce0cf4307a5b9b69f",
+    "display_name": "中债-工行熊猫债30指数"
   },
   {
-    "index_code": "980048",
-    "display_name": "国证建材"
+    "index_code": "2bdda0eb4cac30c07217f95a25a7a85f_dzc",
+    "display_name": "中债-浦发银行绿色低碳股债优选指数"
   },
   {
-    "index_code": "980049",
-    "display_name": "国证酒指"
+    "index_code": "2c666b22d481c7eadb52992baa62591c_dzc",
+    "display_name": "中债-北银理财绿色发展风险平价指数"
   },
   {
-    "index_code": "980052",
-    "display_name": "绿色金融"
+    "index_code": "8a8b2ca03e29cab5013e3a180e064537",
+    "display_name": "中债-高收益中期票据指数"
   },
   {
-    "index_code": "980053",
-    "display_name": "绿色金融（港币）"
+    "index_code": "8a8b2cef7205f8380172069a51280015",
+    "display_name": "中债-工银理财优选1-3年信用债指数"
   },
   {
-    "index_code": "980055",
-    "display_name": "规模因子"
+    "index_code": "8a8b2c836393f4480163950643d92795",
+    "display_name": "中债-中高等级公司债利差因子指数"
   },
   {
-    "index_code": "980056",
-    "display_name": "价值因子"
+    "index_code": "8a8b2cef77b239980177b485d20a6379",
+    "display_name": "中债-30年期国债指数"
   },
   {
-    "index_code": "980057",
-    "display_name": "动量因子"
+    "index_code": "678165887609e2cb84fa87251c33fc08",
+    "display_name": "中债-挂钩LPR浮动利率政策性银行债指数"
   },
   {
-    "index_code": "980058",
-    "display_name": "绿色治理"
+    "index_code": "3d75e320abd5c3440ddd156de1ee622e",
+    "display_name": "中债-商业银行无固定期限资本债券市场隐含评级AA指数"
   },
   {
-    "index_code": "980059",
-    "display_name": "航空出行"
+    "index_code": "8a8b2c8f5a62e9ca015a645fe3b60001",
+    "display_name": "中债-国债及政策性银行债指数"
   },
   {
-    "index_code": "980063",
-    "display_name": "国证回购"
+    "index_code": "8a8b2ca056b9a4450156bb2be8df0002",
+    "display_name": "中债-中国气候相关债券指数"
   },
   {
-    "index_code": "980065",
-    "display_name": "帮扶100"
+    "index_code": "GB00BT95ZL45_hbzs",
+    "display_name": "iBoxx ChinaBond Investment Grade Overall Bond Index"
   },
   {
-    "index_code": "980068",
-    "display_name": "蓝色100"
+    "index_code": "8a8b2cef709854b501709a027fe4002f",
+    "display_name": "中债-长江经济带债券综合指数"
   },
   {
-    "index_code": "980069",
-    "display_name": "蓝色100(港币)"
+    "index_code": "13e7c5de0c647afe9596037e3ffb7d9d",
+    "display_name": "中债-0-1年交易所信用债AAA指数"
   },
   {
-    "index_code": "980070",
-    "display_name": "国证专利"
+    "index_code": "3396aaec56be7ba3378976c9387380f3",
+    "display_name": "中债-非银金融行业信用债指数"
   },
   {
-    "index_code": "980071",
-    "display_name": "机器人龙头"
+    "index_code": "ac5d48b5fe8a36042ae7697d9cdd64f2",
+    "display_name": "中债-0-3年高等级科技创新债券指数"
   },
   {
-    "index_code": "980072",
-    "display_name": "生物农业"
+    "index_code": "a08e1c9454a616491f5bf6431f2591b0",
+    "display_name": "中债-系统重要性银行同业存单指数"
   },
   {
-    "index_code": "980073",
-    "display_name": "生猪指数"
+    "index_code": "8a8b2ca038d716f10138dadde8416adc",
+    "display_name": "中债-信用债总指数"
   },
   {
-    "index_code": "980075",
-    "display_name": "数字交通"
+    "index_code": "e8df331cfd44e54f338bf2811716c6da",
+    "display_name": "中债-农行乡村振兴债券指数"
   },
   {
-    "index_code": "980076",
-    "display_name": "通用航空"
+    "index_code": "0f2de202d490882caf40f623a262c863",
+    "display_name": "中债-1-3年高等级科技创新债券指数"
   },
   {
-    "index_code": "980077",
-    "display_name": "充电设施"
+    "index_code": "469f1601d2b76750b82945b145e90992",
+    "display_name": "中债-国有大型商业银行及股份制商业银行债券指数"
   },
   {
-    "index_code": "980078",
-    "display_name": "ESG基准"
+    "index_code": "25895ebd4694c235a33aa9d360b04764_dzc",
+    "display_name": "中债-北银理财京津冀企业高质量发展多元投资指数"
   },
   {
-    "index_code": "980079",
-    "display_name": "ESG领先"
+    "index_code": "2c9081e91da03927011dcc4fae9f6171",
+    "display_name": "中债-高信用等级债券指数"
   },
   {
-    "index_code": "980080",
-    "display_name": "成长100"
+    "index_code": "GB00BT966G94_hbzs",
+    "display_name": "iBoxx ChinaBond Investment Grade Overall Bond Index (EU EOD) (USD Hedged)"
   },
   {
-    "index_code": "980081",
-    "display_name": "价值100"
+    "index_code": "80e6aa811418a5b9ac810c93ac381fed",
+    "display_name": "中债-投资级公司绿色债券精选指数"
   },
   {
-    "index_code": "980082",
-    "display_name": "央国企低碳科技"
+    "index_code": "97daa17f7c53a5489c2875f1330be645",
+    "display_name": "中债-1-3年交易所信用债AAA指数"
   },
   {
-    "index_code": "980083",
-    "display_name": "央国企自主科技"
+    "index_code": "8a8b2c836709ba0b01670ac05ce10005",
+    "display_name": "中债-1-3年期国债活跃券指数"
   },
   {
-    "index_code": "980086",
-    "display_name": "创新药"
+    "index_code": "e65b5cdf6e3e04c7892bdfd1ccc1e2dc",
+    "display_name": "中债-公路行业信用债指数"
   },
   {
-    "index_code": "980087",
-    "display_name": "人工智能精选"
+    "index_code": "287bfa8756b47b153afa85ec37511dce",
+    "display_name": "中债-0-1年政策性金融债指数"
   },
   {
-    "index_code": "980092",
-    "display_name": "自由现金流"
+    "index_code": "8a8b2cef709d7b1201709f29b09f0084",
+    "display_name": "中债-长江经济带地方政府债指数"
   },
   {
-    "index_code": "980103",
-    "display_name": "红利价值"
+    "index_code": "78598fc1ac4a8f2d327577e0481b065c",
+    "display_name": "中债-国有大型商业银行及股份制商业银行同业存单指数"
   },
   {
-    "index_code": "980105",
-    "display_name": "港股芯片"
+    "index_code": "8a8b2cef7a30ce25017a31baaf4d03b9",
+    "display_name": "中债-0-2年政策性金融债指数"
   },
   {
-    "index_code": "98010500",
-    "display_name": "港股芯片（人民币）"
+    "index_code": "5b78d41604e06e90b720144a6a956c67",
+    "display_name": "中债-高等级信用债综合指数"
   },
   {
-    "index_code": "980106",
-    "display_name": "港股通资源"
+    "index_code": "abea1402e6dd628d02118bca571783cb",
+    "display_name": "中债-中银绿色债券指数"
   },
   {
-    "index_code": "98010600",
-    "display_name": "港股通资源（人民币）"
+    "index_code": "d29061a5d50c21fa70df715b36f030d9",
+    "display_name": "中债-0-5年高等级科技创新债券指数"
   },
   {
-    "index_code": "980107",
-    "display_name": "AI应用软件"
+    "index_code": "62763c1cc15d21813b8170ea9ef09fc5",
+    "display_name": "中债-0-3年交易所信用债AAA指数"
   },
   {
-    "index_code": "980108",
-    "display_name": "港股通AI"
+    "index_code": "8a8b2c83670ee4e80167103f930c006e",
+    "display_name": "中债-5-10年期国债活跃券指数"
   },
   {
-    "index_code": "98010800",
-    "display_name": "港股通AI（人民币）"
+    "index_code": "2c90818811d3f4fa01123837e6b30d4a",
+    "display_name": "中债-企业债总指数"
   },
   {
-    "index_code": "980109",
-    "display_name": "港股通证券"
+    "index_code": "GB00BT96P954_hbzs",
+    "display_name": "iBoxx ChinaBond Investment Grade Overall Bond Index (EU EOD) (EUR Hedged)"
   },
   {
-    "index_code": "98010900",
-    "display_name": "港股通证券（人民币）"
+    "index_code": "8a8b2cef6d4bc1c2016d4caa15e8254a",
+    "display_name": "中债-京津冀债券综合指数"
   },
   {
-    "index_code": "980111",
-    "display_name": "国证生物"
+    "index_code": "890fcfb97ea76876563dfc1771652a22_dzc",
+    "display_name": "中债-利差驱动股债稳健指数"
   },
   {
-    "index_code": "980112",
-    "display_name": "AI应用"
+    "index_code": "ac478f286376cf14bf6cbc68ca0aa284",
+    "display_name": "中债-银行间碳中和债券指数"
   },
   {
-    "index_code": "980113",
-    "display_name": "数字支付"
+    "index_code": "987527eff930a4986a5044a80cadae9e",
+    "display_name": "中债-中银理财高信用等级同业存单指数"
   },
   {
-    "index_code": "980115",
-    "display_name": "国证PCB"
+    "index_code": "8a8b2ca038f905c70139b9b3ab9660bb",
+    "display_name": "中债-高信用等级新财富指数"
   },
   {
-    "index_code": "980120",
-    "display_name": "国证CXO"
+    "index_code": "071fcd510a99c559fc132780eabfb4e2",
+    "display_name": "中债-1-5年高等级科技创新债券指数"
   },
   {
-    "index_code": "980133",
-    "display_name": "能源ESG"
+    "index_code": "37a60515edb02fe8dab961d9c7035a95",
+    "display_name": "中债-银行间高等级碳中和债券指数"
   },
   {
-    "index_code": "980138",
-    "display_name": "存储芯片"
+    "index_code": "85e9dc831c7335636e8f540bf6c63f41",
+    "display_name": "中债-0-3年政策性金融债指数"
   },
   {
-    "index_code": "980150",
-    "display_name": "单项冠军"
+    "index_code": "963fc157a1f34898dd4071a355ea13bd",
+    "display_name": "中债-交易所科技创新债券指数"
   },
   {
-    "index_code": "980202",
-    "display_name": "国证小盘"
+    "index_code": "be7c06428db67138d7526a53dfbc7ff4_sczs",
+    "display_name": "中债-国泰海通中国股债均衡策略指数"
   },
   {
-    "index_code": "980532",
-    "display_name": "国证青岛海洋"
+    "index_code": "GB00BT966H02_hbzs",
+    "display_name": "iBoxx ChinaBond Investment Grade Overall Bond Index (EU EOD) (USD Unhedged)"
   },
   {
-    "index_code": "983001",
-    "display_name": "内地100"
+    "index_code": "8a8b2ca050d9e35d0150da6758462c78",
+    "display_name": "中债-公司债总指数"
   },
   {
-    "index_code": "983002",
-    "display_name": "内地100(港币)"
+    "index_code": "8a8b2cef6d4bc1c2016d4c96069c24fb",
+    "display_name": "中债-京津冀地方政府债指数"
   },
   {
-    "index_code": "983003",
-    "display_name": "内地科技50"
+    "index_code": "8a8b2c8367f69e950167f7b549f00005",
+    "display_name": "中债-国有大型商业银行及股份制商业银行二级资本债券指数"
   },
   {
-    "index_code": "983004",
-    "display_name": "内地科技50(港币)"
+    "index_code": "8a8b2cef6db2c0f4016db432c17f0667",
+    "display_name": "中债-京津冀绿色债券指数"
   },
   {
-    "index_code": "983005",
-    "display_name": "深港通综指"
+    "index_code": "8a8b2cef771294700177144288381a6c",
+    "display_name": "中债-优选投资级信用债指数"
   },
   {
-    "index_code": "983006",
-    "display_name": "深港通综指(港币)"
+    "index_code": "9da7e47f35b11c98cced95e4fb71b596",
+    "display_name": "中债-银行间绿色债券指数"
   },
   {
-    "index_code": "983007",
-    "display_name": "深港通100"
+    "index_code": "8a8b2ca03a59370a013a676d717923da",
+    "display_name": "中债-公司信用类债券指数"
   },
   {
-    "index_code": "983008",
-    "display_name": "深港通100(港币)"
+    "index_code": "412e41ffbb1720f863d2d43b7d4bad7c",
+    "display_name": "中债-0-5年政策性金融债指数"
   },
   {
-    "index_code": "983009",
-    "display_name": "深港通手机产业链"
+    "index_code": "GB00BT96PB71_hbzs",
+    "display_name": "iBoxx ChinaBond Investment Grade Overall Bond Index (EU EOD) (EUR Unhedged)"
   },
   {
-    "index_code": "983010",
-    "display_name": "深港通手机产业链(港币)"
+    "index_code": "398f40c1c8dd2081f6e1ee478b768dbb",
+    "display_name": "中债-中银理财高等级乡村振兴债券指数"
   },
   {
-    "index_code": "983011",
-    "display_name": "深港通绿色优选"
+    "index_code": "af109288145de0c9a36332a4fb3d06c1",
+    "display_name": "中债-国有大型商业银行同业存单指数"
   },
   {
-    "index_code": "983012",
-    "display_name": "深港通绿色优选(港币)"
+    "index_code": "b7c74a6569cb5a38d7f1ab3ed20ca62b",
+    "display_name": "中债-中高等级科技创新债券指数"
   },
   {
-    "index_code": "983013",
-    "display_name": "深港通能源"
+    "index_code": "GB00BT960P65_hbzs",
+    "display_name": "iBoxx ChinaBond Investment Grade Corporates Bond Index"
   },
   {
-    "index_code": "983014",
-    "display_name": "深港通能源（港币）"
+    "index_code": "8a8b2c8f611af5db01611cb3586c00f0",
+    "display_name": "中债-同业存单总指数"
   },
   {
-    "index_code": "983015",
-    "display_name": "深港通材料"
+    "index_code": "8a8b2c8f5d33e42a015d35796c3f5909",
+    "display_name": "中债-1-3年政策性金融债指数"
   },
   {
-    "index_code": "983016",
-    "display_name": "深港通材料（港币）"
+    "index_code": "8a8b2cef6d4bc1c2016d4ca23ef4251b",
+    "display_name": "中债-京津冀公司信用类债券指数"
   },
   {
-    "index_code": "983017",
-    "display_name": "深港通工业"
+    "index_code": "1398633fe32c4076f596530652d2f9bb",
+    "display_name": "中债-股份制商业银行同业存单指数"
   },
   {
-    "index_code": "983018",
-    "display_name": "深港通工业（港币）"
+    "index_code": "9fa9718155dceab39e5149af665f68a7",
+    "display_name": "中债-银行间高等级绿色债券指数"
   },
   {
-    "index_code": "983019",
-    "display_name": "深港通可选消费"
+    "index_code": "aa7a5987110cb22730ff46218ea70b9d",
+    "display_name": "中债-0-3年中高等级科技创新债券指数"
   },
   {
-    "index_code": "983020",
-    "display_name": "深港通可选消费（港币）"
+    "index_code": "61dc05e67fe9af6c9e5b23c80db18242",
+    "display_name": "中债-0-3年中高等级信用债指数"
   },
   {
-    "index_code": "983021",
-    "display_name": "深港通主要消费"
+    "index_code": "8a8b2cef6dcc80c0016dcdb7f0eb000c",
+    "display_name": "中债-交行0-5年长三角债券优选指数"
   },
   {
-    "index_code": "983022",
-    "display_name": "深港通主要消费（港币）"
+    "index_code": "81303c95d362b50182547f7385469b7b",
+    "display_name": "中债-高信用等级城市商业银行及农村商业银行债券指数"
   },
   {
-    "index_code": "983023",
-    "display_name": "深港通医药卫生"
+    "index_code": "ebd9f5ac057709c3fe5a375773e0c62d",
+    "display_name": "中债-交行长三角ESG优选信用债指数"
   },
   {
-    "index_code": "983024",
-    "display_name": "深港通医药卫生（港币）"
+    "index_code": "69d9058162f12b108ad0cb6e58c263c5",
+    "display_name": "中债-京津冀1-3年国有企业信用债精选指数"
   },
   {
-    "index_code": "983025",
-    "display_name": "深港通金融"
+    "index_code": "9fa2ca31d92abb96f8937ac6bb54828c",
+    "display_name": "中债-1-3年中高等级科技创新债券指数"
   },
   {
-    "index_code": "983026",
-    "display_name": "深港通金融（港币）"
+    "index_code": "2c90818811d3f4fa0111d5ed286b7367",
+    "display_name": "中债-短融总指数"
   },
   {
-    "index_code": "983027",
-    "display_name": "深港通信息技术"
+    "index_code": "c3bb7afced9999ce291380c0fc4dbca5_dzc",
+    "display_name": "中债-红利自由现金流低波股债恒定比例5/95指数"
   },
   {
-    "index_code": "983028",
-    "display_name": "深港通信息技术（港币）"
+    "index_code": "f81e213ceda33cb9bacf35da8a2df9d3",
+    "display_name": "中债-0-1年绿色中票短融指数"
   },
   {
-    "index_code": "983029",
-    "display_name": "深港通电信业务"
+    "index_code": "8a8b2c8368e383220168e4c1518f00e9",
+    "display_name": "中债-1-5年政策性金融债指数"
   },
   {
-    "index_code": "983030",
-    "display_name": "深港通电信业务（港币）"
+    "index_code": "8a8b2cef6bba11bd016bbabbfe31001b",
+    "display_name": "中债-0-3年AA+优选信用债指数"
   },
   {
-    "index_code": "983031",
-    "display_name": "深港通公用事业"
+    "index_code": "8a8b2c836751d31701675383b33b008a",
+    "display_name": "中债-3-5年政策性金融债指数"
   },
   {
-    "index_code": "983032",
-    "display_name": "深港通公用事业（港币）"
+    "index_code": "8a8b2ca03e4dd765013e6312d6462a1b",
+    "display_name": "中债-高信用等级企业债指数"
   },
   {
-    "index_code": "983033",
-    "display_name": "深港通通信服务"
+    "index_code": "2c9081e91ebc9e41011ec8c7c0440001",
+    "display_name": "中债-中期票据总指数"
   },
   {
-    "index_code": "983034",
-    "display_name": "深港通通信服务（港币）"
+    "index_code": "0bb01422038bb4086e8baa8f648574e8",
+    "display_name": "中债-高信用等级城市商业银行及农村商业银行同业存单指数"
   },
   {
-    "index_code": "983035",
-    "display_name": "深港通医疗"
+    "index_code": "8961444e141891490cba185d6b59cba2_dzc",
+    "display_name": "中债-红利自由现金流低波股债恒定比例10/90指数"
   },
   {
-    "index_code": "983036",
-    "display_name": "深港通医疗（港币）"
+    "index_code": "6e1844f85237e1e758531babf0d9b821",
+    "display_name": "中债-0-3年绿色债券综合指数"
   },
   {
-    "index_code": "983037",
-    "display_name": "深港通食品零售"
+    "index_code": "dbce7c1ac74e245158068681d16c21c7",
+    "display_name": "中债-0-5年中高等级科技创新债券指数"
   },
   {
-    "index_code": "983038",
-    "display_name": "深港通食品零售（港币）"
+    "index_code": "8a8b2cef6dd6cd77016dd88a7e7d002c",
+    "display_name": "中债-招商银行优选信用债指数"
   },
   {
-    "index_code": "983039",
-    "display_name": "深港通汽车"
+    "index_code": "8a8b2cef74adbfab0174afbea5434943",
+    "display_name": "中债-粤港澳大湾区债券综合指数"
   },
   {
-    "index_code": "983040",
-    "display_name": "深港通汽车（港币）"
+    "index_code": "0de96406d19a7ab66c7869bbbda8d549",
+    "display_name": "中债-5-10年政策性金融债指数"
   },
   {
-    "index_code": "983041",
-    "display_name": "深港通服装纺织"
+    "index_code": "6357eef4131197707f812ea9a7530a53",
+    "display_name": "中债-浦发银行ESG精选债券指数"
   },
   {
-    "index_code": "983042",
-    "display_name": "深港通服装纺织（港币）"
+    "index_code": "8a8b2ca0375f977f0138c2c322474b06",
+    "display_name": "中债-新中期票据总指数"
   },
   {
-    "index_code": "983043",
-    "display_name": "深港通电脑硬件"
+    "index_code": "d0203aedec448bec95845ba349cc9e78_dzc",
+    "display_name": "中债-红利自由现金流低波股债恒定比例15/85指数"
   },
   {
-    "index_code": "983044",
-    "display_name": "深港通电脑硬件（港币）"
+    "index_code": "8a8b2ca0408e9fa7014094a20f21001f",
+    "display_name": "中债-企业债AAA指数"
   },
   {
-    "index_code": "983045",
-    "display_name": "深港通消费服务"
+    "index_code": "577c5bc7775968c47728f3b0e473a2fd",
+    "display_name": "中债-1-5年中高等级科技创新债券指数"
   },
   {
-    "index_code": "983046",
-    "display_name": "深港通消费服务（港币）"
+    "index_code": "26a241dcc95bfd57b3ebaafd4264db03",
+    "display_name": "中债-0-3年高等级绿色债券综合指数"
   },
   {
-    "index_code": "983047",
-    "display_name": "深港通网络软件"
+    "index_code": "8a8b2cef74b8f0c10174bac93afe436a",
+    "display_name": "中债-粤港澳大湾区信用债指数"
   },
   {
-    "index_code": "983048",
-    "display_name": "深港通网络软件（港币）"
+    "index_code": "13fe6e5cd6a84a3038b8a5d46c7a38cb",
+    "display_name": "中债-城市商业银行及农村商业银行债券AAA指数"
   },
   {
-    "index_code": "983049",
-    "display_name": "深港通耐用消费"
+    "index_code": "8a8b2ca0408e9fa701409edf078f26c0",
+    "display_name": "中债-企业债AA+指数"
   },
   {
-    "index_code": "983050",
-    "display_name": "深港通耐用消费（港币）"
+    "index_code": "8b8f70506d65f4675233a32c903ad552",
+    "display_name": "中债-城市商业银行及农村商业银行同业存单AAA指数"
   },
   {
-    "index_code": "983051",
-    "display_name": "深港通农牧渔"
+    "index_code": "a3bd37a345ced14ae86e66cee43f7371",
+    "display_name": "中债-0-3年高等级绿色信用债指数"
   },
   {
-    "index_code": "983052",
-    "display_name": "深港通农牧渔（港币）"
+    "index_code": "8a8b2cef747519b5017476a72ce653a2",
+    "display_name": "中债-粤港澳大湾区绿色债券指数"
   },
   {
-    "index_code": "983053",
-    "display_name": "深港通非银"
+    "index_code": "d69df7413ed6e76fa5b9b20ba9e7c0ec",
+    "display_name": "中债-绿色普惠主题金融债券优选指数"
   },
   {
-    "index_code": "983054",
-    "display_name": "深港通非银（港币）"
+    "index_code": "e638c5f176c772ddaf59e947af2d052e_dzc",
+    "display_name": "中债-红利自由现金流低波股债恒定比例20/80指数"
   },
   {
-    "index_code": "983055",
-    "display_name": "深港通工业服务"
+    "index_code": "8a8b2c836770b93c0167727e6d6e01e6",
+    "display_name": "中债-7-10年政策性金融债指数"
   },
   {
-    "index_code": "983056",
-    "display_name": "深港通工业服务（港币）"
+    "index_code": "8a8b2cef74510d2f0174529d5a9f35b4",
+    "display_name": "中债-资产支持证券指数"
   },
   {
-    "index_code": "983057",
-    "display_name": "深港通电信服务"
+    "index_code": "2d90f08c90b2e886bf6f6df549af950c",
+    "display_name": "中债-交易所AAA科技创新债券指数"
   },
   {
-    "index_code": "983058",
-    "display_name": "深港通电信服务（港币）"
+    "index_code": "f8cbf35f3095aa44006f7fc7c506176d",
+    "display_name": "中债-高信用等级农村商业银行债券优选指数"
   },
   {
-    "index_code": "983059",
-    "display_name": "深港通生科"
+    "index_code": "8a8b2ca03dbda555013dc9ed1a7365f8",
+    "display_name": "中债-5年期金融债指数"
   },
   {
-    "index_code": "983060",
-    "display_name": "深港通生科（港币）"
+    "index_code": "103c0fdb82c06b6b9d7ec09f28b8b615",
+    "display_name": "中债-浦银理财新质生产力发展债券指数"
   },
   {
-    "index_code": "983061",
-    "display_name": "深港通基材"
+    "index_code": "d2a86b6cf61cad4917d86ee30af27cee",
+    "display_name": "中债-0-3年高等级绿色公司信用类债券指数"
   },
   {
-    "index_code": "983062",
-    "display_name": "深港通基材（港币）"
+    "index_code": "8a8b2cef6b96053a016b982c95e7001f",
+    "display_name": "中债-个人住房抵押贷款资产支持证券指数"
   },
   {
-    "index_code": "983063",
-    "display_name": "深港通化工"
+    "index_code": "8a8b2ca0408e9fa70140949f012d0002",
+    "display_name": "中债-企业债AA指数"
   },
   {
-    "index_code": "983064",
-    "display_name": "深港通化工（港币）"
+    "index_code": "44a33e0c99dffbce14774eb52415a5b0",
+    "display_name": "中债-交易所高等级科技创新债券指数"
   },
   {
-    "index_code": "983065",
-    "display_name": "深港通食品饮料"
+    "index_code": "03ffb378810766ab90ec7e959fadc3c0",
+    "display_name": "中债-成渝地区双城经济圈国有企业信用债精选指数"
   },
   {
-    "index_code": "983066",
-    "display_name": "深港通食品饮料（港币）"
+    "index_code": "6bae070303eed9cf867fd5011a0e47bb_dzc",
+    "display_name": "中债-红利自由现金流低波股债恒定比例25/75指数"
   },
   {
-    "index_code": "983067",
-    "display_name": "深港通半导体"
+    "index_code": "d0df76dc4485ecd520c870d81703645c",
+    "display_name": "中债-京津冀绿色债券综合指数"
   },
   {
-    "index_code": "983068",
-    "display_name": "深港通半导体（港币）"
+    "index_code": "8a8b2ca055135ad301551536120b6bef",
+    "display_name": "中债-5年期国债期货期限匹配金融债指数"
   },
   {
-    "index_code": "983069",
-    "display_name": "深港通工业品"
+    "index_code": "8a8b2cef6b4dec2d016b4ebb4ec36c3f",
+    "display_name": "中债-民营企业公司信用类债券指数"
   },
   {
-    "index_code": "983070",
-    "display_name": "深港通工业品（港币）"
+    "index_code": "8a8b2cef7456338c017456818eba000a",
+    "display_name": "中债-北京市地方政府债指数"
   },
   {
-    "index_code": "983071",
-    "display_name": "深港通房地产"
+    "index_code": "8a8b2c8f57df2edc0157e1163014176e",
+    "display_name": "中债-兴业绿色债券指数"
   },
   {
-    "index_code": "983072",
-    "display_name": "深港通房地产（港币）"
+    "index_code": "8a8b2cef7682625f0176835c7a840070",
+    "display_name": "中债-投资优选综合指数"
   },
   {
-    "index_code": "983073",
-    "display_name": "深港通零售"
+    "index_code": "fb8ea3131019103d338d9f3195fae114",
+    "display_name": "中债-0-3年交易所科技创新债券指数"
   },
   {
-    "index_code": "983074",
-    "display_name": "深港通零售（港币）"
+    "index_code": "d33a29eb4d1e1111af1e4b7097cca597_dzc",
+    "display_name": "中债-红利自由现金流低波股债恒定比例30/70指数"
   },
   {
-    "index_code": "983075",
-    "display_name": "深港通传媒"
+    "index_code": "8a8b2ca0406a93470140800885d20b7f",
+    "display_name": "中债-企业债AA-指数"
   },
   {
-    "index_code": "983076",
-    "display_name": "深港通传媒（港币）"
+    "index_code": "0ff243f048cbd219f59fb92ab8ae4941_dzc",
+    "display_name": "中债-红利自由现金流低波股债金恒定比例指数"
   },
   {
-    "index_code": "983077",
-    "display_name": "深港通运输"
+    "index_code": "8a8b2ca055135ad301551549f77c7ec6",
+    "display_name": "中债-10年期国债期货期限匹配金融债指数"
   },
   {
-    "index_code": "983078",
-    "display_name": "深港通运输（港币）"
+    "index_code": "2551cfa3eea577a3ca71d51bceca6f8f",
+    "display_name": "中债-长三角绿色债券综合指数"
   },
   {
-    "index_code": "983079",
-    "display_name": "深港通制药"
+    "index_code": "8a8b2cef7a35f47f017a37c76654232d",
+    "display_name": "中债-投资优选国债指数"
   },
   {
-    "index_code": "983080",
-    "display_name": "深港通制药（港币）"
+    "index_code": "8a8b2cef7408f4280174096a89a04112",
+    "display_name": "中债-上海市地方政府债指数"
   },
   {
-    "index_code": "983081",
-    "display_name": "深港通银行"
+    "index_code": "3e716b3b970be805e32d2efad3193228",
+    "display_name": "中债-1-3年交易所科技创新债券指数"
   },
   {
-    "index_code": "983082",
-    "display_name": "深港通银行（港币）"
+    "index_code": "89019c1cbbe64a34698165eecc7e7417",
+    "display_name": "中债-平安理财ESG优选绿色债券指数"
   },
   {
-    "index_code": "983083",
-    "display_name": "深港通内房股"
+    "index_code": "8a8b2ca03e88932b013e88b9d6290001",
+    "display_name": "中债-高收益企业债指数"
   },
   {
-    "index_code": "983084",
-    "display_name": "深港通内房股(港币)"
+    "index_code": "110d265cae4a6a873ff2b0d293d36322",
+    "display_name": "中债-0-5年交易所科技创新债券指数"
   },
   {
-    "index_code": "983085",
-    "display_name": "深港通节能"
+    "index_code": "8a8b2cef7456338c017458e2e0da3e33",
+    "display_name": "中债-天津市地方政府债指数"
   },
   {
-    "index_code": "983086",
-    "display_name": "深港通节能(港币)"
+    "index_code": "8a8b2c8369455bf001694679d016038a",
+    "display_name": "中债-0-2年国开行债券指数"
   },
   {
-    "index_code": "983087",
-    "display_name": "深港通新能源车"
+    "index_code": "f711877ede9c7aa67bfe326721c2137e",
+    "display_name": "中债-平安人寿ESG整合策略信用债指数"
   },
   {
-    "index_code": "983088",
-    "display_name": "深港通新能源车(港币)"
+    "index_code": "8a8b2cef7a404137017a424e54cb7859",
+    "display_name": "中债-投资优选政策性金融债指数"
   },
   {
-    "index_code": "983089",
-    "display_name": "深港通大湾区"
+    "index_code": "f187fd9f8ee0d88f9a59323d6a709e34",
+    "display_name": "中债-高信用等级银行金融债券指数"
   },
   {
-    "index_code": "983090",
-    "display_name": "深港通大湾区(港币)"
+    "index_code": "7fd4e2eda73794d409e592448adb8c25",
+    "display_name": "中债-粤港澳大湾区绿色债券综合指数"
   },
   {
-    "index_code": "983091",
-    "display_name": "深港通50"
+    "index_code": "48643ba4f9bd31f07ec8efdc44ebf761_dzc",
+    "display_name": "中债-红利自由现金流低波股债金恒定比例10/85/5指数"
   },
   {
-    "index_code": "983092",
-    "display_name": "深港通50（港币）"
+    "index_code": "8a8b2cef744be6d401744ebe4e6568c2",
+    "display_name": "中债-重庆市地方政府债指数"
   },
   {
-    "index_code": "983093",
-    "display_name": "深港通先进制造"
+    "index_code": "8a8b2cef6b439f77016b46a4d5851547",
+    "display_name": "中债-0-3年国开行债券指数"
   },
   {
-    "index_code": "983094",
-    "display_name": "深港通先进制造（港币）"
+    "index_code": "7ebdf1292c65a1bcfcdab7546919312c",
+    "display_name": "中债-长江经济带绿色债券综合指数"
   },
   {
-    "index_code": "983095",
-    "display_name": "深港通数字经济"
+    "index_code": "35cd6e049351b3e346ab29e204afd90b_dzc",
+    "display_name": "中债-红利现金流0-10年股债恒定比例5/95指数"
   },
   {
-    "index_code": "983096",
-    "display_name": "深港通数字经济（港币）"
+    "index_code": "8a8b2cef7a404137017a4245018a7011",
+    "display_name": "中债-投资优选地方政府债指数"
   },
   {
-    "index_code": "983097",
-    "display_name": "深港通绿色低碳"
+    "index_code": "9e758360ea2f7288987ff37b1d8cd367",
+    "display_name": "中债-1-5年交易所科技创新债券指数"
   },
   {
-    "index_code": "983098",
-    "display_name": "深港通绿色低碳（港币）"
+    "index_code": "b9a6d06e9b6458c9062f08a1dc75fd30",
+    "display_name": "中债-北京银行高信用等级城市商业银行债券指数"
   },
   {
-    "index_code": "983101",
-    "display_name": "内地生物科技"
+    "index_code": "81d917dad85d7ce95f51bc644484e1ff",
+    "display_name": "中债-银行金融债券AAA指数"
   },
   {
-    "index_code": "983102",
-    "display_name": "内地生物科技(港币)"
+    "index_code": "e36b9dc1620a0dc7ee027cca1663c526",
+    "display_name": "中债-银行普通债券AAA指数"
   },
   {
-    "index_code": "983103",
-    "display_name": "内地医疗器械"
+    "index_code": "608e6e23ec091fdc8c879481ac979b19",
+    "display_name": "中债-黄河流域绿色债券综合指数"
   },
   {
-    "index_code": "983104",
-    "display_name": "内地医疗器械(港币)"
+    "index_code": "4bde3b669a49e81e8de90e8df7687128",
+    "display_name": "中债-银行间科技创新债券指数"
   },
   {
-    "index_code": "983105",
-    "display_name": "内地消费电子"
+    "index_code": "efb8fc05ef17ab45fb2c6ff8c274c294_dzc",
+    "display_name": "中债-红利现金流0-10年股债恒定比例10/90指数"
   },
   {
-    "index_code": "983106",
-    "display_name": "内地消费电子(港币)"
+    "index_code": "e478b927bfef3db43a051a0b1d812593",
+    "display_name": "中债-天津银行京津冀ESG主题精选信用债指数"
   },
   {
-    "index_code": "983160",
-    "display_name": "低碳科技"
+    "index_code": "8a8b2cef771ce12601771df60d924fdb",
+    "display_name": "中债-投资优选信用债指数"
   },
   {
-    "index_code": "983161",
-    "display_name": "低碳科技(港币)"
+    "index_code": "044bcb6ca838039cbed87d2bd58d5316",
+    "display_name": "中债-0-5年国开行债券指数"
   },
   {
-    "index_code": "987001",
-    "display_name": "港股50"
+    "index_code": "8a8b2c8368e383220168e4bae68500c9",
+    "display_name": "中债-湖北省地方政府债指数"
   },
   {
-    "index_code": "987002",
-    "display_name": "港股50（人民币）"
+    "index_code": "c1dc7e964c26475afa239b00594b8275",
+    "display_name": "中债-贵阳银行西部高质量发展信用债精选指数"
   },
   {
-    "index_code": "987003",
-    "display_name": "港股通50"
+    "index_code": "00474c7a00eb73ca32a23a6861b4a418",
+    "display_name": "中债-中高等级京津冀绿色债券指数"
   },
   {
-    "index_code": "987004",
-    "display_name": "港股通50（人民币）"
+    "index_code": "571d2417bcf35b5dc808f3c480349090",
+    "display_name": "中债-银行间AAA科技创新债券指数"
   },
   {
-    "index_code": "987006",
-    "display_name": "港股科技"
+    "index_code": "6dd638194bb5a5f2de90bd7133192953",
+    "display_name": "中债-投资优选信用债分散指数"
   },
   {
-    "index_code": "987007",
-    "display_name": "港股科技（人民币）"
+    "index_code": "48fc8dfb472c5498c6612cd5151647d8",
+    "display_name": "中债-高信用等级同业存单指数"
   },
   {
-    "index_code": "987008",
-    "display_name": "港股通科技"
+    "index_code": "f40f77cc1fefc9898ad3d481bc700462_dzc",
+    "display_name": "中债-红利现金流0-10年股债恒定比例15/85指数"
   },
   {
-    "index_code": "987009",
-    "display_name": "港股通科技（人民币）"
+    "index_code": "8a8b2cef730c9c8f01730d1816ce0066",
+    "display_name": "中债-河南省地方政府债指数"
   },
   {
-    "index_code": "987010",
-    "display_name": "港股大中盘"
+    "index_code": "8a8b2c83638ecdf001638ffed9ae0007",
+    "display_name": "中债-1-3年国开行债券指数"
   },
   {
-    "index_code": "987011",
-    "display_name": "港股大中盘（人民币）"
+    "index_code": "185bb3883f838a1fdfe60e9ca37f4b43",
+    "display_name": "中债-北京农商银行中高信用等级农村商业银行金融债券指数"
   },
   {
-    "index_code": "987012",
-    "display_name": "港股大盘"
+    "index_code": "8a8b2c8367ec51dc0167ed808dc3001b",
+    "display_name": "中债-1-5年国开行债券指数"
   },
   {
-    "index_code": "987013",
-    "display_name": "港股大盘（人民币）"
+    "index_code": "b15ef8073f38d8962cd7728a857f5cc8",
+    "display_name": "中债-同业存单AAA指数"
   },
   {
-    "index_code": "987014",
-    "display_name": "港股中盘"
+    "index_code": "8a8b2cef7109a09c01710c04f8bb41fd",
+    "display_name": "中债-四川省地方政府债指数"
   },
   {
-    "index_code": "987015",
-    "display_name": "港股中盘（人民币）"
+    "index_code": "19aa3d770a126915e1ad6354b8f5e6dd_dzc",
+    "display_name": "中债-红利现金流0-10年股债恒定比例20/80指数"
   },
   {
-    "index_code": "987016",
-    "display_name": "港股通红利低波"
+    "index_code": "1432826c10c29fdd3b75258378e45aa1",
+    "display_name": "中债-中高等级长三角绿色债券指数"
   },
   {
-    "index_code": "987017",
-    "display_name": "港股通红利低波（人民币）"
+    "index_code": "e4498669d5496afed08bdf7ff8695681",
+    "display_name": "中债-银行间高等级科技创新债券指数"
   },
   {
-    "index_code": "987018",
-    "display_name": "港股通创新药"
+    "index_code": "103a161c9927a9ae41e38f0887bbd33e",
+    "display_name": "中债-投资优选活跃信用债指数"
   },
   {
-    "index_code": "987019",
-    "display_name": "港股通创新药（人民币）"
+    "index_code": "9fbcd883254a1fde6fb7192a4aa23826_dzc",
+    "display_name": "中债-红利现金流0-10年股债恒定比例25/75指数"
   },
   {
-    "index_code": "987020",
-    "display_name": "内房股"
+    "index_code": "8a8b2cef7a11e7fc017a13fe7446002a",
+    "display_name": "中债-国寿资产ESG信用债精选指数"
   },
   {
-    "index_code": "987021",
-    "display_name": "内房股（人民币）"
+    "index_code": "f5517678561c457f03b6d74c06440a3d",
+    "display_name": "中债-投资优选国际信用评级投资级信用债分散指数"
   },
   {
-    "index_code": "987022",
-    "display_name": "港股通互联网"
+    "index_code": "8641b0cb4c1f39c372dbcf5516b9c615",
+    "display_name": "中债-公司信用类科技创新债券指数"
   },
   {
-    "index_code": "987023",
-    "display_name": "港股通互联网（人民币）"
+    "index_code": "8a8b2cef7132d3800171330128ec0002",
+    "display_name": "中债-云南省地方政府债指数"
   },
   {
-    "index_code": "987024",
-    "display_name": "港股通消费"
+    "index_code": "8a8b2c8f59a45e7e0159a4da46990001",
+    "display_name": "中债-3-5年国开行债券指数"
   },
   {
-    "index_code": "987025",
-    "display_name": "港股通消费（人民币）"
+    "index_code": "cc2b58ce2230e6097b7b32447406c783",
+    "display_name": "中债-中高等级粤港澳大湾区绿色债券指数"
   },
   {
-    "index_code": "987026",
-    "display_name": "港股通新能源"
+    "index_code": "d1c9c790faf3cac79edabc6d6068edf7",
+    "display_name": "中债-6-12个月AAA同业存单指数"
   },
   {
-    "index_code": "987027",
-    "display_name": "港股通新能源（人民币）"
+    "index_code": "d20fbfd3ed04a7261a0572967ffc06c3",
+    "display_name": "中债-投资优选国际信用评级投资级活跃信用债指数"
   },
   {
-    "index_code": "987028",
-    "display_name": "港股通内企ESG"
+    "index_code": "d3c82122ac871f08eb5bf877065e5377",
+    "display_name": "中债-中高等级长江经济带绿色债券指数"
   },
   {
-    "index_code": "987029",
-    "display_name": "港股通内企ESG（人民币）"
+    "index_code": "3279a06da6f3a8e8a6429d32b0917cb7",
+    "display_name": "中债-AAA公司信用类科技创新债券指数"
   },
   {
-    "index_code": "987030",
-    "display_name": "港股通内企ESG优选"
+    "index_code": "1847950a9e667f22523c25782313b90a_dzc",
+    "display_name": "中债-红利现金流0-10年股债恒定比例30/70指数"
   },
   {
-    "index_code": "987031",
-    "display_name": "港股通内企ESG优选（人民币）"
+    "index_code": "5846dca288299ac125539d6600c07853",
+    "display_name": "中债-长江养老年金基金债券指数"
   },
   {
-    "index_code": "987032",
-    "display_name": "港股金融科技"
+    "index_code": "8a8b2cef7132d3800171333ba262010c",
+    "display_name": "中债-湖南省地方政府债指数"
   },
   {
-    "index_code": "98703200",
-    "display_name": "港股金融科技（人民币）"
+    "index_code": "429c1ff7661c2abacdbcb5718a3cb5f6",
+    "display_name": "中债-同业存单AA+指数"
   },
   {
-    "index_code": "CESAIT",
-    "display_name": "中华陆股通行业龙头"
+    "index_code": "8a8b2c8f5f465323015f4807db4f0245",
+    "display_name": "中债-3-7年国开行债券指数"
   },
   {
-    "index_code": "CESBNR",
-    "display_name": "中华一带一路"
+    "index_code": "1df5ae3062c141068d592f03bc52a6af",
+    "display_name": "中债-高信用等级短融指数"
   },
   {
-    "index_code": "CESFAC",
-    "display_name": "中华A股外资优先配置"
+    "index_code": "8a8b2cef70eaba740170ed2c79b44c04",
+    "display_name": "中债-山东省地方政府债指数"
   },
   {
-    "index_code": "CESGBA",
-    "display_name": "中华大湾区优势产业"
+    "index_code": "8a8b2ca0515fc8a60151618b84483c9a",
+    "display_name": "平安中债-可投资级信用债指数"
   },
   {
-    "index_code": "CESGTH",
-    "display_name": "中华港股通成长"
+    "index_code": "4e808b033318be271f9b2063693a12ef",
+    "display_name": "中债-投资级公司信用债综合指数"
   },
   {
-    "index_code": "CESIBT",
-    "display_name": "中华创新医药"
+    "index_code": "eba5e43f73c9d877657d88d3e00ad90c",
+    "display_name": "中债-高等级公司信用类科技创新债券指数"
   },
   {
-    "index_code": "CESMOT",
-    "display_name": "中华港股通护城河"
+    "index_code": "8a8b2c8366e5ad870166e8bb4f663dc1",
+    "display_name": "中债-5-10年国开行债券指数"
   },
   {
-    "index_code": "CESPEL",
-    "display_name": "中华港股通泛休闲娱乐"
+    "index_code": "782bf2690db49435c86ead87335b4f4f_dzc",
+    "display_name": "中债-红利现金流0-10年股债金恒定比例10/80/10指数"
   },
   {
-    "index_code": "CESPSM",
-    "display_name": "中华国证港股物业"
+    "index_code": "bfbeeed1994639dcd0e0b94fda306b56",
+    "display_name": "中债-高等级黄河流域绿色债券指数"
   },
   {
-    "index_code": "CESVAL",
-    "display_name": "中华港股通价值"
+    "index_code": "9883fcadeac6d8c22204f0c749e4cf08",
+    "display_name": "中债-商业银行债券AAA指数"
   },
   {
-    "index_code": "CESYLV",
-    "display_name": "中华港股通高息低波"
+    "index_code": "ecac759d61e1c09314d6f2577c20ce6c",
+    "display_name": "中债-金融机构科技创新债券指数"
   },
   {
-    "index_code": "CN2310",
-    "display_name": "国证50"
+    "index_code": "8a8b2cef7109a09c01710c1c2d04478e",
+    "display_name": "中债-浙江省地方政府债指数"
   },
   {
-    "index_code": "CN5074",
-    "display_name": "财富管理"
+    "index_code": "7966f86162b4f58d6e9ff3bd65279c4f_dzc",
+    "display_name": "中债-红利现金流0-10年股债金恒定比例10/85/5指数"
   },
   {
-    "index_code": "CN5075",
-    "display_name": "国证信创"
+    "index_code": "8a8b2ca05242607601524498b2133d9a",
+    "display_name": "中债-7-10年国开行债券指数"
   },
   {
-    "index_code": "CN5082",
-    "display_name": "国证航天"
+    "index_code": "be73e8263fc20359521707abd6db45b3",
+    "display_name": "中债-投资级主题绿色债券优选指数"
   },
   {
-    "index_code": "CN5084",
-    "display_name": "电信服务"
+    "index_code": "8d397b018e0ce97d58dedc3ef41ddf36",
+    "display_name": "中债-投资级公司信用债精选指数"
   },
   {
-    "index_code": "CN5085",
-    "display_name": "服装纺织"
+    "index_code": "1a985201e4c5ceecdde9610e43a0fd35",
+    "display_name": "中债-高信用等级商业银行债券指数"
   },
   {
-    "index_code": "CN5086",
-    "display_name": "工业服务"
+    "index_code": "afb3fe2d59b5165a0175bac95b8c3da0",
+    "display_name": "中债-科技创新债券综合指数"
   },
   {
-    "index_code": "CN5090",
-    "display_name": "国证化工"
+    "index_code": "8a8b2c8368a5b6da0168a6bd29e80017",
+    "display_name": "中债-江苏省地方政府债指数"
   },
   {
-    "index_code": "CN5093",
-    "display_name": "国证零售"
+    "index_code": "8a8b2c8f5c60bf75015c63296c8f3867",
+    "display_name": "中债-7-20年国开行债券指数"
   },
   {
-    "index_code": "CN5094",
-    "display_name": "耐用消费"
+    "index_code": "cec6a61bd8827e306fcba8f195a4903f",
+    "display_name": "中债-乡村振兴债券综合指数"
   },
   {
-    "index_code": "CN5097",
-    "display_name": "消费服务"
+    "index_code": "a485ef64ce0ae0f1f5cc088671e87d8f",
+    "display_name": "中债-科技创新债券指数"
   },
   {
-    "index_code": "CN5100",
-    "display_name": "白色家电"
+    "index_code": "8a8b2cef7311c2e70173135cdcb70301",
+    "display_name": "中债-中信证券2年期国债期货优选可交割券指数"
   },
   {
-    "index_code": "CN5101",
-    "display_name": "国证百货"
+    "index_code": "3c94ebab97ab6edf12ca14e452977115",
+    "display_name": "中债-银行间市场信用债AAA指数"
   },
   {
-    "index_code": "CN5105",
-    "display_name": "路桥港口"
+    "index_code": "4d4aa3607fb4ba663b4587de4a624b24",
+    "display_name": "中债-高等级科技创新债券综合指数"
   },
   {
-    "index_code": "CN5106",
-    "display_name": "酒店餐饮"
+    "index_code": "8a8b2cef7109a09c01710c14d2a74415",
+    "display_name": "中债-广东省地方政府债指数"
   },
   {
-    "index_code": "CN5111",
-    "display_name": "定增综指"
+    "index_code": "8a8b2c8f58b2539f0158b4358a8e1691",
+    "display_name": "中债-10-20年国开行债券指数"
   },
   {
-    "index_code": "CN5122",
-    "display_name": "中小能源"
+    "index_code": "7dc84c0f21a71b97931fd7abadc78433",
+    "display_name": "中债-科技创新及绿色债券指数"
   },
   {
-    "index_code": "CN5123",
-    "display_name": "中小材料"
+    "index_code": "8a8b2cef734542800173460c4f550244",
+    "display_name": "中债-中信证券5年期国债期货优选可交割券指数"
   },
   {
-    "index_code": "CN5124",
-    "display_name": "中小工业"
+    "index_code": "9ced53d3f93b8cb9509a80d294086876",
+    "display_name": "中债-中期票据AAA指数"
   },
   {
-    "index_code": "CN5125",
-    "display_name": "中小可选"
+    "index_code": "3b02fa47414f502add64f1e77e9e67b7",
+    "display_name": "中债-中高等级科技创新债券综合指数"
   },
   {
-    "index_code": "CN5126",
-    "display_name": "中小消费"
+    "index_code": "8a8b2cef730c9c8f01730e79bade0185",
+    "display_name": "中债-贵州省地方政府债指数"
   },
   {
-    "index_code": "CN5127",
-    "display_name": "中小医药"
+    "index_code": "9f5f8148a502cd0d6276b16c798282f1",
+    "display_name": "中债-0-3年农发行债券指数"
   },
   {
-    "index_code": "CN5128",
-    "display_name": "中小金融"
+    "index_code": "0572b7d527231c98e4fc0de8abe2c7c2",
+    "display_name": "中债-投资级公司科技创新债券精选指数"
   },
   {
-    "index_code": "CN5129",
-    "display_name": "中小信息"
+    "index_code": "ca7f4de2681f726e0d1268fd6f646788",
+    "display_name": "中债-高信用等级商业银行无固定期限及二级资本债券指数"
   },
   {
-    "index_code": "CN5130",
-    "display_name": "中小电信"
+    "index_code": "8a8b2cef734a68db01734c47a3420114",
+    "display_name": "中债-中信证券10年期国债期货优选可交割券指数"
   },
   {
-    "index_code": "CN5131",
-    "display_name": "中小公用"
+    "index_code": "5e21777b1e179d595ebd9a78a6b89bf7",
+    "display_name": "中债-科技创新绿色普惠主题债券综合指数"
   },
   {
-    "index_code": "CN5138",
-    "display_name": "大盘红利"
+    "index_code": "8a8b2cef730c9c8f01730d8ca18b00ee",
+    "display_name": "中债-河北省地方政府债指数"
   },
   {
-    "index_code": "CN5139",
-    "display_name": "稳进价值"
+    "index_code": "650aa720bac6f7d57dcb08a11c7fdd76",
+    "display_name": "中债-0-5年农发行债券指数"
   },
   {
-    "index_code": "CN5140",
-    "display_name": "先锋成长"
+    "index_code": "8a8b2c8f5e115590015e123b2569006c",
+    "display_name": "中债-1-3年农发行债券指数"
   },
   {
-    "index_code": "CN5141",
-    "display_name": "优势价值"
+    "index_code": "8a8b2c83694a824d01694c5d53d6000a",
+    "display_name": "中债-中信证券国债及地方政府债精选指数"
   },
   {
-    "index_code": "470006",
-    "display_name": "创业板R(港币)(CNH)"
+    "index_code": "2ac380e3d3d941de8351f1fff8e6bda5",
+    "display_name": "中债-投资优选科技创新债券指数"
   },
   {
-    "index_code": "470007",
-    "display_name": "创业板R（美元）（CNH）"
+    "index_code": "6b227923cd44064bbf239a69f70f09ae",
+    "display_name": "中债-科技创新绿色普惠主题信用债指数"
   },
   {
-    "index_code": "470026",
-    "display_name": "深指ESGR"
+    "index_code": "3f6da52f1d57886271979d928af5a203",
+    "display_name": "中债-商业银行二级资本债券AAA指数"
   },
   {
-    "index_code": "470027",
-    "display_name": "100ESGR"
+    "index_code": "8a8b2cef7311c2e7017312b23a650130",
+    "display_name": "中债-安徽省地方政府债指数"
   },
   {
-    "index_code": "470028",
-    "display_name": "创指ESGR"
+    "index_code": "8a8b2c8366ead3e30166ece4a24207dc",
+    "display_name": "中债-1-5年农发行债券指数"
   },
   {
-    "index_code": "470029",
-    "display_name": "深指ESG领先R"
+    "index_code": "6b12c39d52c331dd5e3d1aabc4d9b5a6",
+    "display_name": "中债-商业银行无固定期限资本债券AAA指数"
   },
   {
-    "index_code": "470030",
-    "display_name": "100ESG领先R"
+    "index_code": "8a8b2c83689643bc0168985a433e000e",
+    "display_name": "中债-中信证券精选高等级资产支持证券指数"
   },
   {
-    "index_code": "470031",
-    "display_name": "创指ESG领先R"
+    "index_code": "8a8b2cef73265c58017326e66e310005",
+    "display_name": "中债-辽宁省地方政府债指数"
   },
   {
-    "index_code": "470032",
-    "display_name": "深指ESG增强R"
+    "index_code": "8a8b2c8368edcfd70168f08992c6153a",
+    "display_name": "中债-金融机构二级资本债券总指数"
   },
   {
-    "index_code": "470033",
-    "display_name": "100ESG增强R"
+    "index_code": "8a8b2cef7740edb1017743079b27001d_sczs",
+    "display_name": "中债-中信证券RMBS条件早偿率指数"
   },
   {
-    "index_code": "470034",
-    "display_name": "创指ESG增强R"
+    "index_code": "5ec55de5ac980c543c2d9bf25d6e423b",
+    "display_name": "中债-中高等级科技创新及绿色债券指数"
   },
   {
-    "index_code": "470035",
-    "display_name": "深证光伏R"
+    "index_code": "0b96ff2a2948a75625e2319b49446633",
+    "display_name": "中债-商业银行无固定期限及二级资本债券指数"
   },
   {
-    "index_code": "470036",
-    "display_name": "深证储能R"
+    "index_code": "8a8b2c83633741c401633816a38d0004",
+    "display_name": "中债-3-5年农发行债券指数"
   },
   {
-    "index_code": "470037",
-    "display_name": "深证高装R"
+    "index_code": "8a8b2cef7311c2e701731364881d032a",
+    "display_name": "中债-内蒙古自治区地方政府债指数"
   },
   {
-    "index_code": "470038",
-    "display_name": "生物经济R"
+    "index_code": "b379a2dacd92d19ca805021c0d336ee8",
+    "display_name": "中债-商业银行二级资本债券指数"
   },
   {
-    "index_code": "470039",
-    "display_name": "创新材料R"
+    "index_code": "8a8b2cef732135fd017322145858008e",
+    "display_name": "中债-福建省地方政府债指数"
   },
   {
-    "index_code": "470040",
-    "display_name": "创业高装R"
+    "index_code": "8a8b2c83650be47401650cfc19260034",
+    "display_name": "中债-5-10年农发行债券指数"
   },
   {
-    "index_code": "470041",
-    "display_name": "创新消费R"
+    "index_code": "f1df5dcfb61be8a2fbcbc119db98b149",
+    "display_name": "中债-高等级科技创新及绿色债券指数"
   },
   {
-    "index_code": "470042",
-    "display_name": "新材料50R"
+    "index_code": "8a8b2cef746ff35701747203d0402708",
+    "display_name": "中债-中信证券1-5年山西省国有企业信用债精选指数"
   },
   {
-    "index_code": "470043",
-    "display_name": "新能装备R"
+    "index_code": "8a8b2cef7311c2e7017313a860bb03dc",
+    "display_name": "中债-广西壮族自治区地方政府债指数"
   },
   {
-    "index_code": "470046",
-    "display_name": "深证XR R"
+    "index_code": "865e39d03b6fd073781dbf1477a6cca1",
+    "display_name": "中债-中高等级科技创新绿色普惠主题信用债指数"
   },
   {
-    "index_code": "470047",
-    "display_name": "数字文化R"
+    "index_code": "8a8b2c8f5e303bba015e31c793b80070",
+    "display_name": "中债-7-10年农发行债券指数"
   },
   {
-    "index_code": "470048",
-    "display_name": "新型显示R"
+    "index_code": "8a8b2cef75b463fb0175b62b358c009c",
+    "display_name": "中债-中信证券1-5年钢铁煤炭行业精选信用债指数"
   },
   {
-    "index_code": "470049",
-    "display_name": "深证数字交通R"
+    "index_code": "a096ce5c63c2a1df2240b876c868c3ed",
+    "display_name": "中债-商业银行无固定期限资本债券指数"
   },
   {
-    "index_code": "470050",
-    "display_name": "深证卫星导航R"
+    "index_code": "61c04cb52c2decb1cbba80292ab46ccd",
+    "display_name": "中债-高等级科技创新绿色普惠主题信用债指数"
   },
   {
-    "index_code": "470052",
-    "display_name": "深证数字安全R"
+    "index_code": "8a8b2cef76637c3a0176646257fd0014",
+    "display_name": "中债-中信证券1-3年江苏省国有企业信用债精选指数"
   },
   {
-    "index_code": "470053",
-    "display_name": "深证数据要素R"
+    "index_code": "8a8b2c83655e4a3901655f9b6cde001b",
+    "display_name": "中债-10年期国债及政策性银行债绿色增强指数"
   },
   {
-    "index_code": "470054",
-    "display_name": "深证智能电网R"
+    "index_code": "8a8b2c83646718fb01646849d3850006",
+    "display_name": "中债-1-5年进出口行债券指数"
   },
   {
-    "index_code": "470055",
-    "display_name": "深证国企ESGR"
+    "index_code": "8a8b2cef732135fd017321b8405e0005",
+    "display_name": "中债-江西省地方政府债指数"
   },
   {
-    "index_code": "470056",
-    "display_name": "深证民企ESGR"
+    "index_code": "cbfd21590b4805df8df7d9de222f8f7d",
+    "display_name": "中债-高等级央企信用债精选指数"
   },
   {
-    "index_code": "470057",
-    "display_name": "深证民企50R"
+    "index_code": "373e09025763c56cf01201234a794658",
+    "display_name": "中债-高信用等级数字经济产业信用债指数"
   },
   {
-    "index_code": "470058",
-    "display_name": "深证民企治理R"
+    "index_code": "8a8b2cef74510d2f01745168e5670004",
+    "display_name": "中债-陕西省地方政府债指数"
   },
   {
-    "index_code": "470059",
-    "display_name": "深证民企科技R"
+    "index_code": "8a8b2c8367c8455a0167cac7d9a236ca",
+    "display_name": "中债-5-10年进出口行债券指数"
   },
   {
-    "index_code": "470060",
-    "display_name": "深证ESG成长R"
+    "index_code": "0857793c945697daf6a9873ff42825f4",
+    "display_name": "中债-中信证券高等级同业存单指数"
   },
   {
-    "index_code": "470061",
-    "display_name": "深证ESG价值R"
+    "index_code": "8a8b2c836973b52b016976377ccb56b1",
+    "display_name": "中债-1-3年高等级央企主题债券指数"
   },
   {
-    "index_code": "470062",
-    "display_name": "深红利300R"
+    "index_code": "ece99ed16ea8c4c9d59befed1175f823",
+    "display_name": "中债-中信证券ESG优选信用债指数"
   },
   {
-    "index_code": "470063",
-    "display_name": "深证回购R"
+    "index_code": "8a8b2cef6cfe825e016cff7a0c1c28be",
+    "display_name": "中债-0-5年中国铁路债券指数"
   },
   {
-    "index_code": "470064",
-    "display_name": "深证国企股东回报R"
+    "index_code": "8a8b2cef7456338c017457a55ccc07cc",
+    "display_name": "中债-黑龙江省地方政府债指数"
   },
   {
-    "index_code": "470065",
-    "display_name": "深证优质信披R"
+    "index_code": "05b2d2e9b40a7f2324774c0b32f8cd70",
+    "display_name": "中债-中高等级战略性新兴产业信用债指数"
   },
   {
-    "index_code": "470066",
-    "display_name": "深证氢能R"
+    "index_code": "8a8b2cef746080450174619484ea000c",
+    "display_name": "中债-山西省地方政府债指数"
   },
   {
-    "index_code": "470067",
-    "display_name": "深证专利R"
+    "index_code": "fa87c88adac6b304de5654c29b1569e1",
+    "display_name": "中债-数字经济产业信用债指数"
   },
   {
-    "index_code": "470068",
-    "display_name": "创业专利R"
+    "index_code": "63280d1c76986d46029cfded9f33b26c",
+    "display_name": "中债-中信证券商业银行二级资本债券指数"
   },
   {
-    "index_code": "470069",
-    "display_name": "深证绿色制造R"
+    "index_code": "adf7158832226e8e7361b78d0f5e4798",
+    "display_name": "中债-高等级战略性新兴产业信用债指数"
   },
   {
-    "index_code": "470071",
-    "display_name": "深证民企成长R"
+    "index_code": "8a8b2c836859be4901685ab9e4e610b1",
+    "display_name": "中债-1-10年中国铁路债券指数"
   },
   {
-    "index_code": "470072",
-    "display_name": "深证民企价值R"
+    "index_code": "f72725181b56144d3f9b55f1b6e60102",
+    "display_name": "中债-战略性新兴产业信用债指数"
   },
   {
-    "index_code": "470073",
-    "display_name": "深证绿色农牧R"
+    "index_code": "d04f2fb3e1012c78b8acdecf2c93979f",
+    "display_name": "中债-高等级信用债指数"
   },
   {
-    "index_code": "470074",
-    "display_name": "深证智能穿戴R"
+    "index_code": "8a8b2cef74608045017461ccceff0073",
+    "display_name": "中债-吉林省地方政府债指数"
   },
   {
-    "index_code": "470075",
-    "display_name": "深证AIGCR"
+    "index_code": "8a8b2ca0561f2580015620aed8481153",
+    "display_name": "中债-1-30年利率债指数"
   },
   {
-    "index_code": "470076",
-    "display_name": "深证绿色化工R"
+    "index_code": "ef1df41cdb8984b3c0f8d58c603220c6",
+    "display_name": "中债-中信证券贷款基准利率RMBS指数"
   },
   {
-    "index_code": "470077",
-    "display_name": "深证绿色建材R"
+    "index_code": "3b824a1426bea356799ca15d730ad6d1",
+    "display_name": "中债-个人住房抵押贷款资产支持证券精选指数"
   },
   {
-    "index_code": "470080",
-    "display_name": "科技50R"
+    "index_code": "b10fd010c80946bf881ca39dca62e49a",
+    "display_name": "中债-中高等级信用债综合指数"
   },
   {
-    "index_code": "471001",
-    "display_name": "深成地产R"
+    "index_code": "3e633ffbdc4c787fdda01cda8ae32eff",
+    "display_name": "中债-中信证券贷款市场报价利率（LPR）RMBS指数"
   },
   {
-    "index_code": "471002",
-    "display_name": "中小地产R"
+    "index_code": "2c9081e50e8767dc010e879d4aa80029",
+    "display_name": "中债-中短期债券指数"
   },
   {
-    "index_code": "471004",
-    "display_name": "创业板战略科技R"
+    "index_code": "8a8b2cef74608045017461d9115400c8",
+    "display_name": "中债-甘肃省地方政府债指数"
   },
   {
-    "index_code": "480001",
-    "display_name": "湾创100R"
+    "index_code": "8a8b2cef74608045017461f9e203012a",
+    "display_name": "中债-青海省地方政府债指数"
   },
   {
-    "index_code": "480002",
-    "display_name": "湾创100R(港币)"
+    "index_code": "2c9081e50e8767dc010e87a19da10031",
+    "display_name": "中债-长期债券指数"
   },
   {
-    "index_code": "480003",
-    "display_name": "湾区综指R"
+    "index_code": "7e400288623a2da960864fa5eef13432",
+    "display_name": "中债-中信证券绿色金融债券指数"
   },
   {
-    "index_code": "480004",
-    "display_name": "湾区综指R(港币)"
+    "index_code": "6cdea6720316fd5d69494b4bc0f8129c",
+    "display_name": "中债-中高等级信用债指数"
   },
   {
-    "index_code": "480007",
-    "display_name": "湾区新兴R"
+    "index_code": "3ba74c271eae8ffd9264611ad2ffe1b7",
+    "display_name": "中债-中信证券精选高收益债券指数"
   },
   {
-    "index_code": "480008",
-    "display_name": "湾区新兴R(港币)"
+    "index_code": "8a8b2cef74608045017461fe1768015f",
+    "display_name": "中债-海南省地方政府债指数"
   },
   {
-    "index_code": "480009",
-    "display_name": "湾区制造R"
+    "index_code": "dc6ace6131234422763bfb1959c0a4f7",
+    "display_name": "中债-0-1年国债及政策性金融债指数"
   },
   {
-    "index_code": "480010",
-    "display_name": "湾区制造R(港币)"
+    "index_code": "0366fa8fafe2d1b12c62e4ffe11b97fe",
+    "display_name": "中债-高等级科技创新债券指数"
   },
   {
-    "index_code": "480011",
-    "display_name": "湾区服务R"
+    "index_code": "8a8b2cef7460804501746219b518020a",
+    "display_name": "中债-宁夏回族自治区地方政府债指数"
   },
   {
-    "index_code": "480012",
-    "display_name": "湾区服务R(港币)"
+    "index_code": "9c6218292a77139d38f12ac6ef85d138",
+    "display_name": "中债-中信证券久期轮动政策性金融债指数"
   },
   {
-    "index_code": "480013",
-    "display_name": "湾区医药R"
+    "index_code": "dff644648a8a007efd6a5b94970c0b89",
+    "display_name": "中债-AAA科技创新债券指数"
   },
   {
-    "index_code": "480014",
-    "display_name": "湾区医药R（港币）"
+    "index_code": "f6d1a716b2225ac934f06d9ae13d8522",
+    "display_name": "中债-0-2年国债及政策性金融债指数"
   },
   {
-    "index_code": "480015",
-    "display_name": "疫苗生科R"
+    "index_code": "5cb7d4be4facd5353ac243620ebf2bde",
+    "display_name": "中债-中信证券个人汽车抵押贷款资产支持证券指数"
   },
   {
-    "index_code": "480016",
-    "display_name": "医疗健康R"
+    "index_code": "81c8a20754c3fbd8ad0eeec92276577a",
+    "display_name": "中债-0-3年国债及政策性金融债指数"
   },
   {
-    "index_code": "480017",
-    "display_name": "国证芯片R"
+    "index_code": "8a8b2cef74510d2f017453365ea0367c",
+    "display_name": "中债-新疆维吾尔自治区地方政府债指数"
   },
   {
-    "index_code": "480019",
-    "display_name": "湾区海洋R"
+    "index_code": "3a2e8c74d7265e3e9aedfd8d1681836b",
+    "display_name": "中债-AAA信用债指数"
   },
   {
-    "index_code": "480020",
-    "display_name": "湾区海洋R(港币)"
+    "index_code": "05d235f4268241c25e36b27e13b13023",
+    "display_name": "中债-AAA信用债综合指数"
   },
   {
-    "index_code": "480021",
-    "display_name": "碳中和50R"
+    "index_code": "a31060c94d1e315dee3f0cd79934c6a3",
+    "display_name": "中债-0-5年国债及政策性金融债指数"
   },
   {
-    "index_code": "480023",
-    "display_name": "南山50R"
+    "index_code": "11c92fe0df3940c3ea172bfec5126593",
+    "display_name": "中债-中信证券挂钩DR浮动利率政策性银行债活跃券指数"
   },
   {
-    "index_code": "480024",
-    "display_name": "南山50R(港币)"
+    "index_code": "8a8b2cef7465a6a201746603d1a1005d",
+    "display_name": "中债-新疆维吾尔自治区（新疆生产建设兵团）地方政府债指数"
   },
   {
-    "index_code": "480026",
-    "display_name": "风光装备R"
+    "index_code": "e6b1e2fc01692f8fcd22ba50e501231a",
+    "display_name": "中债-AAA公司信用类债券综合指数"
   },
   {
-    "index_code": "480027",
-    "display_name": "新能源电池R"
+    "index_code": "8a8b2cef7465a6a2017465f9dc55000a",
+    "display_name": "中债-西藏自治区地方政府债指数"
   },
   {
-    "index_code": "480028",
-    "display_name": "龙头家电R"
+    "index_code": "cd1f9a95bb3410edd22b083ab4560c2e",
+    "display_name": "中债-0-7年国债及政策性金融债指数"
   },
   {
-    "index_code": "480030",
-    "display_name": "消费电子R"
+    "index_code": "430f1876233c711f505500edce079236",
+    "display_name": "中债-中信证券挂钩LPR浮动利率政策性银行债活跃券指数"
   },
   {
-    "index_code": "480032",
-    "display_name": "新能电池R"
+    "index_code": "8a8b2cef7224de5f0172265a948a0089",
+    "display_name": "中债-深圳市地方政府债指数"
   },
   {
-    "index_code": "480033",
-    "display_name": "自主科技R"
+    "index_code": "8a8b2cef7a4fb448017a515401a53fc4",
+    "display_name": "中债-中金公司乡村振兴信用债精选指数"
   },
   {
-    "index_code": "480034",
-    "display_name": "工业软件R"
+    "index_code": "96377056fc894287b4a76ceebaca2808",
+    "display_name": "中债-AAA公司信用类债券指数"
   },
   {
-    "index_code": "480035",
-    "display_name": "化肥农药R"
+    "index_code": "b86e7d63ea2cf2f8a4c0ed6f6eb29a65",
+    "display_name": "中债-0-10年国债及政策性金融债指数"
   },
   {
-    "index_code": "480036",
-    "display_name": "创新龙头R"
+    "index_code": "8a8b2cef783d454901783f2c468307ec",
+    "display_name": "中债-中金公司绿色资产支持证券指数"
   },
   {
-    "index_code": "480037",
-    "display_name": "创新龙头R（港币）"
+    "index_code": "3e1ee4bb172760bee1ec0076e0113fe4",
+    "display_name": "中债-1-3年国债及政策性金融债指数"
   },
   {
-    "index_code": "480038",
-    "display_name": "深圳高新R"
+    "index_code": "6fb584528c4d4aad6194d5a39a3b93a1",
+    "display_name": "中债-高等级公司信用类债券指数"
   },
   {
-    "index_code": "480039",
-    "display_name": "深圳高新R（港币）"
+    "index_code": "8a8b2cef73077630017307dc4339007c",
+    "display_name": "中债-宁波市地方政府债指数"
   },
   {
-    "index_code": "480043",
-    "display_name": "工业金属R"
+    "index_code": "c9a7185542022826b09dcc2ab72be8b1",
+    "display_name": "中债-高等级公司信用类债券综合指数"
   },
   {
-    "index_code": "480046",
-    "display_name": "文化创意R"
+    "index_code": "42e214317cbf2f5816ac98431815fa2e",
+    "display_name": "中债-中短期信用债智选指数"
   },
   {
-    "index_code": "480047",
-    "display_name": "文化创意R（港币）"
+    "index_code": "8a8b2cef7307763001730a5c824524ce",
+    "display_name": "中债-青岛市地方政府债指数"
   },
   {
-    "index_code": "480048",
-    "display_name": "国证建材R"
+    "index_code": "e668b4f09ed800855142c31414dc4cb8",
+    "display_name": "中债-1-5年国债及政策性金融债指数"
   },
   {
-    "index_code": "480052",
-    "display_name": "绿色金融R"
+    "index_code": "8a8b2cef70315583017032cab1660018",
+    "display_name": "中债-国泰海通10年期国债期货可交割券流动性加权指数"
   },
   {
-    "index_code": "480053",
-    "display_name": "绿色金融R（港币）"
+    "index_code": "8a8b2cef73265c580173273fe9e2008d",
+    "display_name": "中债-大连市地方政府债指数"
   },
   {
-    "index_code": "480055",
-    "display_name": "规模因子R"
+    "index_code": "0b962f8bc6aa08b50fdcea62832dba4a",
+    "display_name": "中债-3-5年国债及政策性金融债指数"
   },
   {
-    "index_code": "480056",
-    "display_name": "价值因子R"
+    "index_code": "5911892524d8b384666a88d75200c9df",
+    "display_name": "中债-中高等级公司信用类债券综合指数"
   },
   {
-    "index_code": "480057",
-    "display_name": "动量因子R"
+    "index_code": "8a8b2cef732135fd017322a8e7c80113",
+    "display_name": "中债-厦门市地方政府债指数"
   },
   {
-    "index_code": "480058",
-    "display_name": "绿色治理R"
+    "index_code": "6e043f3a3a16fae1544d038ebdfb3bec_sczs",
+    "display_name": "中债-国泰海通久期配置策略指数"
   },
   {
-    "index_code": "480059",
-    "display_name": "航空出行R"
+    "index_code": "ef82cc4ba2540191dcdce19559153a3d",
+    "display_name": "中债-中高等级公司信用类债券指数"
   },
   {
-    "index_code": "480063",
-    "display_name": "国证回购R"
+    "index_code": "2639befce5706766b053a0d82393d96e",
+    "display_name": "中债-3-7年国债及政策性金融债指数"
   },
   {
-    "index_code": "480065",
-    "display_name": "帮扶100R"
+    "index_code": "414780a7febc8b07d91ad2e85cdba594",
+    "display_name": "中债-5-7年国债及政策性金融债指数"
   },
   {
-    "index_code": "480068",
-    "display_name": "蓝色100R"
+    "index_code": "8a8b2cef6d41750b016d4268d350000b",
+    "display_name": "中债-0-5年超大城市地方政府债精选指数"
   },
   {
-    "index_code": "480069",
-    "display_name": "蓝色100R(港币)"
+    "index_code": "1ec7bab38a25b6d530904cdfa7fcffb6",
+    "display_name": "中债-AA+及以上国有企业信用债优选指数"
   },
   {
-    "index_code": "480070",
-    "display_name": "国证专利R"
+    "index_code": "83d47dbe52474822a4644f139de39430_sczs",
+    "display_name": "中债-国泰海通久期稳健策略指数"
   },
   {
-    "index_code": "480071",
-    "display_name": "机器人龙头R"
+    "index_code": "9b5fbe4a5d1f8a413385c78a4408337b",
+    "display_name": "中债-5-10年国债及政策性金融债指数"
   },
   {
-    "index_code": "480072",
-    "display_name": "生物农业R"
+    "index_code": "6b0d067864ff1675e96f3c49652fb73e",
+    "display_name": "中债-AA国有企业信用债优选指数"
   },
   {
-    "index_code": "480073",
-    "display_name": "生猪指数R"
+    "index_code": "8a8b2cef6a56baf1016a57874d5a000a",
+    "display_name": "中债-0-5年苏浙粤地方政府债指数"
   },
   {
-    "index_code": "480075",
-    "display_name": "数字交通R"
+    "index_code": "80e7be43358f75d1eca575550253d025",
+    "display_name": "中债-7-10年国债及政策性金融债指数"
   },
   {
-    "index_code": "480076",
-    "display_name": "通用航空R"
+    "index_code": "8a8b2c8368a5b6da0168a6c3fe68002e",
+    "display_name": "中债-0-5年江苏省地方政府债指数"
   },
   {
-    "index_code": "480077",
-    "display_name": "充电设施R"
+    "index_code": "8a8b2c8368911d5a0168927ca34b0016",
+    "display_name": "中债-0-5年浙江省地方政府债指数"
   },
   {
-    "index_code": "480078",
-    "display_name": "ESG基准R"
+    "index_code": "a53aab37ca18eeaf15c7450237ddedbb",
+    "display_name": "中债-7-30年国债及政策性金融债指数"
   },
   {
-    "index_code": "480079",
-    "display_name": "ESG领先R"
+    "index_code": "7a8826fddbd3bd3535baa79312f06e1e",
+    "display_name": "中债-10年以上国债及政策性金融债指数"
   },
   {
-    "index_code": "480080",
-    "display_name": "成长100R"
+    "index_code": "8a8b2c8365877d18016588c95af50021",
+    "display_name": "中债-0-5年广东省地方政府债指数"
   },
   {
-    "index_code": "480081",
-    "display_name": "价值100R"
+    "index_code": "de861828ae11bc5f498a330c650fdf5a",
+    "display_name": "中债-国泰海通陕川渝国企信用增强债券精选指数"
   },
   {
-    "index_code": "480082",
-    "display_name": "央国企低碳科技R"
+    "index_code": "a3dc0ed6ba8ab442783109d769baed5e",
+    "display_name": "中债-申万宏源ESG绿色信用债精选指数"
   },
   {
-    "index_code": "480083",
-    "display_name": "央国企自主科技R"
+    "index_code": "61f69682dc3ec18fe9664ff59308314a",
+    "display_name": "中债-0-3年国债指数"
   },
   {
-    "index_code": "480092",
-    "display_name": "自由现金流R"
+    "index_code": "8a8b2cef6f590a69016f5ab8f3e1064d",
+    "display_name": "中债-0-5年河南省地方政府债指数"
   },
   {
-    "index_code": "480150",
-    "display_name": "单项冠军R"
+    "index_code": "0beafb51867009998c2f4932bf22ede3",
+    "display_name": "中债-0-5年国债指数"
   },
   {
-    "index_code": "480532",
-    "display_name": "国证青岛海洋R"
+    "index_code": "8a8b2cef712dad2001712e02e6e80074",
+    "display_name": "中债-0-5年四川省地方政府债指数"
   },
   {
-    "index_code": "483001",
-    "display_name": "内地100R"
+    "index_code": "1997fbc5e0a91db36e53c4540ae51cdd",
+    "display_name": "中债-申万宏源中小微企业主题优选信用债指数"
   },
   {
-    "index_code": "483002",
-    "display_name": "内地100R(港币)"
+    "index_code": "8a8b2cef7137f9d70171382957680002",
+    "display_name": "中债-0-5年云南省地方政府债指数"
   },
   {
-    "index_code": "483003",
-    "display_name": "内地科技50R"
+    "index_code": "cc1cfe89b0cbd0800420a0e037026407",
+    "display_name": "中债-1-3年国债指数"
   },
   {
-    "index_code": "483004",
-    "display_name": "内地科技50R(港币)"
+    "index_code": "2adeb5d8aa35cbcb0ea4a05614a75a08",
+    "display_name": "中债-东方证券科技创新信用债精选指数"
   },
   {
-    "index_code": "483005",
-    "display_name": "深港通综指R"
+    "index_code": "7c3110e5305f9301482517066427a554",
+    "display_name": "中债-1-5年国债指数"
   },
   {
-    "index_code": "483006",
-    "display_name": "深港通综指R(港币)"
+    "index_code": "8a8b2cef7137f9d70171385f49e60087",
+    "display_name": "中债-0-5年湖南省地方政府债指数"
   },
   {
-    "index_code": "483007",
-    "display_name": "深港通100R"
+    "index_code": "8a8b2cef6dcc80c0016dcec096947ba9",
+    "display_name": "中债-中邮理财京津冀债券优选指数"
   },
   {
-    "index_code": "483008",
-    "display_name": "深港通100R(港币)"
+    "index_code": "a5d90802e3259978a027267de651106d",
+    "display_name": "中债-1-10年国债指数"
   },
   {
-    "index_code": "483009",
-    "display_name": "深港通手机产业链R"
+    "index_code": "773ade3d59c36dc1e13146c1866a8ccb",
+    "display_name": "中债-中邮理财高等级科技创新债券精选指数"
   },
   {
-    "index_code": "483010",
-    "display_name": "深港通手机产业链R(港币)"
+    "index_code": "8a8b2c8367bdf89e0167c05355f201fb",
+    "display_name": "中债-安徽省公司信用类债券指数"
   },
   {
-    "index_code": "483011",
-    "display_name": "深港通绿色优选R"
+    "index_code": "8a8b2cef6b00accd016b022cffbb0009",
+    "display_name": "中债-广西壮族自治区公司信用类债券指数"
   },
   {
-    "index_code": "483012",
-    "display_name": "深港通绿色优选R(港币)"
+    "index_code": "f22aea49f4b11a53bd787b013253d5be",
+    "display_name": "中债-中邮理财高等级绿色债券精选指数"
   },
   {
-    "index_code": "483013",
-    "display_name": "深港通能源R"
+    "index_code": "2d3ac1a7ccda4e7aadc605e2b1ca0c9b",
+    "display_name": "中债-天风国际ESG优选中资美元债指数"
   },
   {
-    "index_code": "483014",
-    "display_name": "深港通能源R（港币）"
+    "index_code": "8a8b2cef6b24b94f016b2629b47d004f",
+    "display_name": "中债-0-5年中高等级广东省公司信用类债券指数"
   },
   {
-    "index_code": "483015",
-    "display_name": "深港通材料R"
+    "index_code": "8a8b2cef798c02a301798e167c770015",
+    "display_name": "中债-国联证券长三角精选短期债券平衡指数"
   },
   {
-    "index_code": "483016",
-    "display_name": "深港通材料R（港币）"
+    "index_code": "8a8b2cef6bde1e40016be05e38080879",
+    "display_name": "中债-1-3年中高等级广东省公司信用类债券指数"
   },
   {
-    "index_code": "483017",
-    "display_name": "深港通工业R"
+    "index_code": "8a8b2cef6bba11bd016bbaa826ff0005",
+    "display_name": "中债-0-5年中高等级江苏省城投类债券指数"
   },
   {
-    "index_code": "483018",
-    "display_name": "深港通工业R（港币）"
+    "index_code": "9d895a4e2d56d6829590a5eb3ccf285d",
+    "display_name": "中债-国信证券深圳市国有企业信用债精选指数"
   },
   {
-    "index_code": "483019",
-    "display_name": "深港通可选消费R"
+    "index_code": "8a8b2c83655e4a3901656044c423031b",
+    "display_name": "中债-爱建高收益债券指数"
   },
   {
-    "index_code": "483020",
-    "display_name": "深港通可选消费R（港币）"
+    "index_code": "f7948f9be0732d45e18f1d5c8190757f",
+    "display_name": "中债-中豫信增河南省信用债指数"
   },
   {
-    "index_code": "483021",
-    "display_name": "深港通主要消费R"
+    "index_code": "aa0b6304e290a57bcda90e1358e13de9",
+    "display_name": "中债-天府信用增进公司增信债券指数"
   },
   {
-    "index_code": "483022",
-    "display_name": "深港通主要消费R（港币）"
+    "index_code": "4fa219d5b928975ce80081984d8215e5",
+    "display_name": "中债-融资租赁资产支持证券指数"
   },
   {
-    "index_code": "483023",
-    "display_name": "深港通医药卫生R"
+    "index_code": "87963f8cbe8b5bf25e0a6afd713705f2",
+    "display_name": "中债-融资租赁绿色债券指数"
   },
   {
-    "index_code": "483024",
-    "display_name": "深港通医药卫生R（港币）"
+    "index_code": "74bdb50a9cbf9a45903346968a951bd3",
+    "display_name": "中债-京津冀科技创新债券指数"
   },
   {
-    "index_code": "483025",
-    "display_name": "深港通金融R"
+    "index_code": "8a8b2c8366e0872b0166e27908f90131",
+    "display_name": "中债-1-3年久期央企20债券指数"
   },
   {
-    "index_code": "483026",
-    "display_name": "深港通金融R（港币）"
+    "index_code": "81a92ec45e9d90aa8961e9ac278fc435",
+    "display_name": "中债-渤海银行新质生产力主题科技创新债券指数"
   },
   {
-    "index_code": "483027",
-    "display_name": "深港通信息技术R"
+    "index_code": "1287a4c6c7bce84cbe9eab904468b9d5",
+    "display_name": "中债-高等级科技创新债券行业精选指数"
   },
   {
-    "index_code": "483028",
-    "display_name": "深港通信息技术R（港币）"
-  },
-  {
-    "index_code": "483029",
-    "display_name": "深港通电信业务R"
-  },
-  {
-    "index_code": "483030",
-    "display_name": "深港通电信业务R（港币）"
-  },
-  {
-    "index_code": "483031",
-    "display_name": "深港通公用事业R"
-  },
-  {
-    "index_code": "483032",
-    "display_name": "深港通公用事业R（港币）"
-  },
-  {
-    "index_code": "483033",
-    "display_name": "深港通通信服务R"
-  },
-  {
-    "index_code": "483034",
-    "display_name": "深港通通信服务R（港币）"
-  },
-  {
-    "index_code": "483035",
-    "display_name": "深港通医疗R"
-  },
-  {
-    "index_code": "483036",
-    "display_name": "深港通医疗R（港币）"
-  },
-  {
-    "index_code": "483037",
-    "display_name": "深港通食品零售R"
-  },
-  {
-    "index_code": "483038",
-    "display_name": "深港通食品零售R（港币）"
-  },
-  {
-    "index_code": "483039",
-    "display_name": "深港通汽车R"
-  },
-  {
-    "index_code": "483040",
-    "display_name": "深港通汽车R（港币）"
-  },
-  {
-    "index_code": "483041",
-    "display_name": "深港通服装纺织R"
-  },
-  {
-    "index_code": "483042",
-    "display_name": "深港通服装纺织R（港币）"
-  },
-  {
-    "index_code": "483043",
-    "display_name": "深港通电脑硬件R"
-  },
-  {
-    "index_code": "483044",
-    "display_name": "深港通电脑硬件R（港币）"
-  },
-  {
-    "index_code": "483045",
-    "display_name": "深港通消费服务R"
-  },
-  {
-    "index_code": "483046",
-    "display_name": "深港通消费服务R（港币）"
-  },
-  {
-    "index_code": "483047",
-    "display_name": "深港通网络软件R"
-  },
-  {
-    "index_code": "483048",
-    "display_name": "深港通网络软件R（港币）"
-  },
-  {
-    "index_code": "483049",
-    "display_name": "深港通耐用消费R"
-  },
-  {
-    "index_code": "483050",
-    "display_name": "深港通耐用消费R（港币）"
-  },
-  {
-    "index_code": "483051",
-    "display_name": "深港通农牧渔R"
-  },
-  {
-    "index_code": "483052",
-    "display_name": "深港通农牧渔R（港币）"
-  },
-  {
-    "index_code": "483053",
-    "display_name": "深港通非银R"
-  },
-  {
-    "index_code": "483054",
-    "display_name": "深港通非银R（港币）"
-  },
-  {
-    "index_code": "483055",
-    "display_name": "深港通工业服务R"
-  },
-  {
-    "index_code": "483056",
-    "display_name": "深港通工业服务R（港币）"
-  },
-  {
-    "index_code": "483057",
-    "display_name": "深港通电信服务R"
-  },
-  {
-    "index_code": "483058",
-    "display_name": "深港通电信服务R（港币）"
-  },
-  {
-    "index_code": "483059",
-    "display_name": "深港通生科R"
-  },
-  {
-    "index_code": "483060",
-    "display_name": "深港通生科R（港币）"
-  },
-  {
-    "index_code": "483061",
-    "display_name": "深港通基材R"
-  },
-  {
-    "index_code": "483062",
-    "display_name": "深港通基材R（港币）"
-  },
-  {
-    "index_code": "483063",
-    "display_name": "深港通化工R"
-  },
-  {
-    "index_code": "483064",
-    "display_name": "深港通化工R（港币）"
-  },
-  {
-    "index_code": "483065",
-    "display_name": "深港通食品饮料R"
-  },
-  {
-    "index_code": "483066",
-    "display_name": "深港通食品饮料R（港币）"
-  },
-  {
-    "index_code": "483067",
-    "display_name": "深港通半导体R"
-  },
-  {
-    "index_code": "483068",
-    "display_name": "深港通半导体R（港币）"
-  },
-  {
-    "index_code": "483069",
-    "display_name": "深港通工业品R"
-  },
-  {
-    "index_code": "483070",
-    "display_name": "深港通工业品R（港币）"
-  },
-  {
-    "index_code": "483071",
-    "display_name": "深港通房地产R"
-  },
-  {
-    "index_code": "483072",
-    "display_name": "深港通房地产R（港币）"
-  },
-  {
-    "index_code": "483073",
-    "display_name": "深港通零售R"
-  },
-  {
-    "index_code": "483074",
-    "display_name": "深港通零售R（港币）"
-  },
-  {
-    "index_code": "483075",
-    "display_name": "深港通传媒R"
-  },
-  {
-    "index_code": "483076",
-    "display_name": "深港通传媒R（港币）"
-  },
-  {
-    "index_code": "483077",
-    "display_name": "深港通运输R"
-  },
-  {
-    "index_code": "483078",
-    "display_name": "深港通运输R（港币）"
-  },
-  {
-    "index_code": "483079",
-    "display_name": "深港通制药R"
-  },
-  {
-    "index_code": "483080",
-    "display_name": "深港通制药R（港币）"
-  },
-  {
-    "index_code": "483081",
-    "display_name": "深港通银行R"
-  },
-  {
-    "index_code": "483082",
-    "display_name": "深港通银行R（港币）"
-  },
-  {
-    "index_code": "483083",
-    "display_name": "深港通内房股R"
-  },
-  {
-    "index_code": "483084",
-    "display_name": "深港通内房股R(港币)"
-  },
-  {
-    "index_code": "483085",
-    "display_name": "深港通节能R"
-  },
-  {
-    "index_code": "483086",
-    "display_name": "深港通节能R(港币)"
-  },
-  {
-    "index_code": "483087",
-    "display_name": "深港通新能源车R"
-  },
-  {
-    "index_code": "483088",
-    "display_name": "深港通新能源车R(港币)"
-  },
-  {
-    "index_code": "483089",
-    "display_name": "深港通大湾区R"
-  },
-  {
-    "index_code": "483090",
-    "display_name": "深港通大湾区R(港币)"
-  },
-  {
-    "index_code": "483091",
-    "display_name": "深港通50R"
-  },
-  {
-    "index_code": "483092",
-    "display_name": "深港通50R（港币）"
-  },
-  {
-    "index_code": "483095",
-    "display_name": "深港通数字经济R"
-  },
-  {
-    "index_code": "483096",
-    "display_name": "深港通数字经济R（港币）"
-  },
-  {
-    "index_code": "483101",
-    "display_name": "内地生物科技R"
-  },
-  {
-    "index_code": "483102",
-    "display_name": "内地生物科技R(港币)"
-  },
-  {
-    "index_code": "483103",
-    "display_name": "内地医疗器械R"
-  },
-  {
-    "index_code": "483104",
-    "display_name": "内地医疗器械R(港币)"
-  },
-  {
-    "index_code": "483105",
-    "display_name": "内地消费电子R"
-  },
-  {
-    "index_code": "483106",
-    "display_name": "内地消费电子R(港币)"
-  },
-  {
-    "index_code": "483160",
-    "display_name": "低碳科技R"
-  },
-  {
-    "index_code": "483161",
-    "display_name": "低碳科技R(港币)"
-  },
-  {
-    "index_code": "487001",
-    "display_name": "港股50R"
-  },
-  {
-    "index_code": "487002",
-    "display_name": "港股50R（人民币）"
-  },
-  {
-    "index_code": "487003",
-    "display_name": "港股通50R"
-  },
-  {
-    "index_code": "487004",
-    "display_name": "港股通50R（人民币）"
-  },
-  {
-    "index_code": "487006",
-    "display_name": "港股科技R"
-  },
-  {
-    "index_code": "487007",
-    "display_name": "港股科技R（人民币）"
-  },
-  {
-    "index_code": "487010",
-    "display_name": "港股大中盘R"
-  },
-  {
-    "index_code": "487011",
-    "display_name": "港股大中盘R（人民币）"
-  },
-  {
-    "index_code": "487012",
-    "display_name": "港股大盘R"
-  },
-  {
-    "index_code": "487013",
-    "display_name": "港股大盘R（人民币）"
-  },
-  {
-    "index_code": "487014",
-    "display_name": "港股中盘R"
-  },
-  {
-    "index_code": "487015",
-    "display_name": "港股中盘R（人民币）"
-  },
-  {
-    "index_code": "487016",
-    "display_name": "港股通红利低波R"
-  },
-  {
-    "index_code": "487017",
-    "display_name": "港股通红利低波R（人民币）"
-  },
-  {
-    "index_code": "487020",
-    "display_name": "内房股R"
-  },
-  {
-    "index_code": "487021",
-    "display_name": "内房股R（人民币）"
-  },
-  {
-    "index_code": "487028",
-    "display_name": "港股通内企ESGR"
-  },
-  {
-    "index_code": "487029",
-    "display_name": "港股通内企ESGR（人民币）"
-  },
-  {
-    "index_code": "487030",
-    "display_name": "港股通内企ESG优选R"
-  },
-  {
-    "index_code": "487031",
-    "display_name": "港股通内企ESG优选R（人民币）"
-  },
-  {
-    "index_code": "97005101",
-    "display_name": "深证算力R"
-  },
-  {
-    "index_code": "97007001",
-    "display_name": "创业板人工智能R"
-  },
-  {
-    "index_code": "97008101",
-    "display_name": "创业板电池R"
-  },
-  {
-    "index_code": "97008201",
-    "display_name": "创业板医疗R"
-  },
-  {
-    "index_code": "97008301",
-    "display_name": "创业板算力R"
-  },
-  {
-    "index_code": "97008401",
-    "display_name": "创业板传媒R"
-  },
-  {
-    "index_code": "97008501",
-    "display_name": "创业板金融科技R"
-  },
-  {
-    "index_code": "98000601",
-    "display_name": "港股通自由现金流R（人民币）"
-  },
-  {
-    "index_code": "98000611",
-    "display_name": "港股通自由现金流R"
-  },
-  {
-    "index_code": "98001801",
-    "display_name": "卫星通信R"
-  },
-  {
-    "index_code": "98002201",
-    "display_name": "机器人产业R"
-  },
-  {
-    "index_code": "98008601",
-    "display_name": "创新药R"
-  },
-  {
-    "index_code": "98008701",
-    "display_name": "人工智能精选R"
-  },
-  {
-    "index_code": "98010301",
-    "display_name": "红利价值R"
-  },
-  {
-    "index_code": "98010501",
-    "display_name": "港股芯片R（人民币）"
-  },
-  {
-    "index_code": "98010511",
-    "display_name": "港股芯片R"
-  },
-  {
-    "index_code": "98010601",
-    "display_name": "港股通资源R（人民币）"
-  },
-  {
-    "index_code": "98010611",
-    "display_name": "港股通资源R"
-  },
-  {
-    "index_code": "98010701",
-    "display_name": "AI应用软件R"
-  },
-  {
-    "index_code": "98010801",
-    "display_name": "港股通AIR（人民币）"
-  },
-  {
-    "index_code": "98010811",
-    "display_name": "港股通AIR"
-  },
-  {
-    "index_code": "98010901",
-    "display_name": "港股通证券R（人民币）"
-  },
-  {
-    "index_code": "98010911",
-    "display_name": "港股通证券R"
-  },
-  {
-    "index_code": "98011101",
-    "display_name": "国证生物R"
-  },
-  {
-    "index_code": "98011201",
-    "display_name": "AI应用R"
-  },
-  {
-    "index_code": "98011301",
-    "display_name": "数字支付R"
-  },
-  {
-    "index_code": "98011501",
-    "display_name": "国证PCB R"
-  },
-  {
-    "index_code": "98012001",
-    "display_name": "国证CXO R"
-  },
-  {
-    "index_code": "98013301",
-    "display_name": "能源ESGR"
-  },
-  {
-    "index_code": "98013801",
-    "display_name": "存储芯片R"
-  },
-  {
-    "index_code": "98020201",
-    "display_name": "国证小盘R"
-  },
-  {
-    "index_code": "98309301",
-    "display_name": "深港通先进制造R"
-  },
-  {
-    "index_code": "98309311",
-    "display_name": "深港通先进制造R（港币）"
-  },
-  {
-    "index_code": "98309701",
-    "display_name": "深港通绿色低碳R"
-  },
-  {
-    "index_code": "98309711",
-    "display_name": "深港通绿色低碳R（港币）"
-  },
-  {
-    "index_code": "98700801",
-    "display_name": "港股通科技R（人民币）"
-  },
-  {
-    "index_code": "98700811",
-    "display_name": "港股通科技R"
-  },
-  {
-    "index_code": "98701801",
-    "display_name": "港股通创新药R（人民币）"
-  },
-  {
-    "index_code": "98701811",
-    "display_name": "港股通创新药R"
-  },
-  {
-    "index_code": "98702201",
-    "display_name": "港股通互联网R（人民币）"
-  },
-  {
-    "index_code": "98702211",
-    "display_name": "港股通互联网R"
-  },
-  {
-    "index_code": "98702401",
-    "display_name": "港股通消费R（人民币）"
-  },
-  {
-    "index_code": "98702411",
-    "display_name": "港股通消费R"
-  },
-  {
-    "index_code": "98702601",
-    "display_name": "港股通新能源R（人民币）"
-  },
-  {
-    "index_code": "98702611",
-    "display_name": "港股通新能源R"
-  },
-  {
-    "index_code": "98703201",
-    "display_name": "港股金融科技R（人民币）"
-  },
-  {
-    "index_code": "98703211",
-    "display_name": "港股金融科技R"
-  },
-  {
-    "index_code": "AITCNYG",
-    "display_name": "中华陆股通行业龙头R"
-  },
-  {
-    "index_code": "BNRCNYG",
-    "display_name": "中华一带一路R"
-  },
-  {
-    "index_code": "CN2008",
-    "display_name": "中小300R"
-  },
-  {
-    "index_code": "CN2010",
-    "display_name": "深证700R"
-  },
-  {
-    "index_code": "CN2011",
-    "display_name": "深证1000R"
-  },
-  {
-    "index_code": "CN2012",
-    "display_name": "创业300R"
-  },
-  {
-    "index_code": "CN2013",
-    "display_name": "深市精选R"
-  },
-  {
-    "index_code": "CN2015",
-    "display_name": "中小创新R"
-  },
-  {
-    "index_code": "CN2016",
-    "display_name": "深证创新R"
-  },
-  {
-    "index_code": "CN2017",
-    "display_name": "SME创新R"
-  },
-  {
-    "index_code": "CN2018",
-    "display_name": "创业创新R"
-  },
-  {
-    "index_code": "CN2019",
-    "display_name": "创业200R"
-  },
-  {
-    "index_code": "CN2020",
-    "display_name": "创业小盘R"
-  },
-  {
-    "index_code": "CN2030",
-    "display_name": "碳科技30R"
-  },
-  {
-    "index_code": "CN2050",
-    "display_name": "创新引擎R"
-  },
-  {
-    "index_code": "CN2060",
-    "display_name": "碳科技60R"
-  },
-  {
-    "index_code": "CN2088",
-    "display_name": "深创100R"
-  },
-  {
-    "index_code": "CN2258",
-    "display_name": "绿色低碳R"
-  },
-  {
-    "index_code": "CN2259",
-    "display_name": "创业低碳R"
-  },
-  {
-    "index_code": "CN2260",
-    "display_name": "先进制造R"
-  },
-  {
-    "index_code": "CN2261",
-    "display_name": "创业制造R"
-  },
-  {
-    "index_code": "CN2262",
-    "display_name": "数字经济R"
-  },
-  {
-    "index_code": "CN2263",
-    "display_name": "创业数字R"
-  },
-  {
-    "index_code": "CN2265",
-    "display_name": "创新药械R"
-  },
-  {
-    "index_code": "CN2266",
-    "display_name": "创新能源R"
-  },
-  {
-    "index_code": "CN2269",
-    "display_name": "创质量R"
-  },
-  {
-    "index_code": "CN2274",
-    "display_name": "深新基建R"
-  },
-  {
-    "index_code": "CN2275",
-    "display_name": "创医药R"
-  },
-  {
-    "index_code": "CN2276",
-    "display_name": "创科技R"
-  },
-  {
-    "index_code": "CN2277",
-    "display_name": "公共健康R"
-  },
-  {
-    "index_code": "CN2278",
-    "display_name": "长江100R"
-  },
-  {
-    "index_code": "CN2279",
-    "display_name": "云科技50R"
-  },
-  {
-    "index_code": "CN2280",
-    "display_name": "生物50R"
-  },
-  {
-    "index_code": "CN2281",
-    "display_name": "电子50R"
-  },
-  {
-    "index_code": "CN2282",
-    "display_name": "大数据50R"
-  },
-  {
-    "index_code": "CN2283",
-    "display_name": "机器人50R"
-  },
-  {
-    "index_code": "CN2284",
-    "display_name": "AI 50R"
-  },
-  {
-    "index_code": "CN2285",
-    "display_name": "物联网50R"
-  },
-  {
-    "index_code": "CN2286",
-    "display_name": "区块链50R"
-  },
-  {
-    "index_code": "CN2291",
-    "display_name": "创精选88R"
-  },
-  {
-    "index_code": "CN2292",
-    "display_name": "民企发展R"
-  },
-  {
-    "index_code": "CN2293",
-    "display_name": "创业大盘R"
-  },
-  {
-    "index_code": "CN2294",
-    "display_name": "中小创Q R"
-  },
-  {
-    "index_code": "CN2295",
-    "display_name": "创价值R"
-  },
-  {
-    "index_code": "CN2296",
-    "display_name": "创成长R"
-  },
-  {
-    "index_code": "CN2297",
-    "display_name": "新浪100R"
-  },
-  {
-    "index_code": "CN2303",
-    "display_name": "国证2000R"
-  },
-  {
-    "index_code": "CN2311",
-    "display_name": "国证1000R"
-  },
-  {
-    "index_code": "CN2312",
-    "display_name": "国证300R"
-  },
-  {
-    "index_code": "CN2313",
-    "display_name": "巨潮100R"
-  },
-  {
-    "index_code": "CN2314",
-    "display_name": "巨潮大盘R"
-  },
-  {
-    "index_code": "CN2315",
-    "display_name": "巨潮中盘R"
-  },
-  {
-    "index_code": "CN2316",
-    "display_name": "巨潮小盘R"
-  },
-  {
-    "index_code": "CN2319",
-    "display_name": "资源优势R"
-  },
-  {
-    "index_code": "CN2320",
-    "display_name": "国证服务R"
-  },
-  {
-    "index_code": "CN2321",
-    "display_name": "国证红利R"
-  },
-  {
-    "index_code": "CN2322",
-    "display_name": "国证治理R"
-  },
-  {
-    "index_code": "CN2324",
-    "display_name": "深证红利R"
-  },
-  {
-    "index_code": "CN2326",
-    "display_name": "成长40R"
-  },
-  {
-    "index_code": "CN2328",
-    "display_name": "深证治理R"
-  },
-  {
-    "index_code": "CN2335",
-    "display_name": "深证央企R"
-  },
-  {
-    "index_code": "CN2337",
-    "display_name": "深证民营R"
-  },
-  {
-    "index_code": "CN2339",
-    "display_name": "深证科技R"
-  },
-  {
-    "index_code": "CN2341",
-    "display_name": "深证责任R"
-  },
-  {
-    "index_code": "CN2346",
-    "display_name": "深证成长R"
-  },
-  {
-    "index_code": "CN2348",
-    "display_name": "深证价值R"
-  },
-  {
-    "index_code": "CN2350",
-    "display_name": "皖江30R"
-  },
-  {
-    "index_code": "CN2351",
-    "display_name": "创新示范R"
-  },
-  {
-    "index_code": "CN2353",
-    "display_name": "国证物流R"
-  },
-  {
-    "index_code": "CN2354",
-    "display_name": "分析师指R"
-  },
-  {
-    "index_code": "CN2355",
-    "display_name": "长三角R"
-  },
-  {
-    "index_code": "CN2356",
-    "display_name": "珠三角R"
-  },
-  {
-    "index_code": "CN2357",
-    "display_name": "环渤海R"
-  },
-  {
-    "index_code": "CN2358",
-    "display_name": "国证环保R"
-  },
-  {
-    "index_code": "CN2360",
-    "display_name": "新硬件R"
-  },
-  {
-    "index_code": "CN2361",
-    "display_name": "在线消费R"
-  },
-  {
-    "index_code": "CN2366",
-    "display_name": "能源金属R"
-  },
-  {
-    "index_code": "CN2367",
-    "display_name": "1000地产R"
-  },
-  {
-    "index_code": "CN2368",
-    "display_name": "国证军工R"
-  },
-  {
-    "index_code": "CN2369",
-    "display_name": "国证责任R"
-  },
-  {
-    "index_code": "CN2370",
-    "display_name": "国证成长R"
-  },
-  {
-    "index_code": "CN2371",
-    "display_name": "国证价值R"
-  },
-  {
-    "index_code": "CN2372",
-    "display_name": "大盘成长R"
-  },
-  {
-    "index_code": "CN2373",
-    "display_name": "大盘价值R"
-  },
-  {
-    "index_code": "CN2374",
-    "display_name": "中盘成长R"
-  },
-  {
-    "index_code": "CN2375",
-    "display_name": "中盘价值R"
-  },
-  {
-    "index_code": "CN2376",
-    "display_name": "小盘成长R"
-  },
-  {
-    "index_code": "CN2377",
-    "display_name": "小盘价值R"
-  },
-  {
-    "index_code": "CN2378",
-    "display_name": "ESG 300R"
-  },
-  {
-    "index_code": "CN2381",
-    "display_name": "1000能源R"
-  },
-  {
-    "index_code": "CN2382",
-    "display_name": "1000材料R"
-  },
-  {
-    "index_code": "CN2383",
-    "display_name": "1000工业R"
-  },
-  {
-    "index_code": "CN2384",
-    "display_name": "1000可选R"
-  },
-  {
-    "index_code": "CN2385",
-    "display_name": "1000消费R"
-  },
-  {
-    "index_code": "CN2386",
-    "display_name": "1000医药R"
-  },
-  {
-    "index_code": "CN2387",
-    "display_name": "1000金融R"
-  },
-  {
-    "index_code": "CN2388",
-    "display_name": "1000信息R"
-  },
-  {
-    "index_code": "CN2389",
-    "display_name": "国证通信R"
-  },
-  {
-    "index_code": "CN2390",
-    "display_name": "1000公用R"
-  },
-  {
-    "index_code": "CN2391",
-    "display_name": "投资时钟R"
-  },
-  {
-    "index_code": "CN2392",
-    "display_name": "国证新兴R"
-  },
-  {
-    "index_code": "CN2393",
-    "display_name": "国证地产R"
-  },
-  {
-    "index_code": "CN2394",
-    "display_name": "国证医药R"
-  },
-  {
-    "index_code": "CN2395",
-    "display_name": "国证有色R"
-  },
-  {
-    "index_code": "CN2396",
-    "display_name": "国证食品R"
-  },
-  {
-    "index_code": "CN2397",
-    "display_name": "国证文化R"
-  },
-  {
-    "index_code": "CN2398",
-    "display_name": "绩效指数R"
-  },
-  {
-    "index_code": "CN2399",
-    "display_name": "中经GDPR"
-  },
-  {
-    "index_code": "CN2400",
-    "display_name": "大中盘R"
-  },
-  {
-    "index_code": "CN2401",
-    "display_name": "中小盘R"
-  },
-  {
-    "index_code": "CN2402",
-    "display_name": "周期100R"
-  },
-  {
-    "index_code": "CN2403",
-    "display_name": "防御100R"
-  },
-  {
-    "index_code": "CN2405",
-    "display_name": "大盘高贝R"
-  },
-  {
-    "index_code": "CN2406",
-    "display_name": "中盘低波R"
-  },
-  {
-    "index_code": "CN2407",
-    "display_name": "中盘高贝R"
-  },
-  {
-    "index_code": "CN2408",
-    "display_name": "小盘低波R"
-  },
-  {
-    "index_code": "CN2409",
-    "display_name": "小盘高贝R"
-  },
-  {
-    "index_code": "CN2410",
-    "display_name": "苏州率先R"
-  },
-  {
-    "index_code": "CN2411",
-    "display_name": "红利100R"
-  },
-  {
-    "index_code": "CN2412",
-    "display_name": "国证新能R"
-  },
-  {
-    "index_code": "CN2415",
-    "display_name": "I100R"
-  },
-  {
-    "index_code": "CN2416",
-    "display_name": "I300R"
-  },
-  {
-    "index_code": "CN2417",
-    "display_name": "新能源车R"
-  },
-  {
-    "index_code": "CN2418",
-    "display_name": "数据要素R"
-  },
-  {
-    "index_code": "CN2419",
-    "display_name": "国证高铁R"
-  },
-  {
-    "index_code": "CN2420",
-    "display_name": "国证保证R"
-  },
-  {
-    "index_code": "CN2422",
-    "display_name": "中关村AR"
-  },
-  {
-    "index_code": "CN2423",
-    "display_name": "中关村50R"
-  },
-  {
-    "index_code": "CN2428",
-    "display_name": "国证定增R"
-  },
-  {
-    "index_code": "CN2429",
-    "display_name": "新丝路R"
-  },
-  {
-    "index_code": "CN2431",
-    "display_name": "国证银行R"
-  },
-  {
-    "index_code": "CN2432",
-    "display_name": "智能汽车R"
-  },
-  {
-    "index_code": "CN2433",
-    "display_name": "国证交运R"
-  },
-  {
-    "index_code": "CN2434",
-    "display_name": "数字传媒R"
-  },
-  {
-    "index_code": "CN2435",
-    "display_name": "国证农牧R"
-  },
-  {
-    "index_code": "CN2436",
-    "display_name": "绿色煤炭R"
-  },
-  {
-    "index_code": "CN2437",
-    "display_name": "证券龙头R"
-  },
-  {
-    "index_code": "CN2438",
-    "display_name": "绿色电力R"
-  },
-  {
-    "index_code": "CN2440",
-    "display_name": "国证钢铁R"
-  },
-  {
-    "index_code": "CN2441",
-    "display_name": "生物医药R"
-  },
-  {
-    "index_code": "CN2550",
-    "display_name": "央视50R"
-  },
-  {
-    "index_code": "CN2551",
-    "display_name": "央视创新R"
-  },
-  {
-    "index_code": "CN2552",
-    "display_name": "央视成长R"
-  },
-  {
-    "index_code": "CN2553",
-    "display_name": "央视回报R"
-  },
-  {
-    "index_code": "CN2554",
-    "display_name": "央视治理R"
-  },
-  {
-    "index_code": "CN2555",
-    "display_name": "央视责任R"
-  },
-  {
-    "index_code": "CN2556",
-    "display_name": "央视生态R"
-  },
-  {
-    "index_code": "CN2557",
-    "display_name": "央视文化R"
-  },
-  {
-    "index_code": "CN2602",
-    "display_name": "中小成长R"
-  },
-  {
-    "index_code": "CN2604",
-    "display_name": "中小价值R"
-  },
-  {
-    "index_code": "CN2608",
-    "display_name": "科技100R"
-  },
-  {
-    "index_code": "CN2610",
-    "display_name": "TMT 50R"
-  },
-  {
-    "index_code": "CN2613",
-    "display_name": "深证能源R"
-  },
-  {
-    "index_code": "CN2614",
-    "display_name": "深证材料R"
-  },
-  {
-    "index_code": "CN2615",
-    "display_name": "深证工业R"
-  },
-  {
-    "index_code": "CN2616",
-    "display_name": "深证可选R"
-  },
-  {
-    "index_code": "CN2617",
-    "display_name": "深证消费R"
-  },
-  {
-    "index_code": "CN2618",
-    "display_name": "深证医药R"
-  },
-  {
-    "index_code": "CN2619",
-    "display_name": "深证金融R"
-  },
-  {
-    "index_code": "CN2620",
-    "display_name": "深证信息R"
-  },
-  {
-    "index_code": "CN2621",
-    "display_name": "深证电信R"
-  },
-  {
-    "index_code": "CN2622",
-    "display_name": "深证公用R"
-  },
-  {
-    "index_code": "CN2623",
-    "display_name": "中小基础R"
-  },
-  {
-    "index_code": "CN2624",
-    "display_name": "中创400R"
-  },
-  {
-    "index_code": "CN2625",
-    "display_name": "中创500R"
-  },
-  {
-    "index_code": "CN2626",
-    "display_name": "中创成长R"
-  },
-  {
-    "index_code": "CN2627",
-    "display_name": "中创价值R"
-  },
-  {
-    "index_code": "CN2628",
-    "display_name": "700成长R"
-  },
-  {
-    "index_code": "CN2629",
-    "display_name": "700价值R"
-  },
-  {
-    "index_code": "CN2630",
-    "display_name": "1000成长R"
-  },
-  {
-    "index_code": "CN2631",
-    "display_name": "1000价值R"
-  },
-  {
-    "index_code": "CN2632",
-    "display_name": "深100EWR"
-  },
-  {
-    "index_code": "CN2633",
-    "display_name": "深300EWR"
-  },
-  {
-    "index_code": "CN2634",
-    "display_name": "中小等权R"
-  },
-  {
-    "index_code": "CN2635",
-    "display_name": "创业板EWR"
-  },
-  {
-    "index_code": "CN2636",
-    "display_name": "深证装备R"
-  },
-  {
-    "index_code": "CN2637",
-    "display_name": "深证地产R"
-  },
-  {
-    "index_code": "CN2638",
-    "display_name": "深证环保R"
-  },
-  {
-    "index_code": "CN2639",
-    "display_name": "深证大宗R"
-  },
-  {
-    "index_code": "CN2640",
-    "display_name": "创业基础R"
-  },
-  {
-    "index_code": "CN2641",
-    "display_name": "深证新兴R"
-  },
-  {
-    "index_code": "CN2642",
-    "display_name": "中小新兴R"
-  },
-  {
-    "index_code": "CN2643",
-    "display_name": "创业新兴R"
-  },
-  {
-    "index_code": "CN2644",
-    "display_name": "深证时钟R"
-  },
-  {
-    "index_code": "CN2645",
-    "display_name": "100低波R"
-  },
-  {
-    "index_code": "CN2646",
-    "display_name": "深消费50R"
-  },
-  {
-    "index_code": "CN2647",
-    "display_name": "深医药50R"
-  },
-  {
-    "index_code": "CN2648",
-    "display_name": "深证GDPR"
-  },
-  {
-    "index_code": "CN2649",
-    "display_name": "中小红利R"
-  },
-  {
-    "index_code": "CN2650",
-    "display_name": "中小治理R"
-  },
-  {
-    "index_code": "CN2651",
-    "display_name": "中小责任R"
-  },
-  {
-    "index_code": "CN2652",
-    "display_name": "中创高新R"
-  },
-  {
-    "index_code": "CN2653",
-    "display_name": "深证龙头R"
-  },
-  {
-    "index_code": "CN2654",
-    "display_name": "深证文化R"
-  },
-  {
-    "index_code": "CN2655",
-    "display_name": "深证绩效R"
-  },
-  {
-    "index_code": "CN2656",
-    "display_name": "100绩效R"
-  },
-  {
-    "index_code": "CN2657",
-    "display_name": "300绩效R"
-  },
-  {
-    "index_code": "CN2658",
-    "display_name": "中小绩效R"
-  },
-  {
-    "index_code": "CN2659",
-    "display_name": "深成指EWR"
-  },
-  {
-    "index_code": "CN2660",
-    "display_name": "中创EWR"
-  },
-  {
-    "index_code": "CN2661",
-    "display_name": "深证低波R"
-  },
-  {
-    "index_code": "CN2662",
-    "display_name": "深证高贝R"
-  },
-  {
-    "index_code": "CN2663",
-    "display_name": "中小低波R"
-  },
-  {
-    "index_code": "CN2664",
-    "display_name": "中小高贝R"
-  },
-  {
-    "index_code": "CN2665",
-    "display_name": "中创低波R"
-  },
-  {
-    "index_code": "CN2666",
-    "display_name": "中创高贝R"
-  },
-  {
-    "index_code": "CN2667",
-    "display_name": "创业成长R"
-  },
-  {
-    "index_code": "CN2668",
-    "display_name": "创业板VR"
-  },
-  {
-    "index_code": "CN2669",
-    "display_name": "深证农业R"
-  },
-  {
-    "index_code": "CN2670",
-    "display_name": "深周期50R"
-  },
-  {
-    "index_code": "CN2671",
-    "display_name": "深防御50R"
-  },
-  {
-    "index_code": "CN2672",
-    "display_name": "深红利50R"
-  },
-  {
-    "index_code": "CN2673",
-    "display_name": "创业板50R"
-  },
-  {
-    "index_code": "CN2674",
-    "display_name": "深A医药R"
-  },
-  {
-    "index_code": "CN2675",
-    "display_name": "深互联网R"
-  },
-  {
-    "index_code": "CN2676",
-    "display_name": "深医药EWR"
-  },
-  {
-    "index_code": "CN2677",
-    "display_name": "深互联EWR"
-  },
-  {
-    "index_code": "CN2678",
-    "display_name": "深次新股R"
-  },
-  {
-    "index_code": "CN2680",
-    "display_name": "深成能源R"
-  },
-  {
-    "index_code": "CN2681",
-    "display_name": "深成材料R"
-  },
-  {
-    "index_code": "CN2682",
-    "display_name": "深成工业R"
-  },
-  {
-    "index_code": "CN2683",
-    "display_name": "深成可选R"
-  },
-  {
-    "index_code": "CN2684",
-    "display_name": "深成消费R"
-  },
-  {
-    "index_code": "CN2685",
-    "display_name": "深成医药R"
-  },
-  {
-    "index_code": "CN2686",
-    "display_name": "深成金融R"
-  },
-  {
-    "index_code": "CN2687",
-    "display_name": "深成信息R"
-  },
-  {
-    "index_code": "CN2688",
-    "display_name": "深成电信R"
-  },
-  {
-    "index_code": "CN2689",
-    "display_name": "深成公用R"
-  },
-  {
-    "index_code": "CN2692",
-    "display_name": "创业低波R"
-  },
-  {
-    "index_code": "CN2693",
-    "display_name": "安防产业R"
-  },
-  {
-    "index_code": "CN2694",
-    "display_name": "创业高贝R"
-  },
-  {
-    "index_code": "CN2695",
-    "display_name": "深证节能R"
-  },
-  {
-    "index_code": "CN2696",
-    "display_name": "深证创投R"
-  },
-  {
-    "index_code": "CN2697",
-    "display_name": "中关村60R"
-  },
-  {
-    "index_code": "CN2698",
-    "display_name": "优势成长R"
-  },
-  {
-    "index_code": "CN2699",
-    "display_name": "金融科技R"
-  },
-  {
-    "index_code": "CN2750",
-    "display_name": "深主板50R"
-  },
-  {
-    "index_code": "CN2850",
-    "display_name": "深证50R"
-  },
-  {
-    "index_code": "CN5061",
-    "display_name": "深证GDP对冲"
-  },
-  {
-    "index_code": "CN5062",
-    "display_name": "中经GDP对冲"
-  },
-  {
-    "index_code": "CN6002",
-    "display_name": "北京指数"
-  },
-  {
-    "index_code": "CN6005",
-    "display_name": "广东指数"
-  },
-  {
-    "index_code": "CN6009",
-    "display_name": "河北指数"
-  },
-  {
-    "index_code": "CN6010",
-    "display_name": "河南指数"
-  },
-  {
-    "index_code": "CN6012",
-    "display_name": "湖北指数"
-  },
-  {
-    "index_code": "CN6013",
-    "display_name": "湖南指数"
-  },
-  {
-    "index_code": "CN6015",
-    "display_name": "江苏指数"
-  },
-  {
-    "index_code": "CN6024",
-    "display_name": "上海指数"
-  },
-  {
-    "index_code": "CN6025",
-    "display_name": "四川指数"
-  },
-  {
-    "index_code": "CN6026",
-    "display_name": "天津指数"
-  },
-  {
-    "index_code": "CN6028",
-    "display_name": "新疆指数"
-  },
-  {
-    "index_code": "CN6030",
-    "display_name": "浙江指数"
-  },
-  {
-    "index_code": "CN6032",
-    "display_name": "农副指数"
-  },
-  {
-    "index_code": "CN6033",
-    "display_name": "食品指数"
-  },
-  {
-    "index_code": "CN6034",
-    "display_name": "饮料指数"
-  },
-  {
-    "index_code": "CN6036",
-    "display_name": "纺织指数"
-  },
-  {
-    "index_code": "CN6037",
-    "display_name": "服装指数"
-  },
-  {
-    "index_code": "CN6039",
-    "display_name": "木材指数"
-  },
-  {
-    "index_code": "CN6041",
-    "display_name": "造纸指数"
-  },
-  {
-    "index_code": "CN6042",
-    "display_name": "印刷指数"
-  },
-  {
-    "index_code": "CN6043",
-    "display_name": "文教指数"
-  },
-  {
-    "index_code": "CN6044",
-    "display_name": "石化指数"
-  },
-  {
-    "index_code": "CN6045",
-    "display_name": "化学指数"
-  },
-  {
-    "index_code": "CN6046",
-    "display_name": "医药指数"
-  },
-  {
-    "index_code": "CN6047",
-    "display_name": "化纤指数"
-  },
-  {
-    "index_code": "CN6048",
-    "display_name": "橡胶指数"
-  },
-  {
-    "index_code": "CN6049",
-    "display_name": "矿物指数"
-  },
-  {
-    "index_code": "CN6050",
-    "display_name": "钢铁指数"
-  },
-  {
-    "index_code": "CN6051",
-    "display_name": "有色指数"
-  },
-  {
-    "index_code": "CN6052",
-    "display_name": "金属指数"
-  },
-  {
-    "index_code": "CN6053",
-    "display_name": "通用指数"
-  },
-  {
-    "index_code": "CN6054",
-    "display_name": "专用指数"
-  },
-  {
-    "index_code": "CN6055",
-    "display_name": "汽车指数"
-  },
-  {
-    "index_code": "CN6056",
-    "display_name": "交运指数"
-  },
-  {
-    "index_code": "CN6057",
-    "display_name": "电气指数"
-  },
-  {
-    "index_code": "CN6058",
-    "display_name": "电子指数"
-  },
-  {
-    "index_code": "CN6059",
-    "display_name": "仪表指数"
-  },
-  {
-    "index_code": "CN6060",
-    "display_name": "其他指数"
-  },
-  {
-    "index_code": "CN6074",
-    "display_name": "财富管理R"
-  },
-  {
-    "index_code": "CN6075",
-    "display_name": "国证信创R"
-  },
-  {
-    "index_code": "CN6082",
-    "display_name": "国证航天R"
-  },
-  {
-    "index_code": "CN6084",
-    "display_name": "电信服务R"
-  },
-  {
-    "index_code": "CN6085",
-    "display_name": "服装纺织R"
-  },
-  {
-    "index_code": "CN6086",
-    "display_name": "工业服务R"
-  },
-  {
-    "index_code": "CN6090",
-    "display_name": "国证化工R"
-  },
-  {
-    "index_code": "CN6093",
-    "display_name": "国证零售R"
-  },
-  {
-    "index_code": "CN6094",
-    "display_name": "耐用消费R"
-  },
-  {
-    "index_code": "CN6097",
-    "display_name": "消费服务R"
-  },
-  {
-    "index_code": "CN6100",
-    "display_name": "白色家电R"
-  },
-  {
-    "index_code": "CN6101",
-    "display_name": "国证百货R"
-  },
-  {
-    "index_code": "CN6105",
-    "display_name": "路桥港口R"
-  },
-  {
-    "index_code": "CN6106",
-    "display_name": "酒店餐饮R"
-  },
-  {
-    "index_code": "CN6109",
-    "display_name": "中创100美元R"
-  },
-  {
-    "index_code": "CN6111",
-    "display_name": "定增综指R"
-  },
-  {
-    "index_code": "CN6122",
-    "display_name": "中小能源R"
-  },
-  {
-    "index_code": "CN6123",
-    "display_name": "中小材料R"
-  },
-  {
-    "index_code": "CN6124",
-    "display_name": "中小工业R"
-  },
-  {
-    "index_code": "CN6125",
-    "display_name": "中小可选R"
-  },
-  {
-    "index_code": "CN6126",
-    "display_name": "中小消费R"
-  },
-  {
-    "index_code": "CN6127",
-    "display_name": "中小医药R"
-  },
-  {
-    "index_code": "CN6128",
-    "display_name": "中小金融R"
-  },
-  {
-    "index_code": "CN6129",
-    "display_name": "中小信息R"
-  },
-  {
-    "index_code": "CN6130",
-    "display_name": "中小电信R"
-  },
-  {
-    "index_code": "CN6131",
-    "display_name": "中小公用R"
-  },
-  {
-    "index_code": "CN6138",
-    "display_name": "大盘红利R"
-  },
-  {
-    "index_code": "CN6139",
-    "display_name": "稳进价值R"
-  },
-  {
-    "index_code": "CN6140",
-    "display_name": "先锋成长R"
-  },
-  {
-    "index_code": "CN6141",
-    "display_name": "优势价值R"
-  },
-  {
-    "index_code": "FACCNYG",
-    "display_name": "中华A股外资优先配置R"
-  },
-  {
-    "index_code": "GBACNYG",
-    "display_name": "中华大湾区优势产业R"
-  },
-  {
-    "index_code": "GTHHKDG",
-    "display_name": "中华港股通成长R"
-  },
-  {
-    "index_code": "IBTCNYG",
-    "display_name": "中华创新医药R"
-  },
-  {
-    "index_code": "MOTHKDG",
-    "display_name": "中华港股通护城河R"
-  },
-  {
-    "index_code": "PELHKDG",
-    "display_name": "中华港股通泛休闲娱乐R"
-  },
-  {
-    "index_code": "PSMHKDG",
-    "display_name": "中华国证港股物业R"
-  },
-  {
-    "index_code": "VALHKDG",
-    "display_name": "中华港股通价值R"
-  },
-  {
-    "index_code": "YLVHKDG",
-    "display_name": "中华港股通高息低波R"
-  },
-  {
-    "index_code": "921110",
-    "display_name": "长三角地债"
-  },
-  {
-    "index_code": "921111",
-    "display_name": "浙江省地债"
-  },
-  {
-    "index_code": "921112",
-    "display_name": "江苏省地债"
-  },
-  {
-    "index_code": "921113",
-    "display_name": "广东省地债"
-  },
-  {
-    "index_code": "921114",
-    "display_name": "四川省地债"
-  },
-  {
-    "index_code": "921115",
-    "display_name": "山东省地债"
-  },
-  {
-    "index_code": "921116",
-    "display_name": "贵州省地债"
-  },
-  {
-    "index_code": "921117",
-    "display_name": "河南省地债"
-  },
-  {
-    "index_code": "921118",
-    "display_name": "河北省地债"
-  },
-  {
-    "index_code": "921119",
-    "display_name": "湖南省地债"
-  },
-  {
-    "index_code": "921120",
-    "display_name": "湖北省地债"
-  },
-  {
-    "index_code": "921121",
-    "display_name": "云南省地债"
-  },
-  {
-    "index_code": "921122",
-    "display_name": "福建省地债"
-  },
-  {
-    "index_code": "921123",
-    "display_name": "辽宁省地债"
-  },
-  {
-    "index_code": "921124",
-    "display_name": "安徽省地债"
-  },
-  {
-    "index_code": "921125",
-    "display_name": "陕西省地债"
-  },
-  {
-    "index_code": "921126",
-    "display_name": "深绿色信用债"
-  },
-  {
-    "index_code": "921127",
-    "display_name": "深做市利率债"
-  },
-  {
-    "index_code": "921128",
-    "display_name": "深做市信用债"
-  },
-  {
-    "index_code": "921129",
-    "display_name": "深乡村振兴债"
-  },
-  {
-    "index_code": "921130",
-    "display_name": "深AAA科创债"
-  },
-  {
-    "index_code": "922110",
-    "display_name": "长三角地债(净价)"
-  },
-  {
-    "index_code": "922111",
-    "display_name": "浙江省地债(净价)"
-  },
-  {
-    "index_code": "922112",
-    "display_name": "江苏省地债 (净价)"
-  },
-  {
-    "index_code": "922113",
-    "display_name": "广东省地债(净价)"
-  },
-  {
-    "index_code": "922114",
-    "display_name": "四川省地债(净价)"
-  },
-  {
-    "index_code": "922115",
-    "display_name": "山东省地债(净价)"
-  },
-  {
-    "index_code": "922116",
-    "display_name": "贵州省地债 (净价)"
-  },
-  {
-    "index_code": "922117",
-    "display_name": "河南省地债(净价)"
-  },
-  {
-    "index_code": "922118",
-    "display_name": "河北省地债(净价)"
-  },
-  {
-    "index_code": "922119",
-    "display_name": "湖南省地债(净价)"
-  },
-  {
-    "index_code": "922120",
-    "display_name": "湖北省地债(净价)"
-  },
-  {
-    "index_code": "922121",
-    "display_name": "云南省地债(净价)"
-  },
-  {
-    "index_code": "922122",
-    "display_name": "福建省地债 (净价)"
-  },
-  {
-    "index_code": "922123",
-    "display_name": "辽宁省地债 (净价)"
-  },
-  {
-    "index_code": "922124",
-    "display_name": "安徽省地债(净价)"
-  },
-  {
-    "index_code": "922125",
-    "display_name": "陕西省地债(净价)"
-  },
-  {
-    "index_code": "922128",
-    "display_name": "深做市信用债（净价）"
-  },
-  {
-    "index_code": "922130",
-    "display_name": "深AAA科创债（净价）"
-  },
-  {
-    "index_code": "923110",
-    "display_name": "长三角地债 (全价)"
-  },
-  {
-    "index_code": "923111",
-    "display_name": "浙江省地债(全价)"
-  },
-  {
-    "index_code": "923112",
-    "display_name": "江苏省地债(全价)"
-  },
-  {
-    "index_code": "923113",
-    "display_name": "广东省地债(全价)"
-  },
-  {
-    "index_code": "923114",
-    "display_name": "四川省地债(全价)"
-  },
-  {
-    "index_code": "923115",
-    "display_name": "山东省地债(全价)"
-  },
-  {
-    "index_code": "923116",
-    "display_name": "贵州省地债(全价)"
-  },
-  {
-    "index_code": "923117",
-    "display_name": "河南省地债(全价)"
-  },
-  {
-    "index_code": "923118",
-    "display_name": "河北省地债(全价)"
-  },
-  {
-    "index_code": "923119",
-    "display_name": "湖南省地债(全价)"
-  },
-  {
-    "index_code": "923120",
-    "display_name": "湖北省地债(全价)"
-  },
-  {
-    "index_code": "923121",
-    "display_name": "云南省地债 (全价)"
-  },
-  {
-    "index_code": "923122",
-    "display_name": "福建省地债 (全价)"
-  },
-  {
-    "index_code": "923123",
-    "display_name": "辽宁省地债 (全价)"
-  },
-  {
-    "index_code": "923124",
-    "display_name": "安徽省地债(全价)"
-  },
-  {
-    "index_code": "923125",
-    "display_name": "陕西省地债(全价)"
-  },
-  {
-    "index_code": "923128",
-    "display_name": "深做市信用债（全价）"
-  },
-  {
-    "index_code": "923130",
-    "display_name": "深AAA科创债（全价）"
-  },
-  {
-    "index_code": "970091",
-    "display_name": "深AAA国企债"
-  },
-  {
-    "index_code": "970092",
-    "display_name": "深AAA民企债"
-  },
-  {
-    "index_code": "980025",
-    "display_name": "北股交指"
-  },
-  {
-    "index_code": "980093",
-    "display_name": "现金流做市债10/90"
-  },
-  {
-    "index_code": "980094",
-    "display_name": "现金流做市债15/85"
-  },
-  {
-    "index_code": "980095",
-    "display_name": "现金流做市债20/80"
-  },
-  {
-    "index_code": "980096",
-    "display_name": "现金流做市债30/70"
-  },
-  {
-    "index_code": "980097",
-    "display_name": "现金流股债10/90"
-  },
-  {
-    "index_code": "980098",
-    "display_name": "现金流股债15/85"
-  },
-  {
-    "index_code": "980099",
-    "display_name": "现金流股债20/80"
-  },
-  {
-    "index_code": "980100",
-    "display_name": "现金流股债30/70"
-  },
-  {
-    "index_code": "980121",
-    "display_name": "创业板指股债5/95"
-  },
-  {
-    "index_code": "980122",
-    "display_name": "创业板指股债10/90"
-  },
-  {
-    "index_code": "980123",
-    "display_name": "创业板指股债15/85"
-  },
-  {
-    "index_code": "980124",
-    "display_name": "创业板指股债20/80"
-  },
-  {
-    "index_code": "980125",
-    "display_name": "创业板指股债25/75"
-  },
-  {
-    "index_code": "980126",
-    "display_name": "创业板指股债30/70"
-  },
-  {
-    "index_code": "980127",
-    "display_name": "创业板50股债5/95"
-  },
-  {
-    "index_code": "980128",
-    "display_name": "创业板50股债10/90"
-  },
-  {
-    "index_code": "980129",
-    "display_name": "创业板50股债15/85"
-  },
-  {
-    "index_code": "980130",
-    "display_name": "创业板50股债20/80"
-  },
-  {
-    "index_code": "980131",
-    "display_name": "创业板50股债25/75"
-  },
-  {
-    "index_code": "980132",
-    "display_name": "创业板50股债30/70"
-  },
-  {
-    "index_code": "B10013",
-    "display_name": "深证地债"
-  },
-  {
-    "index_code": "B10014",
-    "display_name": "一般地债"
-  },
-  {
-    "index_code": "B10015",
-    "display_name": "专项地债"
-  },
-  {
-    "index_code": "B10016",
-    "display_name": "深证地债1-3"
-  },
-  {
-    "index_code": "B10017",
-    "display_name": "深证地债3-5"
-  },
-  {
-    "index_code": "B10018",
-    "display_name": "深证地债5-10"
-  },
-  {
-    "index_code": "B20013",
-    "display_name": "深证地债(净价)"
-  },
-  {
-    "index_code": "B20014",
-    "display_name": "一般地债(净价)"
-  },
-  {
-    "index_code": "B20015",
-    "display_name": "专项地债(净价)"
-  },
-  {
-    "index_code": "B20016",
-    "display_name": "深证地债1-3(净价)"
-  },
-  {
-    "index_code": "B20017",
-    "display_name": "深证地债3-5(净价)"
-  },
-  {
-    "index_code": "B20018",
-    "display_name": "深证地债5-10(净价)"
-  },
-  {
-    "index_code": "B30013",
-    "display_name": "深证地债(全价)"
-  },
-  {
-    "index_code": "B30014",
-    "display_name": "一般地债(全价)"
-  },
-  {
-    "index_code": "B30015",
-    "display_name": "专项地债(全价)"
-  },
-  {
-    "index_code": "B30016",
-    "display_name": "深证地债1-3(全价)"
-  },
-  {
-    "index_code": "B30017",
-    "display_name": "深证地债3-5(全价)"
-  },
-  {
-    "index_code": "B30018",
-    "display_name": "深证地债5-10(全价)"
-  },
-  {
-    "index_code": "CESRET",
-    "display_name": "中华房地产信托基金"
-  },
-  {
-    "index_code": "CN6070",
-    "display_name": "中国股基指数"
-  },
-  {
-    "index_code": "CN6071",
-    "display_name": "中国混基指数"
-  },
-  {
-    "index_code": "CN6072",
-    "display_name": "中国债基指数"
-  },
-  {
-    "index_code": "CN6112",
-    "display_name": "货基指数"
-  },
-  {
-    "index_code": "CN6113",
-    "display_name": "年金指数"
-  },
-  {
-    "index_code": "CN6114",
-    "display_name": "生命周期(20-35)基金指数"
-  },
-  {
-    "index_code": "CN6115",
-    "display_name": "生命周期(15-20)基金指数"
-  },
-  {
-    "index_code": "CN6116",
-    "display_name": "生命周期(10-15)基金指数"
-  },
-  {
-    "index_code": "CN6117",
-    "display_name": "生命周期(5-10)基金指数"
-  },
-  {
-    "index_code": "CN6118",
-    "display_name": "生命周期(0-5)基金指数"
-  },
-  {
-    "index_code": "CNB00001",
-    "display_name": "国证利率"
-  },
-  {
-    "index_code": "CNB00002",
-    "display_name": "国证国债"
-  },
-  {
-    "index_code": "CNB00003",
-    "display_name": "国证政金"
-  },
-  {
-    "index_code": "CNB00004",
-    "display_name": "国证利率0-1"
-  },
-  {
-    "index_code": "CNB00005",
-    "display_name": "国证利率1-5"
-  },
-  {
-    "index_code": "CNB00006",
-    "display_name": "国证利率5-10"
-  },
-  {
-    "index_code": "CNB00007",
-    "display_name": "国证国债0-1"
-  },
-  {
-    "index_code": "CNB00008",
-    "display_name": "国证国债1-5"
-  },
-  {
-    "index_code": "CNB00009",
-    "display_name": "国证国债5-10"
-  },
-  {
-    "index_code": "CNB00010",
-    "display_name": "国证政金0-1"
-  },
-  {
-    "index_code": "CNB00011",
-    "display_name": "国证政金1-5"
-  },
-  {
-    "index_code": "CNB00012",
-    "display_name": "国证政金5-10"
-  },
-  {
-    "index_code": "CNB00013",
-    "display_name": "高等级绿色债券"
-  },
-  {
-    "index_code": "CNB00014",
-    "display_name": "高等级非贴标绿债"
-  },
-  {
-    "index_code": "CNB00015",
-    "display_name": "高等级贴标绿债"
-  },
-  {
-    "index_code": "CNB10001",
-    "display_name": "国证利率(净价)"
-  },
-  {
-    "index_code": "CNB10002",
-    "display_name": "国证国债(净价)"
-  },
-  {
-    "index_code": "CNB10003",
-    "display_name": "国证政金(净价)"
-  },
-  {
-    "index_code": "CNB10004",
-    "display_name": "国证利率0-1(净价)"
-  },
-  {
-    "index_code": "CNB10005",
-    "display_name": "国证利率1-5(净价)"
-  },
-  {
-    "index_code": "CNB10006",
-    "display_name": "国证利率5-10(净价)"
-  },
-  {
-    "index_code": "CNB10007",
-    "display_name": "国证国债0-1(净价)"
-  },
-  {
-    "index_code": "CNB10008",
-    "display_name": "国证国债1-5(净价)"
-  },
-  {
-    "index_code": "CNB10009",
-    "display_name": "国证国债5-10(净价)"
-  },
-  {
-    "index_code": "CNB10010",
-    "display_name": "国证政金0-1(净价)"
-  },
-  {
-    "index_code": "CNB10011",
-    "display_name": "国证政金1-5(净价)"
-  },
-  {
-    "index_code": "CNB10012",
-    "display_name": "国证政金5-10(净价)"
-  },
-  {
-    "index_code": "CNB10013",
-    "display_name": "高等级绿色债券(净价)"
-  },
-  {
-    "index_code": "CNB10014",
-    "display_name": "高等级非贴标绿债（净价）"
-  },
-  {
-    "index_code": "CNB10015",
-    "display_name": "高等级贴标绿债（净价）"
-  },
-  {
-    "index_code": "CNB20001",
-    "display_name": "国证利率(全价)"
-  },
-  {
-    "index_code": "CNB20002",
-    "display_name": "国证国债(全价)"
-  },
-  {
-    "index_code": "CNB20003",
-    "display_name": "国证政金(全价)"
-  },
-  {
-    "index_code": "CNB20004",
-    "display_name": "国证利率0-1(全价)"
-  },
-  {
-    "index_code": "CNB20005",
-    "display_name": "国证利率1-5(全价)"
-  },
-  {
-    "index_code": "CNB20006",
-    "display_name": "国证利率5-10(全价)"
-  },
-  {
-    "index_code": "CNB20007",
-    "display_name": "国证国债0-1(全价)"
-  },
-  {
-    "index_code": "CNB20008",
-    "display_name": "国证国债1-5(全价)"
-  },
-  {
-    "index_code": "CNB20009",
-    "display_name": "国证国债5-10(全价)"
-  },
-  {
-    "index_code": "CNB20010",
-    "display_name": "国证政金0-1(全价)"
-  },
-  {
-    "index_code": "CNB20011",
-    "display_name": "国证政金1-5(全价)"
-  },
-  {
-    "index_code": "CNB20012",
-    "display_name": "国证政金5-10(全价)"
-  },
-  {
-    "index_code": "CNB20013",
-    "display_name": "高等级绿色债券（全价）"
-  },
-  {
-    "index_code": "CNB20014",
-    "display_name": "高等级非贴标绿债（全价）"
-  },
-  {
-    "index_code": "CNB20015",
-    "display_name": "高等级贴标绿债（全价）"
-  },
-  {
-    "index_code": "RETHKDG",
-    "display_name": "中华房地产信托基金R"
+    "index_code": "eaa66fdacaeea4d5c7105c6e06fcdf16",
+    "display_name": "中债-1-3年投资级中资美元债综合指数"
   }
 ]
