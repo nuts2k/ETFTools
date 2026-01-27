@@ -48,6 +48,23 @@ CROSS_BORDER_NAME_MAP = {
     "道琼斯工业平均": "道琼斯工业平均指数",
 }
 
+# 指数名称映射：ETF跟踪标的全称 -> 数据库简称
+# 主要处理上证科创板系列等全称/简称不一致的情况
+INDEX_NAME_MAP = {
+    # 上证科创板系列（全称 -> 简称）
+    "上证科创板新材料指数": "科创材料",
+    "上证科创板芯片指数": "科创芯片",
+    "上证科创板50成份指数": "科创50",
+    "上证科创板100指数": "科创100",
+    "上证科创板200指数": "科创200",
+    "上证科创板生物医药指数": "科创生物",
+    "上证科创板信息技术指数": "科创信息",
+    "上证科创板高端装备指数": "科创高装",
+    "上证科创板新能源指数": "科创新能",
+    "上证科创板机械指数": "科创机械",
+    "上证科创板成长指数": "科创成长",
+}
+
 
 def load_mapping() -> Dict:
     """加载现有映射文件，如不存在则返回初始结构"""
@@ -290,6 +307,11 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     
     # 0. 跨境名称映射
     mapped_name = CROSS_BORDER_NAME_MAP.get(source_name)
+    if mapped_name:
+        source_name = mapped_name
+    
+    # 0.1 指数全称->简称映射（如：上证科创板新材料指数 -> 科创材料）
+    mapped_name = INDEX_NAME_MAP.get(source_name)
     if mapped_name:
         source_name = mapped_name
     

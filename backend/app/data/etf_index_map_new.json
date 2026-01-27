@@ -197,16 +197,113 @@
       "index_name": "中证5-10年期国债活跃券指数",
       "source_name": "中证5-10年期国债活跃券指数",
       "updated_at": "2026-01-27"
-    }
-  },
-  "unmappable": {
+    },
+    "511090": {
+      "index_code": "8a8b2cef77b239980177b485d20a6379",
+      "index_name": "中债-30年期国债指数",
+      "source_name": "中债-30年期国债财富(总值)指数",
+      "updated_at": "2026-01-27"
+    },
+    "512960": {
+      "index_code": "000860",
+      "index_name": "中证央企结构调整指数",
+      "source_name": "中证央企结构调整指数",
+      "updated_at": "2026-01-27"
+    },
+    "159261": {
+      "index_code": "932461",
+      "index_name": "中证科创创业新能源指数",
+      "source_name": "创业板新能源指数",
+      "updated_at": "2026-01-27"
+    },
+    "515260": {
+      "index_code": "931461",
+      "index_name": "中证电子50指数",
+      "source_name": "中证电子50指数",
+      "updated_at": "2026-01-27"
+    },
+    "159814": {
+      "index_code": "399293",
+      "index_name": "创业大盘",
+      "source_name": "创业板大盘指数",
+      "updated_at": "2026-01-27"
+    },
+    "513810": {
+      "index_code": "H11153",
+      "index_name": "中证香港内地国有企业指数",
+      "source_name": "中证香港内地国有企业港元指数",
+      "updated_at": "2026-01-27"
+    },
+    "510090": {
+      "index_code": "000048",
+      "index_name": "责任指数",
+      "source_name": "责任指数",
+      "updated_at": "2026-01-27"
+    },
     "513100": {
-      "reason": "跨境ETF",
+      "index_code": ".NDX",
+      "index_name": "纳斯达克100指数",
       "source_name": "纳斯达克100指数",
       "updated_at": "2026-01-27"
     },
+    "513600": {
+      "index_code": "HSI",
+      "index_name": "恒生指数",
+      "source_name": "恒生指数",
+      "updated_at": "2026-01-27"
+    },
+    "159997": {
+      "index_code": "930652",
+      "index_name": "中证电子指数",
+      "source_name": "中证电子指数",
+      "updated_at": "2026-01-27"
+    },
+    "159865": {
+      "index_code": "930707",
+      "index_name": "中证畜牧养殖指数",
+      "source_name": "中证畜牧养殖指数",
+      "updated_at": "2026-01-27"
+    },
+    "517100": {
+      "index_code": "H30455",
+      "index_name": "中证沪港深500指数",
+      "source_name": "中证沪港深500人民币指数",
+      "updated_at": "2026-01-27"
+    },
+    "561090": {
+      "index_code": "000510",
+      "index_name": "中证A500",
+      "source_name": "中证A500指数",
+      "updated_at": "2026-01-27"
+    },
+    "159821": {
+      "index_code": "399006",
+      "index_name": "创业板指",
+      "source_name": "创业板指数(价格)",
+      "updated_at": "2026-01-27"
+    },
+    "159790": {
+      "index_code": "399977",
+      "index_name": "中证内地低碳经济主题指数",
+      "source_name": "中证内地低碳经济主题指数",
+      "updated_at": "2026-01-27"
+    },
+    "560080": {
+      "index_code": "930641",
+      "index_name": "中证中药指数",
+      "source_name": "中证中药指数",
+      "updated_at": "2026-01-27"
+    },
+    "516180": {
+      "index_code": "931151",
+      "index_name": "中证光伏产业指数",
+      "source_name": "中证光伏产业指数",
+      "updated_at": "2026-01-27"
+    }
+  },
+  "unmappable": {
     "508003": {
-      "reason": "无跟踪标的（主动管理型/LOF）",
+      "reason": "无跟踪标的（主动管理型/LOF/REITs）",
       "source_name": null,
       "updated_at": "2026-01-27"
     },
@@ -225,33 +322,25 @@
       "source_name": null,
       "updated_at": "2026-01-27"
     },
-    "159120": {
-      "reason": "跨境ETF",
-      "source_name": "恒生港股通科技主题指数",
+    "512180": {
+      "reason": "无公开数据源",
+      "source_name": "MSCI中国A股国际通指数",
+      "updated_at": "2026-01-27"
+    },
+    "159621": {
+      "reason": "无公开数据源",
+      "source_name": "MSCI CHINA A RMB ESG UNIVERSAL INDEX",
+      "updated_at": "2026-01-27"
+    },
+    "180801": {
+      "reason": "无跟踪标的（主动管理型/LOF/REITs）",
+      "source_name": null,
       "updated_at": "2026-01-27"
     }
   },
   "pending": [
-    "512180",
-    "511090",
-    "512960",
-    "159261",
-    "515260",
-    "159814",
-    "513600",
-    "159621",
-    "513810",
-    "510090",
-    "159997",
-    "159865",
-    "517100",
-    "561090",
-    "159821",
-    "159790",
+    "159120",
     "588010",
-    "180801",
-    "560080",
-    "516180",
     "159971",
     "159888",
     "562850",
