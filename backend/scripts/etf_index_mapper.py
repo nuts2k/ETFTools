@@ -14,6 +14,9 @@ import sys
 from datetime import date
 from typing import Dict, List, Optional
 
+import akshare as ak
+import pandas as pd
+
 # 数据文件路径
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "app", "data")
 OUTPUT_FILE = os.path.join(DATA_DIR, "etf_index_map_new.json")
@@ -34,6 +37,19 @@ def save_mapping(data: Dict) -> None:
     print(f"[INFO] 已保存到 {OUTPUT_FILE}")
 
 
+def fetch_all_etf_codes() -> List[str]:
+    """从 AKShare 获取全量 ETF 代码列表"""
+    print("[INFO] 正在从 AKShare 获取 ETF 列表...")
+    try:
+        df = ak.fund_etf_spot_em()
+        codes = df["代码"].tolist()
+        print(f"[INFO] 获取到 {len(codes)} 只 ETF")
+        return codes
+    except Exception as e:
+        print(f"[ERROR] 获取 ETF 列表失败: {e}")
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description="ETF 指数自动映射脚本")
     parser.add_argument("--codes", type=str, help="指定 ETF 代码（逗号分隔）")
@@ -47,8 +63,28 @@ def main():
     data = load_mapping()
     print(f"[INFO] 已加载映射文件: mapped={len(data['mapped'])}, pending={len(data['pending'])}")
     
-    # TODO: 实现处理逻辑
-    print("[INFO] 脚本骨架运行成功")
+    # 确定要处理的 ETF 列表
+    if args.init:
+        all_codes = fetch_all_etf_codes()
+        # 排除已处理的
+        existing = set(data["mapped"].keys()) | set(data["unmappable"].keys())
+        new_codes = [c for c in all_codes if c not in existing]
+        data["pending"] = list(set(data["pending"]) | set(new_codes))
+        print(f"[INFO] 新增 {len(new_codes)} 个待处理 ETF 到 pending")
+        if not args.dry_run:
+            save_mapping(data)
+        return
+    
+    if args.codes:
+        codes_to_process = [c.strip() for c in args.codes.split(",")]
+    else:
+        codes_to_process = data["pending"][:args.limit]
+    
+    if not codes_to_process:
+        print("[INFO] 无待处理 ETF")
+        return
+    
+    print(f"[INFO] 本次将处理 {len(codes_to_process)} 个 ETF")
 
 
 if __name__ == "__main__":
