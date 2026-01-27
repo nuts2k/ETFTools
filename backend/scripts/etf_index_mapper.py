@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import random
+import re
 import sys
 import time
 from datetime import date
@@ -47,6 +48,7 @@ def save_mapping(data: Dict) -> None:
     """保存映射文件"""
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write("\n")  # 添加尾部换行
     print(f"[INFO] 已保存到 {OUTPUT_FILE}")
 
 
@@ -135,9 +137,12 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
         return None
     
     # 清理源名称：去除括号及其内容、去除「指数」后缀
-    import re
     source_clean = re.sub(r'\([^)]*\)', '', source_name)  # 去除 (价格) 等
     source_clean = source_clean.replace("指数", "").strip()
+    
+    # 空字符串检查，避免 str.contains("") 匹配所有行
+    if not source_clean:
+        return None
     
     # 精确匹配
     exact = index_db[index_db["display_name"] == source_name]
