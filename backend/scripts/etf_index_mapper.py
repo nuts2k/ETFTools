@@ -36,6 +36,18 @@ USER_AGENTS = [
 EASTMONEY_URL = "https://fundf10.eastmoney.com/jbgk_{code}.html"
 REQUEST_DELAY = (5, 10)  # 请求间隔秒数范围
 
+# 跨境指数名称映射：ETF跟踪标的名称 -> 数据源名称
+# 用于处理 ETF 公示名称与数据源名称的差异
+CROSS_BORDER_NAME_MAP = {
+    # 日本
+    "东京日经225指数": "日经225指数",
+    # 美国（多种表述统一）
+    "纳斯达克100": "纳斯达克100指数",
+    "标普500": "标普500指数",
+    "标准普尔500指数": "标普500指数",  # 全称 -> 简称
+    "道琼斯工业平均": "道琼斯工业平均指数",
+}
+
 
 def load_mapping() -> Dict:
     """加载现有映射文件，如不存在则返回初始结构"""
@@ -153,6 +165,35 @@ def update_index_database() -> None:
     except Exception as e:
         print(f"  - chinabond 失败: {e}")
     
+    # 5. 新浪港股指数（恒生系列）
+    try:
+        df5 = ak.stock_hk_index_spot_sina()[['代码', '名称']]
+        df5.columns = ['index_code', 'display_name']
+        frames.append(df5)
+        print(f"  - stock_hk_index_spot_sina (港股): {len(df5)} 条")
+    except Exception as e:
+        print(f"  - stock_hk_index_spot_sina 失败: {e}")
+    
+    # 6. 新浪全球指数（日经225等）
+    try:
+        df6 = ak.index_global_name_table()[['代码', '指数名称']]
+        df6.columns = ['index_code', 'display_name']
+        frames.append(df6)
+        print(f"  - index_global_name_table (全球): {len(df6)} 条")
+    except Exception as e:
+        print(f"  - index_global_name_table 失败: {e}")
+    
+    # 7. 新浪美股主要指数（手动定义，AkShare 无直接接口）
+    us_indices = [
+        {"index_code": ".NDX", "display_name": "纳斯达克100指数"},
+        {"index_code": ".IXIC", "display_name": "纳斯达克综合指数"},
+        {"index_code": ".DJI", "display_name": "道琼斯工业平均指数"},
+        {"index_code": ".INX", "display_name": "标普500指数"},
+    ]
+    df7 = pd.DataFrame(us_indices)
+    frames.append(df7)
+    print(f"  - 美股指数 (手动): {len(df7)} 条")
+    
     if not frames:
         print("[ERROR] 所有指数数据源均失败")
         sys.exit(1)
@@ -235,6 +276,7 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     匹配指数名称到指数代码
     
     优先级:
+    0. 跨境名称映射（ETF名称 -> 数据源名称）
     1. 精确匹配 display_name
     2. 去除「指数」后缀后匹配
     3. 中债指数特殊处理（去除财富/全价/净价等后缀）
@@ -245,6 +287,11 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     """
     if not source_name or pd.isna(source_name):
         return None
+    
+    # 0. 跨境名称映射
+    mapped_name = CROSS_BORDER_NAME_MAP.get(source_name)
+    if mapped_name:
+        source_name = mapped_name
     
     # 清理源名称：去除括号及其内容、去除「指数」后缀
     source_clean = re.sub(r'\([^)]*\)', '', source_name)  # 去除 (价格) 等
@@ -339,12 +386,13 @@ def process_etf(
     
     print(f"  → 跟踪标的: {source_name}" + (f" (简称: {short_name})" if short_name else ""))
     
-    # 检测跨境/MSCI ETF（无法从国内数据源匹配）
-    cross_border_keywords = ["纳斯达克", "标普", "恒生", "道琼斯", "日经", "法兰克福", "纳指", "美股", "MSCI"]
-    if any(kw in source_name for kw in cross_border_keywords):
-        print(f"  → 匹配结果: 跨境/MSCI指数 → UNMAPPABLE")
+    # 检测无法匹配的跨境指数（仅 MSCI 系列，其他跨境指数已有数据源）
+    # 注意: 纳斯达克、标普、恒生、道琼斯、日经等已整合数据源，不再标记为 UNMAPPABLE
+    unmappable_keywords = ["MSCI", "法兰克福"]
+    if any(kw in source_name for kw in unmappable_keywords):
+        print(f"  → 匹配结果: {source_name} (无公开数据源) → UNMAPPABLE")
         data["unmappable"][etf_code] = {
-            "reason": "跨境/MSCI指数",
+            "reason": "无公开数据源",
             "source_name": source_name,
             "updated_at": today
         }
