@@ -15,7 +15,7 @@ import re
 import sys
 import time
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import akshare as ak
 import pandas as pd
@@ -25,6 +25,7 @@ from bs4 import BeautifulSoup
 # 数据文件路径
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "app", "data")
 OUTPUT_FILE = os.path.join(DATA_DIR, "etf_index_map_new.json")
+INDEX_DB_FILE = os.path.join(DATA_DIR, "index_database.json")
 
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0",
@@ -53,11 +54,16 @@ def save_mapping(data: Dict) -> None:
 
 
 def fetch_all_etf_codes() -> List[str]:
-    """从 AKShare 获取全量 ETF 代码列表"""
-    print("[INFO] 正在从 AKShare 获取 ETF 列表...")
+    """从主应用服务获取全量 ETF 代码列表（复用完善的 fallback 机制）"""
+    print("[INFO] 正在从主应用服务获取 ETF 列表...")
     try:
-        df = ak.fund_etf_spot_em()
-        codes = df["代码"].tolist()
+        # 将 backend/ 添加到路径以支持 app 模块导入
+        backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if backend_dir not in sys.path:
+            sys.path.insert(0, backend_dir)
+        from app.services.akshare_service import AkShareService
+        etf_list = AkShareService.fetch_all_etfs()
+        codes = [etf["code"] for etf in etf_list]
         print(f"[INFO] 获取到 {len(codes)} 只 ETF")
         return codes
     except Exception as e:
@@ -66,23 +72,74 @@ def fetch_all_etf_codes() -> List[str]:
 
 
 def load_index_database() -> pd.DataFrame:
-    """加载全量指数列表用于匹配"""
-    print("[INFO] 正在从 AKShare 加载指数数据库...")
-    try:
-        df = ak.index_stock_info()
-        print(f"[INFO] 加载 {len(df)} 条指数数据")
-        return df
-    except Exception as e:
-        print(f"[ERROR] 加载指数数据库失败: {e}")
+    """从本地 JSON 加载指数数据库"""
+    if not os.path.exists(INDEX_DB_FILE):
+        print(f"[ERROR] 指数数据库不存在: {INDEX_DB_FILE}")
+        print("[INFO] 请先运行: python scripts/etf_index_mapper.py --update-index-db")
         sys.exit(1)
+    
+    print(f"[INFO] 正在从本地加载指数数据库...")
+    with open(INDEX_DB_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    
+    df = pd.DataFrame(data)
+    print(f"[INFO] 已加载 {len(df)} 条指数")
+    return df
 
 
-def fetch_tracking_index(etf_code: str, max_retries: int = 1) -> Optional[str]:
+def update_index_database() -> None:
+    """从 AkShare 获取全量指数并保存到本地 JSON"""
+    print("[INFO] 正在从 AkShare 更新指数数据库...")
+    frames = []
+    
+    # 1. 上证/深证基础指数
+    try:
+        df1 = ak.index_stock_info()[['index_code', 'display_name']]
+        frames.append(df1)
+        print(f"  - index_stock_info: {len(df1)} 条")
+    except Exception as e:
+        print(f"  - index_stock_info 失败: {e}")
+    
+    # 2. 中证全量指数（使用全称匹配）
+    try:
+        df2 = ak.index_csindex_all()[['指数代码', '指数全称']]
+        df2.columns = ['index_code', 'display_name']
+        frames.append(df2)
+        print(f"  - index_csindex_all: {len(df2)} 条")
+    except Exception as e:
+        print(f"  - index_csindex_all 失败: {e}")
+    
+    # 3. 国证指数
+    try:
+        df3 = ak.index_all_cni()[['指数代码', '指数简称']]
+        df3.columns = ['index_code', 'display_name']
+        frames.append(df3)
+        print(f"  - index_all_cni: {len(df3)} 条")
+    except Exception as e:
+        print(f"  - index_all_cni 失败: {e}")
+    
+    if not frames:
+        print("[ERROR] 所有指数数据源均失败")
+        sys.exit(1)
+    
+    merged = pd.concat(frames, ignore_index=True)
+    merged = merged.drop_duplicates(subset='index_code', keep='first')
+    print(f"[INFO] 合并去重后共 {len(merged)} 条指数")
+    
+    # 保存到 JSON
+    records = merged.to_dict(orient="records")
+    with open(INDEX_DB_FILE, "w", encoding="utf-8") as f:
+        json.dump(records, f, ensure_ascii=False, indent=2)
+        f.write("\n")
+    print(f"[INFO] 已保存到 {INDEX_DB_FILE}")
+
+
+def fetch_tracking_index(etf_code: str, max_retries: int = 1) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
-    从天天基金爬取 ETF 的跟踪标的名称
+    从天天基金爬取 ETF 的跟踪标的名称、简称和业绩比较基准指数名称
     
     Returns:
-        跟踪标的名称，如未找到返回 None
+        (跟踪标的名称, 简称, 业绩比较基准指数名称)
     """
     url = EASTMONEY_URL.format(code=etf_code)
     headers = {"User-Agent": random.choice(USER_AGENTS)}
@@ -95,18 +152,34 @@ def fetch_tracking_index(etf_code: str, max_retries: int = 1) -> Optional[str]:
             
             soup = BeautifulSoup(resp.text, "html.parser")
             
-            # 查找包含「跟踪标的」的行
-            for th in soup.find_all("th"):
-                if "跟踪标的" in th.get_text():
-                    td = th.find_next_sibling("td")
-                    if td:
-                        # 提取文本，清理空白
-                        text = td.get_text(strip=True)
-                        # 有时候是链接，只取文本
-                        if text and text != "--":
-                            return text
+            tracking_name = None
+            short_name = None
+            benchmark_index = None
             
-            return None
+            # 遍历所有 th 提取信息
+            for th in soup.find_all("th"):
+                th_text = th.get_text()
+                td = th.find_next_sibling("td")
+                if not td:
+                    continue
+                td_text = td.get_text(strip=True)
+                
+                # 提取跟踪标的
+                if "跟踪标的" in th_text:
+                    if td_text and td_text != "--" and "无跟踪标的" not in td_text:
+                        tracking_name = td_text
+                
+                # 从业绩比较基准提取信息
+                if "业绩比较基准" in th_text:
+                    # 提取简称
+                    match = re.search(r'简称[:：]([^)）]+)[)）]', td_text)
+                    if match:
+                        short_name = match.group(1)
+                    # 提取指数名称（去掉「收益率」后缀）
+                    if "收益率" in td_text:
+                        benchmark_index = td_text.split("收益率")[0].strip()
+            
+            return (tracking_name, short_name, benchmark_index)
             
         except requests.RequestException as e:
             if attempt < max_retries:
@@ -114,12 +187,12 @@ def fetch_tracking_index(etf_code: str, max_retries: int = 1) -> Optional[str]:
                 time.sleep(2)
             else:
                 print(f"  [WARN] 请求失败: {e}")
-                return None
+                return (None, None, None)
         except Exception as e:
             print(f"  [WARN] 解析失败: {e}")
-            return None
+            return (None, None, None)
     
-    return None
+    return (None, None, None)
 
 
 def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
@@ -129,7 +202,8 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     优先级:
     1. 精确匹配 display_name
     2. 去除「指数」后缀后匹配
-    3. 模糊匹配简称
+    3. 包含匹配
+    4. 去除通用词后模糊匹配
     
     代码优先级: 000xxx/399xxx > H3xxxx > 其他
     """
@@ -144,20 +218,33 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     if not source_clean:
         return None
     
-    # 精确匹配
+    # 1. 精确匹配
     exact = index_db[index_db["display_name"] == source_name]
     if not exact.empty:
         return _select_best_match(exact)
     
-    # 去除「指数」后匹配
+    # 2. 去除「指数」后匹配
     clean_match = index_db[index_db["display_name"] == source_clean]
     if not clean_match.empty:
         return _select_best_match(clean_match)
     
-    # 包含匹配（使用 regex=False 避免警告）
+    # 3. 包含匹配（使用 regex=False 避免警告）
     contains = index_db[index_db["display_name"].str.contains(source_clean, na=False, regex=False)]
     if not contains.empty:
         return _select_best_match(contains)
+    
+    # 4. 去除通用词后模糊匹配
+    common_words = ["中证", "中国", "国证", "上证", "深证", "板"]
+    source_fuzzy = source_clean
+    for word in common_words:
+        source_fuzzy = source_fuzzy.replace(word, "")
+    source_fuzzy = source_fuzzy.strip()
+    
+    if source_fuzzy and len(source_fuzzy) >= 2:
+        # 在数据库名称中搜索包含关键词的记录
+        fuzzy_match = index_db[index_db["display_name"].str.contains(source_fuzzy, na=False, regex=False)]
+        if not fuzzy_match.empty:
+            return _select_best_match(fuzzy_match)
     
     return None
 
@@ -190,23 +277,26 @@ def process_etf(
     """
     today = date.today().isoformat()
     
-    # 爬取跟踪标的
-    source_name = fetch_tracking_index(etf_code)
+    # 爬取跟踪标的、简称和业绩比较基准指数名称
+    source_name, short_name, benchmark_index = fetch_tracking_index(etf_code)
     
     if not source_name:
-        # 无跟踪标的 -> 可能是主动管理型基金
+        # 无跟踪标的 -> 可能是主动管理型基金/REITs
+        print(f"  → 无跟踪标的")
+        print(f"  → 匹配结果: 主动管理型/LOF/REITs → UNMAPPABLE")
         data["unmappable"][etf_code] = {
-            "reason": "无跟踪标的（主动管理型/LOF）",
+            "reason": "无跟踪标的（主动管理型/LOF/REITs）",
             "source_name": None,
             "updated_at": today
         }
         return "UNMAPPABLE"
     
-    print(f"  → 跟踪标的: {source_name}")
+    print(f"  → 跟踪标的: {source_name}" + (f" (简称: {short_name})" if short_name else ""))
     
     # 检测跨境 ETF
     cross_border_keywords = ["纳斯达克", "标普", "恒生", "道琼斯", "日经", "法兰克福", "纳指", "美股"]
     if any(kw in source_name for kw in cross_border_keywords):
+        print(f"  → 匹配结果: 跨境ETF → UNMAPPABLE")
         data["unmappable"][etf_code] = {
             "reason": "跨境ETF",
             "source_name": source_name,
@@ -214,8 +304,12 @@ def process_etf(
         }
         return "UNMAPPABLE"
     
-    # 匹配指数
+    # 匹配指数：先用全称，失败后用简称，再失败用业绩比较基准
     match = match_index(source_name, index_db)
+    if not match and short_name:
+        match = match_index(short_name, index_db)
+    if not match and benchmark_index:
+        match = match_index(benchmark_index, index_db)
     
     if match:
         data["mapped"][etf_code] = {
@@ -238,10 +332,16 @@ def main():
     parser = argparse.ArgumentParser(description="ETF 指数自动映射脚本")
     parser.add_argument("--codes", type=str, help="指定 ETF 代码（逗号分隔）")
     parser.add_argument("--init", action="store_true", help="从 AKShare 获取全量 ETF 列表")
+    parser.add_argument("--update-index-db", action="store_true", help="更新本地指数数据库")
     parser.add_argument("--dry-run", action="store_true", help="只输出结果，不写入文件")
     parser.add_argument("--limit", type=int, default=20, help="限制本次处理数量")
     
     args = parser.parse_args()
+    
+    # 更新指数数据库
+    if args.update_index_db:
+        update_index_database()
+        return
     
     # 加载现有数据
     data = load_mapping()
