@@ -10,16 +10,29 @@ ETF 指数自动映射脚本
 import argparse
 import json
 import os
+import random
 import sys
+import time
 from datetime import date
 from typing import Dict, List, Optional
 
 import akshare as ak
 import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 
 # 数据文件路径
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "app", "data")
 OUTPUT_FILE = os.path.join(DATA_DIR, "etf_index_map_new.json")
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+]
+
+EASTMONEY_URL = "https://fundf10.eastmoney.com/jbgk_{code}.html"
+REQUEST_DELAY = (5, 10)  # 请求间隔秒数范围
 
 
 def load_mapping() -> Dict:
@@ -60,6 +73,51 @@ def load_index_database() -> pd.DataFrame:
     except Exception as e:
         print(f"[ERROR] 加载指数数据库失败: {e}")
         sys.exit(1)
+
+
+def fetch_tracking_index(etf_code: str, max_retries: int = 1) -> Optional[str]:
+    """
+    从天天基金爬取 ETF 的跟踪标的名称
+    
+    Returns:
+        跟踪标的名称，如未找到返回 None
+    """
+    url = EASTMONEY_URL.format(code=etf_code)
+    headers = {"User-Agent": random.choice(USER_AGENTS)}
+    
+    for attempt in range(max_retries + 1):
+        try:
+            resp = requests.get(url, headers=headers, timeout=10)
+            resp.raise_for_status()
+            resp.encoding = "utf-8"
+            
+            soup = BeautifulSoup(resp.text, "html.parser")
+            
+            # 查找包含「跟踪标的」的行
+            for th in soup.find_all("th"):
+                if "跟踪标的" in th.get_text():
+                    td = th.find_next_sibling("td")
+                    if td:
+                        # 提取文本，清理空白
+                        text = td.get_text(strip=True)
+                        # 有时候是链接，只取文本
+                        if text and text != "--":
+                            return text
+            
+            return None
+            
+        except requests.RequestException as e:
+            if attempt < max_retries:
+                print(f"  [WARN] 请求失败，重试中... ({e})")
+                time.sleep(2)
+            else:
+                print(f"  [WARN] 请求失败: {e}")
+                return None
+        except Exception as e:
+            print(f"  [WARN] 解析失败: {e}")
+            return None
+    
+    return None
 
 
 def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
