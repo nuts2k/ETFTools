@@ -315,6 +315,9 @@ def match_index(source_name: str, index_db: pd.DataFrame) -> Optional[Dict]:
     if mapped_name:
         source_name = mapped_name
     
+    # 0.2 去除计价币种后缀（如：xxx人民币指数 -> xxx指数，xxx港元指数 -> xxx指数）
+    source_name = re.sub(r'(人民币|港元)指数$', '指数', source_name)
+    
     # 清理源名称：去除括号及其内容、去除「指数」后缀
     source_clean = re.sub(r'\([^)]*\)', '', source_name)  # 去除 (价格) 等
     source_clean = source_clean.replace("指数", "").strip()
