@@ -51,10 +51,13 @@ function TrendIndicator({
   if (!label) return null;
   
   return (
-    <span className={cn(
-      "inline-flex items-center gap-0.5 text-[10px] font-medium",
-      direction === "up" ? "text-up" : direction === "down" ? "text-down" : "text-muted-foreground"
-    )}>
+    <span 
+      className={cn(
+        "inline-flex items-center gap-0.5 text-[10px] font-medium",
+        direction === "up" ? "text-up" : direction === "down" ? "text-down" : "text-muted-foreground"
+      )}
+      aria-label={`周趋势: ${label}`}
+    >
       <span>{icon}</span>
       <span>{label}</span>
     </span>
@@ -74,15 +77,24 @@ function TemperatureIndicator({
   }
   
   const icon = TEMPERATURE_ICONS[level] || "🌤️";
+  const levelLabels: Record<string, string> = {
+    freezing: "冰点",
+    cool: "温和",
+    warm: "偏热",
+    hot: "过热"
+  };
   
   return (
-    <span className={cn(
-      "inline-flex items-center gap-0.5 text-[10px] font-medium",
-      level === "hot" ? "text-up" : 
-      level === "warm" ? "text-orange-500" : 
-      level === "cool" ? "text-blue-400" : 
-      "text-blue-500"
-    )}>
+    <span 
+      className={cn(
+        "inline-flex items-center gap-0.5 text-[10px] font-medium",
+        level === "hot" ? "text-up" : 
+        level === "warm" ? "text-orange-500" : 
+        level === "cool" ? "text-blue-400" : 
+        "text-blue-500"
+      )}
+      aria-label={`市场温度: ${Math.round(score)}分 (${levelLabels[level] || level})`}
+    >
       <span>{icon}</span>
       <span className="tabular-nums">温度{Math.round(score)}</span>
     </span>
@@ -100,8 +112,11 @@ function VolatilityIndicator({
   }
   
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
-      <span>波动</span>
+    <span 
+      className="inline-flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground"
+      aria-label={`波动率 ${atr.toFixed(3)}`}
+    >
+      <span>📊</span>
       <span className="tabular-nums">{atr.toFixed(3)}</span>
     </span>
   );
@@ -119,20 +134,25 @@ function DrawdownIndicator({
   
   const isNegative = drawdown < 0;
   const displayValue = (drawdown * 100).toFixed(1);
+  const ariaLabel = `当前回撤 ${isNegative ? "" : "+"}${displayValue}%`;
   
   return (
-    <span className={cn(
-      "inline-flex items-center text-[10px] font-medium tabular-nums",
-      isNegative ? "text-down" : "text-muted-foreground"
-    )}>
-      {isNegative ? "" : "+"}{displayValue}%
+    <span 
+      className={cn(
+        "inline-flex items-center gap-0.5 text-[10px] font-medium tabular-nums",
+        isNegative ? "text-down" : "text-muted-foreground"
+      )}
+      aria-label={ariaLabel}
+    >
+      <span>📉</span>
+      <span>{isNegative ? "" : "+"}{displayValue}%</span>
     </span>
   );
 }
 
 // 指标分隔符
 function IndicatorSeparator() {
-  return <span className="text-muted-foreground/30 text-[10px]">·</span>;
+  return <span className="text-muted-foreground/30 text-[10px]" aria-hidden="true">·</span>;
 }
 
 // 辅助函数：检查指标是否有值
