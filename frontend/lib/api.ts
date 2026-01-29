@@ -41,6 +41,11 @@ export interface ETFItem {
   volume: number;
   atr?: number | null;
   current_drawdown?: number | null;
+  // 首页展示所需的摘要字段
+  temperature_score?: number | null;
+  temperature_level?: "freezing" | "cool" | "warm" | "hot" | null;
+  weekly_direction?: "up" | "down" | "flat" | null;
+  consecutive_weeks?: number | null;
 }
 
 export interface ETFDetail extends ETFItem {
@@ -68,6 +73,44 @@ export interface ETFValuation {
   history_years: number;
 }
 
+// 周线趋势
+export interface WeeklyTrend {
+  consecutive_weeks: number;  // 正数=连涨，负数=连跌
+  direction: "up" | "down" | "flat";
+  ma_status: "bullish" | "bearish" | "mixed";
+}
+
+// 日线趋势
+export interface DailyTrend {
+  ma5_position: "above" | "below" | "crossing_up" | "crossing_down";
+  ma20_position: "above" | "below" | "crossing_up" | "crossing_down";
+  ma60_position: "above" | "below" | "crossing_up" | "crossing_down";
+  ma_alignment: "bullish" | "bearish" | "mixed";
+  latest_signal: string | null;  // e.g., "break_above_ma20"
+  ma_values: {
+    ma5: number;
+    ma20: number;
+    ma60: number;
+  };
+}
+
+// 温度计
+export interface Temperature {
+  score: number;  // 0-100
+  level: "freezing" | "cool" | "warm" | "hot";
+  factors: {
+    drawdown_score: number;
+    rsi_score: number;
+    percentile_score: number;
+    volatility_score: number;
+    trend_score: number;
+  };
+  rsi_value: number;
+  percentile_value: number;
+  percentile_years: number;
+  percentile_note?: string;  // 不足10年时显示
+}
+
 export interface ETFMetrics {
   period: string;
   total_return: number;
@@ -87,4 +130,8 @@ export interface ETFMetrics {
   effective_drawdown_days?: number;
   current_drawdown_peak_date?: string | null;
   days_since_peak?: number;
+  // 新增趋势和温度字段
+  weekly_trend?: WeeklyTrend | null;
+  daily_trend?: DailyTrend | null;
+  temperature?: Temperature | null;
 }
