@@ -1,7 +1,7 @@
 import json
 import os
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 logger = logging.getLogger(__name__)
 
@@ -52,5 +52,54 @@ class MetricConfigLoader:
     @property
     def atr_period(self) -> int:
         return self.config.get("atr_period", 14)
+
+    # --- Trend Config ---
+    @property
+    def trend_config(self) -> Dict[str, Any]:
+        return self.config.get("trend", {
+            "daily_ma_periods": [5, 20, 60],
+            "weekly_ma_periods": [5, 10, 20]
+        })
+
+    @property
+    def daily_ma_periods(self) -> List[int]:
+        return self.trend_config.get("daily_ma_periods", [5, 20, 60])
+
+    @property
+    def weekly_ma_periods(self) -> List[int]:
+        return self.trend_config.get("weekly_ma_periods", [5, 10, 20])
+
+    # --- Temperature Config ---
+    @property
+    def temperature_config(self) -> Dict[str, Any]:
+        return self.config.get("temperature", {
+            "percentile_years": 10,
+            "rsi_period": 14,
+            "weights": {
+                "drawdown": 0.30,
+                "rsi": 0.20,
+                "percentile": 0.20,
+                "volatility": 0.15,
+                "trend": 0.15
+            }
+        })
+
+    @property
+    def rsi_period(self) -> int:
+        return self.temperature_config.get("rsi_period", 14)
+
+    @property
+    def percentile_years(self) -> int:
+        return self.temperature_config.get("percentile_years", 10)
+
+    @property
+    def temperature_weights(self) -> Dict[str, float]:
+        return self.temperature_config.get("weights", {
+            "drawdown": 0.30,
+            "rsi": 0.20,
+            "percentile": 0.20,
+            "volatility": 0.15,
+            "trend": 0.15
+        })
 
 metric_config = MetricConfigLoader()
