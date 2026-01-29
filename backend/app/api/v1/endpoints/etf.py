@@ -7,8 +7,8 @@ from datetime import datetime, time
 from app.core.cache import etf_cache
 from app.services.akshare_service import ak_service
 from app.services.valuation_service import valuation_service
-from app.services.trend_service import trend_service
-from app.services.temperature_service import temperature_service
+from app.services.trend_cache_service import trend_cache_service
+from app.services.temperature_cache_service import temperature_cache_service
 from app.core.config_loader import metric_config
 from app.middleware.rate_limit import limiter
 
@@ -79,10 +79,15 @@ async def get_etf_history(code: str, period: str = "daily", adjust: str = "qfq")
     return data
 
 @router.get("/{code}/metrics")
-async def get_etf_metrics(code: str, period: str = "5y"):
+async def get_etf_metrics(code: str, period: str = "5y", force_refresh: bool = False):
     """
     计算核心指标: CAGR, MaxDrawdown, Volatility
     默认基于 daily, qfq 数据
+    
+    Args:
+        code: ETF 代码
+        period: 计算周期 (1y, 3y, 5y, all)
+        force_refresh: 强制刷新缓存
     """
     # 1. 获取全量历史数据
     history = ak_service.get_etf_history(code, period="daily", adjust="qfq")
@@ -292,14 +297,20 @@ async def get_etf_metrics(code: str, period: str = "5y"):
     # 准备用于趋势分析的 DataFrame（需要 date 和 close 列）
     df_for_trend = df.reset_index()  # 将 date 从索引恢复为列
     
-    # 日趋势分析
-    daily_trend = trend_service.get_daily_trend(df_for_trend)
+    # 日趋势分析（使用缓存服务）
+    daily_trend = trend_cache_service.get_daily_trend(
+        code, df_for_trend, realtime_price=None, force_refresh=force_refresh
+    )
     
-    # 周趋势分析
-    weekly_trend = trend_service.get_weekly_trend(df_for_trend)
+    # 周趋势分析（使用缓存服务）
+    weekly_trend = trend_cache_service.get_weekly_trend(
+        code, df_for_trend, force_refresh=force_refresh
+    )
     
-    # 市场温度计算
-    temperature = temperature_service.calculate_temperature(df_for_trend)
+    # 市场温度计算（使用缓存服务）
+    temperature = temperature_cache_service.calculate_temperature(
+        code, df_for_trend, realtime_price=None, force_refresh=force_refresh
+    )
 
     return {
         "period": f"{actual_start_date.date()} to {actual_end_date.date()}",
