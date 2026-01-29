@@ -111,15 +111,16 @@ class TestDeterminePosition:
         service = TrendService()
 
         # Create data where price crosses above MA
-        # MA5 of [0.9, 0.9, 0.9, 0.9, 0.95] = 0.91
-        # Yesterday close (0.9) < yesterday MA, today close (1.0) > today MA
+        # Data: [1.0, 1.0, 1.0, 1.0, 0.8, 0.8, 1.2]
+        # Yesterday MA5 = mean([1.0, 1.0, 0.8, 0.8]) needs yesterday close (0.8) < MA
+        # Today MA5 = mean([1.0, 0.8, 0.8, 1.2]) needs today close (1.2) >= MA
         data = pd.DataFrame({
-            "date": [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(6, 0, -1)],
-            "close": [0.85, 0.9, 0.9, 0.9, 0.9, 1.0],  # Crosses up on last day
-            "open": [0.9] * 6,
-            "high": [1.0] * 6,
-            "low": [0.8] * 6,
-            "volume": [1000000] * 6,
+            "date": [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(7, 0, -1)],
+            "close": [1.0, 1.0, 1.0, 1.0, 0.8, 0.8, 1.2],  # Price drops then jumps up
+            "open": [1.0] * 7,
+            "high": [1.2] * 7,
+            "low": [0.8] * 7,
+            "volume": [1000000] * 7,
         })
 
         position = service.determine_position(data, ma_period=5)
@@ -134,13 +135,16 @@ class TestDeterminePosition:
         service = TrendService()
 
         # Create data where price crosses below MA
+        # Data: [1.0, 1.0, 1.0, 1.0, 1.2, 1.2, 0.8]
+        # Yesterday MA5 = mean([1.0, 1.0, 1.2, 1.2]) = 1.08, yesterday close (1.2) > MA
+        # Today MA5 = mean([1.0, 1.2, 1.2, 0.8]) = 1.04, today close (0.8) < MA
         data = pd.DataFrame({
-            "date": [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(6, 0, -1)],
-            "close": [1.1, 1.0, 1.0, 1.0, 1.0, 0.9],  # Crosses down on last day
-            "open": [1.0] * 6,
-            "high": [1.1] * 6,
-            "low": [0.9] * 6,
-            "volume": [1000000] * 6,
+            "date": [(datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(7, 0, -1)],
+            "close": [1.0, 1.0, 1.0, 1.0, 1.2, 1.2, 0.8],  # Price rises then drops
+            "open": [1.0] * 7,
+            "high": [1.2] * 7,
+            "low": [0.8] * 7,
+            "volume": [1000000] * 7,
         })
 
         position = service.determine_position(data, ma_period=5)
@@ -150,13 +154,27 @@ class TestDeterminePosition:
 class TestMAAlignment:
     """Test MA alignment detection (bullish/bearish/mixed)."""
 
-    def test_ma_alignment_bullish(self, bullish_trend_data: pd.DataFrame):
+    def test_ma_alignment_bullish(self):
         """
         Bullish alignment: MA5 > MA20 > MA60
         多头排列
         """
         service = TrendService()
-        alignment = service.get_ma_alignment(bullish_trend_data)
+        
+        # Create deterministic bullish data with clear uptrend
+        # Price steadily increases to ensure MA5 > MA20 > MA60
+        days = 70
+        prices = [1.0 + i * 0.01 for i in range(days)]  # Steady increase
+        bullish_data = pd.DataFrame({
+            "date": [(datetime.now() - timedelta(days=days-i)).strftime("%Y-%m-%d") for i in range(days)],
+            "close": prices,
+            "open": [p - 0.005 for p in prices],
+            "high": [p + 0.01 for p in prices],
+            "low": [p - 0.01 for p in prices],
+            "volume": [1000000] * days,
+        })
+        
+        alignment = service.get_ma_alignment(bullish_data)
 
         assert alignment == "bullish"
 
