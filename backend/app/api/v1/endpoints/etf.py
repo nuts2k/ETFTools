@@ -7,6 +7,8 @@ from datetime import datetime, time
 from app.core.cache import etf_cache
 from app.services.akshare_service import ak_service
 from app.services.valuation_service import valuation_service
+from app.services.trend_service import trend_service
+from app.services.temperature_service import temperature_service
 from app.core.config_loader import metric_config
 from app.middleware.rate_limit import limiter
 
@@ -286,6 +288,19 @@ async def get_etf_metrics(code: str, period: str = "5y"):
         else:
             current_drawdown = 0.0
 
+    # --- Trend and Temperature Analysis ---
+    # 准备用于趋势分析的 DataFrame（需要 date 和 close 列）
+    df_for_trend = df.reset_index()  # 将 date 从索引恢复为列
+    
+    # 日趋势分析
+    daily_trend = trend_service.get_daily_trend(df_for_trend)
+    
+    # 周趋势分析
+    weekly_trend = trend_service.get_weekly_trend(df_for_trend)
+    
+    # 市场温度计算
+    temperature = temperature_service.calculate_temperature(df_for_trend)
+
     return {
         "period": f"{actual_start_date.date()} to {actual_end_date.date()}",
         "total_return": round(total_return, 4),
@@ -304,5 +319,8 @@ async def get_etf_metrics(code: str, period: str = "5y"):
         "drawdown_days": dd_days,
         "effective_drawdown_days": effective_drawdown_days,
         "current_drawdown_peak_date": current_drawdown_peak_date,
-        "days_since_peak": days_since_peak
+        "days_since_peak": days_since_peak,
+        "daily_trend": daily_trend,
+        "weekly_trend": weekly_trend,
+        "temperature": temperature
     }
