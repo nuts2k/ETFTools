@@ -1,3 +1,4 @@
+import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "next/navigation";
@@ -88,6 +89,57 @@ function TemperatureIndicator({
   );
 }
 
+// 波动率指示器组件
+function VolatilityIndicator({ 
+  atr 
+}: { 
+  atr?: number | null;
+}) {
+  if (atr === null || atr === undefined) {
+    return null;
+  }
+  
+  return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
+      <span>波动</span>
+      <span className="tabular-nums">{atr.toFixed(3)}</span>
+    </span>
+  );
+}
+
+// 回撤指示器组件
+function DrawdownIndicator({ 
+  drawdown 
+}: { 
+  drawdown?: number | null;
+}) {
+  if (drawdown === null || drawdown === undefined) {
+    return null;
+  }
+  
+  const isNegative = drawdown < 0;
+  const displayValue = (drawdown * 100).toFixed(1);
+  
+  return (
+    <span className={cn(
+      "inline-flex items-center text-[10px] font-medium tabular-nums",
+      isNegative ? "text-down" : "text-muted-foreground"
+    )}>
+      {isNegative ? "" : "+"}{displayValue}%
+    </span>
+  );
+}
+
+// 指标分隔符
+function IndicatorSeparator() {
+  return <span className="text-muted-foreground/30 text-[10px]">·</span>;
+}
+
+// 辅助函数：检查指标是否有值
+function hasValue(value: number | null | undefined): boolean {
+  return value !== null && value !== undefined;
+}
+
 interface Props {
   etf: ETFItem;
   isEditing: boolean;
@@ -142,27 +194,54 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
           <span className="text-sm text-muted-foreground font-mono tracking-wide">{etf.code}</span>
         </div>
         
-        {/* Trend & Temperature Indicators */}
-        <div className="flex items-center gap-2 mt-2 flex-wrap">
-          <TrendIndicator 
-            direction={etf.weekly_direction} 
-            weeks={etf.consecutive_weeks} 
-          />
-          <TemperatureIndicator 
-            score={etf.temperature_score} 
-            level={etf.temperature_level} 
-          />
-          {/* Fallback: show drawdown if no trend/temperature data */}
-          {!etf.weekly_direction && !etf.temperature_score && (
-            <span className={cn(
-              "text-[10px] font-medium",
-              (etf.current_drawdown || 0) < 0 ? "text-down" : "text-muted-foreground"
-            )}>
-              {etf.current_drawdown !== undefined && etf.current_drawdown !== null 
-                ? `回撤 ${(etf.current_drawdown * 100).toFixed(1)}%` 
-                : ""}
-            </span>
-          )}
+        {/* Compact Indicators Row */}
+        <div className="flex items-center gap-1.5 mt-2 flex-wrap text-[10px]">
+          {(() => {
+            const indicators: React.ReactNode[] = [];
+            
+            // 趋势指标（仅 >=2 周显示）
+            if (etf.weekly_direction && Math.abs(etf.consecutive_weeks || 0) >= 2) {
+              indicators.push(
+                <TrendIndicator 
+                  key="trend"
+                  direction={etf.weekly_direction} 
+                  weeks={etf.consecutive_weeks} 
+                />
+              );
+            }
+            
+            // 温度指标
+            if (hasValue(etf.temperature_score) && etf.temperature_level) {
+              indicators.push(
+                <TemperatureIndicator 
+                  key="temp"
+                  score={etf.temperature_score} 
+                  level={etf.temperature_level} 
+                />
+              );
+            }
+            
+            // 波动率指标
+            if (hasValue(etf.atr)) {
+              indicators.push(
+                <VolatilityIndicator key="atr" atr={etf.atr} />
+              );
+            }
+            
+            // 回撤指标
+            if (hasValue(etf.current_drawdown)) {
+              indicators.push(
+                <DrawdownIndicator key="dd" drawdown={etf.current_drawdown} />
+              );
+            }
+            
+            // 用分隔符连接
+            return indicators.flatMap((indicator, index) => 
+              index === 0 
+                ? [indicator] 
+                : [<IndicatorSeparator key={`sep-${index}`} />, indicator]
+            );
+          })()}
         </div>
       </div>
       
