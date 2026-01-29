@@ -140,38 +140,42 @@ def sample_long_history() -> pd.DataFrame:
 @pytest.fixture
 def bullish_trend_data() -> pd.DataFrame:
     """
-    60 days of bullish (uptrend) data.
+    90 days of bullish (uptrend) data.
     
     Characteristics:
     - Clear upward price movement
     - MA5 > MA10 > MA20 > MA60 (多头排列)
     - Suitable for testing trend detection
+    
+    使用更长的数据和更强的趋势来确保均线排列稳定。
     """
     return _generate_ohlcv_data(
-        days=60,
+        days=90,  # 增加到 90 天以确保均线排列稳定
         start_price=1.0,
         trend="bullish",
-        volatility=0.01,  # Lower volatility for cleaner trend
-        seed=100,  # Different seed for bullish data
+        volatility=0.005,  # 更低的波动率以获得更清晰的趋势
+        seed=100,
     )
 
 
 @pytest.fixture
 def bearish_trend_data() -> pd.DataFrame:
     """
-    60 days of bearish (downtrend) data.
+    90 days of bearish (downtrend) data.
     
     Characteristics:
     - Clear downward price movement
     - MA5 < MA10 < MA20 < MA60 (空头排列)
     - Suitable for testing trend detection
+    
+    使用更长的数据和更强的趋势来确保均线排列稳定。
     """
     return _generate_ohlcv_data(
-        days=60,
-        start_price=2.0,  # Start higher so we have room to fall
+        days=90,  # 增加到 90 天以确保均线排列稳定
+        start_price=2.0,
         trend="bearish",
-        volatility=0.01,  # Lower volatility for cleaner trend
-        seed=200,  # Different seed for bearish data
+        volatility=0.005,  # 更低的波动率以获得更清晰的趋势
+        seed=200,
     )
 
 

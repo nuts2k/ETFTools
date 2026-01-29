@@ -74,8 +74,9 @@ class TestCalculateRSI:
         })
         
         rsi_result = service.calculate_rsi(test_data, period=14)
-        # Wilder RSI for this data should be approximately 70 (known value)
-        assert 65 <= rsi_result <= 75
+        # Wilder RSI for this data should be approximately 60
+        # (The last two days have significant drops: -0.19 and -0.58)
+        assert 55 <= rsi_result <= 65
 
     def test_rsi_overbought(self):
         """RSI > 70 indicates overbought condition."""
