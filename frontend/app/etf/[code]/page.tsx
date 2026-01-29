@@ -17,6 +17,7 @@ import {
 import { fetchClient, type ETFDetail, type ETFMetrics } from "@/lib/api";
 import { ETFChart, type Period } from "@/components/ETFChart";
 import ValuationCard from "@/components/ValuationCard";
+import TrendAnalysisCard from "@/components/TrendAnalysisCard";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
@@ -232,6 +233,16 @@ export default function ETFDetailPage() {
             ) : null}
           </div>
         )}
+
+        {/* Trend Analysis Card */}
+        <div className="mb-6">
+          <TrendAnalysisCard
+            weeklyTrend={metrics?.weekly_trend}
+            dailyTrend={metrics?.daily_trend}
+            temperature={metrics?.temperature}
+            isLoading={loading || (isInitialLoad && metricsLoading)}
+          />
+        </div>
 
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">核心指标</h3>
         <div className="grid grid-cols-2 gap-3">
