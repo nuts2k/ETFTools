@@ -4,17 +4,21 @@ from sqlmodel import Session, select, func
 from datetime import datetime
 import concurrent.futures
 
+import pandas as pd
+
 from app.core.database import get_session
 from app.core.cache import etf_cache
 from app.api.v1.endpoints.auth import get_current_user
 from app.models.user import User, Watchlist
 from app.services.akshare_service import ak_service
 from app.services.metrics_service import metrics_service
+from app.services.trend_service import trend_service
+from app.services.temperature_service import temperature_service
 
 router = APIRouter()
 
 def process_watchlist_item(item: Watchlist) -> Dict[str, Any]:
-    """Helper to process a single watchlist item (Realtime info + Metrics)"""
+    """Helper to process a single watchlist item (Realtime info + Metrics + Trend + Temperature)"""
     info = ak_service.get_etf_info(item.etf_code)
     
     price = 0.0
@@ -29,6 +33,35 @@ def process_watchlist_item(item: Watchlist) -> Dict[str, Any]:
     # Calculate lite metrics (Non-blocking history fetch inside)
     metrics = metrics_service.get_realtime_metrics_lite(item.etf_code, price, change_pct)
     
+    # 获取历史数据用于趋势和温度计算
+    weekly_direction = None
+    consecutive_weeks = None
+    temperature_score = None
+    temperature_level = None
+    
+    try:
+        # 获取历史数据（复用缓存）
+        history = ak_service.get_etf_history(item.etf_code, period="daily", adjust="qfq")
+        if history and len(history) > 0:
+            df = pd.DataFrame(history)
+            df["date"] = pd.to_datetime(df["date"])
+            df = df.sort_values("date")
+            
+            # 计算周趋势
+            weekly_trend = trend_service.get_weekly_trend(df)
+            if weekly_trend:
+                weekly_direction = weekly_trend.get("direction")
+                consecutive_weeks = weekly_trend.get("consecutive_weeks")
+            
+            # 计算温度
+            temperature = temperature_service.calculate_temperature(df)
+            if temperature:
+                temperature_score = temperature.get("score")
+                temperature_level = temperature.get("level")
+    except Exception as e:
+        # 趋势和温度计算失败不影响主流程
+        pass
+    
     return {
         "code": item.etf_code,
         "name": name,
@@ -38,7 +71,11 @@ def process_watchlist_item(item: Watchlist) -> Dict[str, Any]:
         "added_at": item.created_at,
         "atr": metrics.get("atr"),
         "current_drawdown": metrics.get("current_drawdown"),
-        "needs_name_update": (info.get("name") and not item.name)
+        "weekly_direction": weekly_direction,
+        "consecutive_weeks": consecutive_weeks,
+        "temperature_score": temperature_score,
+        "temperature_level": temperature_level,
+        "needs_name_update": (info and info.get("name") and not item.name)
     }
 
 @router.get("/", response_model=List[Dict[str, Any]])
@@ -80,7 +117,11 @@ def get_watchlist(
                     "sort_order": item.sort_order,
                     "added_at": item.created_at,
                     "atr": None,
-                    "current_drawdown": None
+                    "current_drawdown": None,
+                    "weekly_direction": None,
+                    "consecutive_weeks": None,
+                    "temperature_score": None,
+                    "temperature_level": None
                 })
 
     # Sort results back by sort_order because as_completed returns in finish order
