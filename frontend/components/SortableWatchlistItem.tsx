@@ -2,7 +2,7 @@ import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "next/navigation";
-import { Trash2, GripVertical } from "lucide-react";
+import { Trash2, GripVertical, Activity, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type ETFItem } from "@/lib/api";
 import { useLongPress } from "@/hooks/use-long-press";
@@ -116,7 +116,8 @@ function VolatilityIndicator({
       className="inline-flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground"
       aria-label={`波动率 ${atr.toFixed(3)}`}
     >
-      <span>📊</span>
+      <Activity className="h-3 w-3" />
+      <span>波动</span>
       <span className="tabular-nums">{atr.toFixed(3)}</span>
     </span>
   );
@@ -144,7 +145,8 @@ function DrawdownIndicator({
       )}
       aria-label={ariaLabel}
     >
-      <span>📉</span>
+      <TrendingDown className="h-3 w-3" />
+      <span>回撤</span>
       <span>{isNegative ? "" : "+"}{displayValue}%</span>
     </span>
   );
