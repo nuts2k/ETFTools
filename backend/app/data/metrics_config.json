@@ -1,4 +1,21 @@
 {
   "drawdown_days": 120,
-  "atr_period": 14
+  "atr_period": 14,
+
+  "trend": {
+    "daily_ma_periods": [5, 20, 60],
+    "weekly_ma_periods": [5, 10, 20]
+  },
+
+  "temperature": {
+    "percentile_years": 10,
+    "rsi_period": 14,
+    "weights": {
+      "drawdown": 0.30,
+      "rsi": 0.20,
+      "percentile": 0.20,
+      "volatility": 0.15,
+      "trend": 0.15
+    }
+  }
 }
