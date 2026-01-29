@@ -113,7 +113,7 @@ function VolatilityIndicator({
   
   return (
     <span 
-      className="inline-flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground"
+      className="inline-flex items-center gap-0.5 text-[10px] font-medium text-foreground"
       aria-label={`波动率 ${atr.toFixed(3)}`}
     >
       <Activity className="h-3 w-3" />
