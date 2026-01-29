@@ -6,6 +6,88 @@ import { cn } from "@/lib/utils";
 import { type ETFItem } from "@/lib/api";
 import { useLongPress } from "@/hooks/use-long-press";
 
+// 温度等级图标映射
+const TEMPERATURE_ICONS: Record<string, string> = {
+  freezing: "❄️",
+  cool: "🌤️",
+  warm: "🌡️",
+  hot: "🔥",
+};
+
+// 周趋势方向图标
+const TREND_ICONS: Record<string, string> = {
+  up: "↗️",
+  down: "↘️",
+  flat: "→",
+};
+
+// 趋势指示器组件
+function TrendIndicator({ 
+  direction, 
+  weeks 
+}: { 
+  direction?: "up" | "down" | "flat" | null; 
+  weeks?: number | null;
+}) {
+  if (!direction || weeks === null || weeks === undefined) {
+    return null;
+  }
+  
+  const icon = TREND_ICONS[direction] || "→";
+  const absWeeks = Math.abs(weeks);
+  
+  // 只显示连续2周以上的趋势
+  if (absWeeks < 2) {
+    return null;
+  }
+  
+  const label = direction === "up" 
+    ? `连涨${absWeeks}周` 
+    : direction === "down" 
+      ? `连跌${absWeeks}周` 
+      : null;
+  
+  if (!label) return null;
+  
+  return (
+    <span className={cn(
+      "inline-flex items-center gap-0.5 text-[10px] font-medium",
+      direction === "up" ? "text-up" : direction === "down" ? "text-down" : "text-muted-foreground"
+    )}>
+      <span>{icon}</span>
+      <span>{label}</span>
+    </span>
+  );
+}
+
+// 温度指示器组件
+function TemperatureIndicator({ 
+  score, 
+  level 
+}: { 
+  score?: number | null; 
+  level?: "freezing" | "cool" | "warm" | "hot" | null;
+}) {
+  if (score === null || score === undefined || !level) {
+    return null;
+  }
+  
+  const icon = TEMPERATURE_ICONS[level] || "🌤️";
+  
+  return (
+    <span className={cn(
+      "inline-flex items-center gap-0.5 text-[10px] font-medium",
+      level === "hot" ? "text-up" : 
+      level === "warm" ? "text-orange-500" : 
+      level === "cool" ? "text-blue-400" : 
+      "text-blue-500"
+    )}>
+      <span>{icon}</span>
+      <span className="tabular-nums">温度{Math.round(score)}</span>
+    </span>
+  );
+}
+
 interface Props {
   etf: ETFItem;
   isEditing: boolean;
@@ -60,26 +142,27 @@ export function SortableWatchlistItem({ etf, isEditing, onRemove, onLongPress }:
           <span className="text-sm text-muted-foreground font-mono tracking-wide">{etf.code}</span>
         </div>
         
-        {/* Dual-line Metrics Display */}
-        <div className="flex items-center gap-4 mt-2 text-[11px] font-medium tracking-tight">
-             <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground/60 uppercase">ATR</span>
-                <span className="text-foreground/80 tabular-nums font-semibold">
-                    {etf.atr !== undefined && etf.atr !== null ? etf.atr.toFixed(4) : "--"}
-                </span>
-             </div>
-             <div className="w-[1px] h-2.5 bg-border/60" />
-             <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground/60">120D回撤</span>
-                <span className={cn(
-                    "tabular-nums font-semibold", 
-                    (etf.current_drawdown || 0) < 0 ? "text-down" : "text-foreground/80"
-                )}>
-                    {etf.current_drawdown !== undefined && etf.current_drawdown !== null 
-                        ? `${(etf.current_drawdown * 100).toFixed(2)}%` 
-                        : "--"}
-                </span>
-             </div>
+        {/* Trend & Temperature Indicators */}
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <TrendIndicator 
+            direction={etf.weekly_direction} 
+            weeks={etf.consecutive_weeks} 
+          />
+          <TemperatureIndicator 
+            score={etf.temperature_score} 
+            level={etf.temperature_level} 
+          />
+          {/* Fallback: show drawdown if no trend/temperature data */}
+          {!etf.weekly_direction && !etf.temperature_score && (
+            <span className={cn(
+              "text-[10px] font-medium",
+              (etf.current_drawdown || 0) < 0 ? "text-down" : "text-muted-foreground"
+            )}>
+              {etf.current_drawdown !== undefined && etf.current_drawdown !== null 
+                ? `回撤 ${(etf.current_drawdown * 100).toFixed(1)}%` 
+                : ""}
+            </span>
+          )}
         </div>
       </div>
       
