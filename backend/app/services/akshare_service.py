@@ -217,7 +217,8 @@ class AkShareService:
             if df.empty: return pd.DataFrame()
 
             df = df.rename(columns={"日期": "date", "开盘": "open", "收盘": "close", "最高": "high", "最低": "low", "成交量": "volume"})
-            disk_cache.set(cache_key, df, expire=3600)
+            # 缓存 4 小时（历史数据不会变化，只需在收盘后更新）
+            disk_cache.set(cache_key, df, expire=14400)
             return df
         except Exception as e:
             logger.error(f"Error fetching history raw for {code}: {e}")
