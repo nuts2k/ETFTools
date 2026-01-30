@@ -77,12 +77,13 @@ def calculate_grid_params(df: pd.DataFrame) -> Dict[str, Any]:
     # 限制网格数量在 5-20 之间
     count = max(5, min(count, 20))
     
+    # 确保所有值都是标准 Python 类型（避免 numpy 类型序列化问题）
     return {
-        "upper": round(upper, 3),
-        "lower": round(lower, 3),
-        "spacing_pct": spacing_pct * 100,
-        "grid_count": count,
+        "upper": round(float(upper), 3),
+        "lower": round(float(lower), 3),
+        "spacing_pct": round(float(spacing_pct * 100), 2),
+        "grid_count": int(count),
         "range_start": recent_df['date'].iloc[0].strftime("%Y-%m-%d") if 'date' in recent_df.columns else "",
         "range_end": recent_df['date'].iloc[-1].strftime("%Y-%m-%d") if 'date' in recent_df.columns else "",
-        "is_out_of_range": current_price > upper * 1.05 or current_price < lower * 0.95
+        "is_out_of_range": bool(current_price > upper * 1.05 or current_price < lower * 0.95)
     }

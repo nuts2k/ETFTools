@@ -9,6 +9,7 @@ from app.services.akshare_service import ak_service
 from app.services.valuation_service import valuation_service
 from app.services.trend_cache_service import trend_cache_service
 from app.services.temperature_cache_service import temperature_cache_service
+from app.services.grid_service import calculate_grid_params
 from app.core.config_loader import metric_config
 from app.middleware.rate_limit import limiter
 
@@ -335,3 +336,31 @@ async def get_etf_metrics(code: str, period: str = "5y", force_refresh: bool = F
         "weekly_trend": weekly_trend,
         "temperature": temperature
     }
+
+
+@router.get("/{code}/grid-suggestion")
+async def get_grid_suggestion(code: str):
+    """
+    获取网格交易建议参数
+    
+    基于历史波动率（ATR）计算适合震荡行情的网格交易参数
+    
+    Args:
+        code: ETF 代码
+        
+    Returns:
+        网格参数，包含上下界、间距、网格数量等
+    """
+    # 获取 QFQ 历史数据
+    df = ak_service.fetch_history_raw(code, period="daily", adjust="qfq")
+    
+    if df.empty:
+        raise HTTPException(status_code=404, detail="History data not found")
+    
+    # 计算网格参数
+    result = calculate_grid_params(df)
+    
+    if not result:
+        raise HTTPException(status_code=400, detail="Insufficient data for grid calculation")
+    
+    return result
