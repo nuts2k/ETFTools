@@ -1,0 +1,47 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0 -- /Library/Developer/CommandLineTools/usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/kelin/Work/ETFTool/backend
+configfile: pyproject.toml
+plugins: anyio-4.12.1, cov-7.0.0
+collecting ... collected 2 items
+
+tests/performance/test_grid_performance.py::test_grid_cache_performance_improvement 
+============================================================
+网格参数缓存性能测试结果
+============================================================
+  冷启动平均耗时: 3.0ms
+  缓存命中平均耗时: 0.0ms
+  性能提升倍数: 294.6x
+  性能提升百分比: 99.7%
+============================================================
+PASSED
+tests/performance/test_grid_performance.py::test_concurrent_cache_access 
+============================================================
+并发缓存访问性能测试
+============================================================
+  并发请求数: 10
+  总耗时: 8.6ms
+  平均单次耗时: 6.7ms
+  最大单次耗时: 8.3ms
+  最小单次耗时: 2.8ms
+============================================================
+PASSED
+
+=============================== warnings summary ===============================
+tests/performance/test_grid_performance.py:16
+  /Users/kelin/Work/ETFTool/backend/tests/performance/test_grid_performance.py:16: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+tests/performance/test_grid_performance.py:78
+  /Users/kelin/Work/ETFTool/backend/tests/performance/test_grid_performance.py:78: PytestUnknownMarkWarning: Unknown pytest.mark.performance - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.performance
+
+tests/performance/test_grid_performance.py::test_grid_cache_performance_improvement
+  /Users/kelin/Library/Python/3.9/lib/python/site-packages/_pytest/python.py:161: PytestReturnNotNoneWarning: Test functions should return None, but tests/performance/test_grid_performance.py::test_grid_cache_performance_improvement returned <class 'dict'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 2 passed, 3 warnings in 0.38s =========================
