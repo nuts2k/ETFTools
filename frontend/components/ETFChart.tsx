@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   ReferenceArea
 } from "recharts";
-import { fetchClient, type ETFHistoryItem } from "@/lib/api";
+import { fetchClient, type ETFHistoryItem, type GridSuggestion } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export type Period = "1y" | "3y" | "5y" | "all";
@@ -26,6 +26,8 @@ interface ETFChartProps {
       end?: string | null;
       value?: number;
   };
+  gridSuggestion?: GridSuggestion | null;
+  showGrid?: boolean;
 }
 
 function calculateDaysDiff(start: string, end: string): number {
@@ -75,7 +77,7 @@ function CustomAreaLabel(props: any) {
   );
 }
 
-export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChartProps) {
+export function ETFChart({ code, period, onPeriodChange, drawdownInfo, gridSuggestion, showGrid = false }: ETFChartProps) {
   const [data, setData] = useState<ETFHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
   
@@ -277,6 +279,30 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo }: ETFChar
                         />
                       }
                   />
+              )}
+
+              {/* Grid Trading Zone - 网格交易区域 */}
+              {showGrid && gridSuggestion && (
+                <ReferenceArea
+                  y1={gridSuggestion.lower}
+                  y2={gridSuggestion.upper}
+                  fill="hsl(var(--chart-2))"
+                  fillOpacity={0.1}
+                  stroke="hsl(var(--chart-2))"
+                  strokeOpacity={0.3}
+                  strokeDasharray="3 3"
+                  ifOverflow="extendDomain"
+                  label={
+                    <CustomAreaLabel
+                      value={`网格区间 ${gridSuggestion.grid_count}档`}
+                      labelPosition="insideTop"
+                      fill="hsl(var(--chart-2))"
+                      fontSize={11}
+                      fontWeight={600}
+                      dy={6}
+                    />
+                  }
+                />
               )}
 
                <XAxis

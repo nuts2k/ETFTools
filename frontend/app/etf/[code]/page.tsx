@@ -14,10 +14,11 @@ import {
   ArrowDownCircle,
   PieChart
 } from "lucide-react";
-import { fetchClient, type ETFDetail, type ETFMetrics } from "@/lib/api";
+import { fetchClient, type ETFDetail, type ETFMetrics, type GridSuggestion } from "@/lib/api";
 import { ETFChart, type Period } from "@/components/ETFChart";
 import ValuationCard from "@/components/ValuationCard";
 import TrendAnalysisCard from "@/components/TrendAnalysisCard";
+import GridSuggestionCard from "@/components/GridSuggestionCard";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
@@ -31,11 +32,14 @@ export default function ETFDetailPage() {
 
   const [info, setInfo] = useState<ETFDetail | null>(null);
   const [metrics, setMetrics] = useState<ETFMetrics | null>(null);
+  const [gridSuggestion, setGridSuggestion] = useState<GridSuggestion | null>(null);
   const [loading, setLoading] = useState(true);
   const [metricsLoading, setMetricsLoading] = useState(false);
+  const [gridLoading, setGridLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [error, setError] = useState("");
   const [period, setPeriod] = useState<Period>("5y");
+  const [showGrid, setShowGrid] = useState(false);
 
   const { isWatched, add, remove, isLoaded: isWatchlistLoaded } = useWatchlist();
   const watched = isWatched(code);
@@ -82,6 +86,23 @@ export default function ETFDetailPage() {
     }
     loadMetrics();
   }, [code, period]);
+
+  // Load Grid Suggestion
+  useEffect(() => {
+    async function loadGridSuggestion() {
+      if (!code) return;
+      try {
+        setGridLoading(true);
+        const data = await fetchClient<GridSuggestion>(`/etf/${code}/grid-suggestion`);
+        setGridSuggestion(data);
+      } catch (err) {
+        console.error("Failed to load grid suggestion", err);
+      } finally {
+        setGridLoading(false);
+      }
+    }
+    loadGridSuggestion();
+  }, [code]);
 
   // Auto Refresh Logic
   useEffect(() => {
@@ -217,6 +238,8 @@ export default function ETFDetailPage() {
             period={period} 
             onPeriodChange={setPeriod}
             drawdownInfo={drawdownInfo}
+            gridSuggestion={gridSuggestion}
+            showGrid={showGrid}
          />
       </div>
 
@@ -241,6 +264,26 @@ export default function ETFDetailPage() {
             dailyTrend={metrics?.daily_trend}
             temperature={metrics?.temperature}
             isLoading={loading || (isInitialLoad && metricsLoading)}
+          />
+        </div>
+
+        {/* Grid Suggestion Card with Toggle */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">网格交易</h3>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <span className="text-xs text-muted-foreground">图表显示</span>
+              <input
+                type="checkbox"
+                checked={showGrid}
+                onChange={(e) => setShowGrid(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+            </label>
+          </div>
+          <GridSuggestionCard
+            gridSuggestion={gridSuggestion}
+            isLoading={gridLoading}
           />
         </div>
 
