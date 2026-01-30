@@ -1,6 +1,11 @@
 import pandas as pd
 import numpy as np
 from typing import Dict, Any
+import logging
+
+from app.services.akshare_service import disk_cache, ak_service
+
+logger = logging.getLogger(__name__)
 
 def _calculate_atr(df: pd.DataFrame, period: int = 14) -> float:
     """
@@ -87,3 +92,44 @@ def calculate_grid_params(df: pd.DataFrame) -> Dict[str, Any]:
         "range_end": str(recent_df['date'].iloc[-1])[:10] if 'date' in recent_df.columns else "",
         "is_out_of_range": bool(current_price > upper * 1.05 or current_price < lower * 0.95)
     }
+
+
+def calculate_grid_params_cached(code: str, force_refresh: bool = False) -> Dict[str, Any]:
+    """
+    带缓存的网格参数计算
+    
+    Args:
+        code: ETF 代码
+        force_refresh: 是否强制刷新缓存
+        
+    Returns:
+        网格参数字典，包含 upper, lower, spacing_pct, grid_count 等
+    """
+    cache_key = f"grid_params_{code}"
+    
+    # 如果不强制刷新，先尝试从缓存读取
+    if not force_refresh:
+        cached = disk_cache.get(cache_key)
+        if cached is not None:
+            logger.debug(f"Grid params cache hit for {code}")
+            return cached
+    
+    # 缓存未命中或强制刷新，重新计算
+    logger.info(f"Calculating grid params for {code} (force_refresh={force_refresh})")
+    
+    # 获取历史数据
+    df = ak_service.fetch_history_raw(code, period="daily", adjust="qfq")
+    
+    if df.empty:
+        logger.warning(f"No history data found for {code}")
+        return {}
+    
+    # 计算网格参数
+    result = calculate_grid_params(df)
+    
+    # 如果计算成功，写入缓存（4 小时过期）
+    if result:
+        disk_cache.set(cache_key, result, expire=14400)
+        logger.debug(f"Grid params cached for {code}")
+    
+    return result
