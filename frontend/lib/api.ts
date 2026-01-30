@@ -111,6 +111,18 @@ export interface Temperature {
   percentile_note?: string;  // 不足10年时显示
 }
 
+// 网格交易建议
+export interface GridSuggestion {
+  upper: number;           // 网格上界
+  lower: number;           // 网格下界
+  spacing_pct: number;     // 网格间距百分比
+  grid_count: number;      // 网格数量
+  range_start: string;     // 分析区间起始日期
+  range_end: string;       // 分析区间结束日期
+  is_out_of_range: boolean; // 当前价格是否超出区间
+  reason?: string;         // 不适合网格交易的原因（可选）
+}
+
 export interface ETFMetrics {
   period: string;
   total_return: number;
