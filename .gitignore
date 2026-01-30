@@ -61,3 +61,11 @@ backend/.cache/
 backend/etf_tool.db
 backend/*.db
 .cache/
+
+# AI Agent configurations (local development)
+.agent/
+.agents/
+.claude/
+.gemini/
+.opencode/
+.trae/
