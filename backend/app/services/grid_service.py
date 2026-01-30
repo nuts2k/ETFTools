@@ -83,7 +83,7 @@ def calculate_grid_params(df: pd.DataFrame) -> Dict[str, Any]:
         "lower": round(float(lower), 3),
         "spacing_pct": round(float(spacing_pct * 100), 2),
         "grid_count": int(count),
-        "range_start": recent_df['date'].iloc[0].strftime("%Y-%m-%d") if 'date' in recent_df.columns else "",
-        "range_end": recent_df['date'].iloc[-1].strftime("%Y-%m-%d") if 'date' in recent_df.columns else "",
+        "range_start": str(recent_df['date'].iloc[0])[:10] if 'date' in recent_df.columns else "",
+        "range_end": str(recent_df['date'].iloc[-1])[:10] if 'date' in recent_df.columns else "",
         "is_out_of_range": bool(current_price > upper * 1.05 or current_price < lower * 0.95)
     }
