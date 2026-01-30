@@ -2,6 +2,34 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any
 
+def _calculate_atr(df: pd.DataFrame, period: int = 14) -> float:
+    """
+    计算 ATR (Average True Range)
+    
+    Args:
+        df: 包含 high, low, close 列的数据
+        period: ATR 计算周期
+        
+    Returns:
+        ATR 值
+    """
+    if len(df) < period + 1:
+        return 0.0
+    
+    prev_close = df['close'].shift(1)
+    tr = pd.concat([
+        df['high'] - df['low'],
+        (df['high'] - prev_close).abs(),
+        (df['low'] - prev_close).abs()
+    ], axis=1).max(axis=1)
+    
+    atr_series = tr.rolling(window=period).mean()
+    if pd.isna(atr_series.iloc[-1]):
+        return 0.0
+    
+    return float(atr_series.iloc[-1])
+
+
 def calculate_grid_params(df: pd.DataFrame) -> Dict[str, Any]:
     """
     计算网格交易参数
@@ -18,13 +46,23 @@ def calculate_grid_params(df: pd.DataFrame) -> Dict[str, Any]:
     # 使用最近 60 天数据
     recent_df = df.tail(60).copy()
     
-    # 使用分位数计算上下界（简化版本，后续可用 ATR 优化）
+    # 使用分位数计算上下界
     upper = recent_df['close'].quantile(0.95)
     lower = recent_df['close'].quantile(0.05)
     current_price = recent_df['close'].iloc[-1]
     
-    # 网格间距百分比（简化为固定值）
-    spacing_pct = 0.015
+    # 使用 ATR 动态计算网格间距
+    atr = _calculate_atr(recent_df, period=14)
+    avg_price = (upper + lower) / 2
+    
+    if avg_price > 0 and atr > 0:
+        # ATR 占均价的百分比作为基础间距
+        atr_pct = (atr / avg_price)
+        # 间距范围：1% - 3%，根据 ATR 动态调整
+        spacing_pct = max(0.01, min(0.03, atr_pct * 1.5))
+    else:
+        # 降级为固定间距
+        spacing_pct = 0.015
     
     # 计算网格数量
     price_range = upper - lower
