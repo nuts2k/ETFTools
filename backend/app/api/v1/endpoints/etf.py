@@ -3,17 +3,19 @@ from typing import List, Dict, Optional
 import numpy as np
 import pandas as pd
 from datetime import datetime, time
+import logging
 
 from app.core.cache import etf_cache
 from app.services.akshare_service import ak_service
 from app.services.valuation_service import valuation_service
 from app.services.trend_cache_service import trend_cache_service
 from app.services.temperature_cache_service import temperature_cache_service
-from app.services.grid_service import calculate_grid_params
+from app.services.grid_service import calculate_grid_params_cached
 from app.core.config_loader import metric_config
 from app.middleware.rate_limit import limiter
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 def get_market_status() -> str:
     """
@@ -339,7 +341,7 @@ async def get_etf_metrics(code: str, period: str = "5y", force_refresh: bool = F
 
 
 @router.get("/{code}/grid-suggestion")
-async def get_grid_suggestion(code: str):
+async def get_grid_suggestion(code: str, force_refresh: bool = False):
     """
     获取网格交易建议参数
     
@@ -347,18 +349,24 @@ async def get_grid_suggestion(code: str):
     
     Args:
         code: ETF 代码
+        force_refresh: 是否强制刷新缓存（默认 False）
         
     Returns:
         网格参数，包含上下界、间距、网格数量等
     """
-    # 获取 QFQ 历史数据
-    df = ak_service.fetch_history_raw(code, period="daily", adjust="qfq")
+    import time
+    start_time = time.time()
     
-    if df.empty:
-        raise HTTPException(status_code=404, detail="History data not found")
+    # 使用缓存版本的计算函数
+    result = calculate_grid_params_cached(code, force_refresh=force_refresh)
     
-    # 计算网格参数
-    result = calculate_grid_params(df)
+    elapsed = time.time() - start_time
+    is_cached = elapsed < 0.1  # 如果响应时间小于 100ms，认为是缓存命中
+    
+    logger.info(
+        f"Grid suggestion for {code}: {elapsed:.3f}s "
+        f"(cached: {is_cached}, force_refresh: {force_refresh})"
+    )
     
     if not result:
         raise HTTPException(status_code=400, detail="Insufficient data for grid calculation")
