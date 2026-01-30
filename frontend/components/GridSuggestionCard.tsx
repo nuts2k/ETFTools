@@ -1,7 +1,6 @@
 "use client";
 
-import { Grid3x3, AlertCircle, TrendingUp } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Grid3x3, AlertCircle } from "lucide-react";
 import type { GridSuggestion } from "@/lib/api";
 
 interface GridSuggestionCardProps {
@@ -10,6 +9,7 @@ interface GridSuggestionCardProps {
 }
 
 export default function GridSuggestionCard({ gridSuggestion, isLoading }: GridSuggestionCardProps) {
+  // Loading 状态
   if (isLoading) {
     return (
       <div className="rounded-lg border bg-card p-4">
@@ -20,41 +20,12 @@ export default function GridSuggestionCard({ gridSuggestion, isLoading }: GridSu
         <div className="space-y-2">
           <div className="h-4 bg-muted animate-pulse rounded" />
           <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
-          </div>
-        </div>
-
-        {/* 网格配置 */}
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">网格间距</span>
-            <span className="font-medium">{spacing_pct.toFixed(2)}%</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">网格数量</span>
-            <span className="font-medium">{grid_count} 档</span>
-          </div>
-        </div>
-
-        {/* 分析区间 */}
-        <div className="pt-2 border-t text-xs text-muted-foreground">
-          <div className="flex items-center justify-between">
-            <span>分析区间</span>
-            <span>{range_start} ~ {range_end}</span>
-          </div>
-        </div>
-
-        {/* 说明文字 */}
-        <div className="pt-2 text-xs text-muted-foreground">
-          <p>💡 基于近 60 天历史波动率（ATR）计算，适合震荡行情</p>
         </div>
       </div>
-    </div>
-  );
-}
-
     );
   }
 
+  // 无数据状态
   if (!gridSuggestion) {
     return (
       <div className="rounded-lg border bg-card p-4">
@@ -69,6 +40,7 @@ export default function GridSuggestionCard({ gridSuggestion, isLoading }: GridSu
 
   const { upper, lower, spacing_pct, grid_count, range_start, range_end, is_out_of_range } = gridSuggestion;
 
+  // 正常显示
   return (
     <div className="rounded-lg border bg-card p-4">
       {/* 标题 */}
@@ -106,3 +78,32 @@ export default function GridSuggestionCard({ gridSuggestion, isLoading }: GridSu
             </div>
           </div>
         </div>
+
+        {/* 网格配置 */}
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">网格间距</span>
+            <span className="font-medium">{spacing_pct.toFixed(2)}%</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">网格数量</span>
+            <span className="font-medium">{grid_count} 档</span>
+          </div>
+        </div>
+
+        {/* 分析区间 */}
+        <div className="pt-2 border-t text-xs text-muted-foreground">
+          <div className="flex items-center justify-between">
+            <span>分析区间</span>
+            <span>{range_start} ~ {range_end}</span>
+          </div>
+        </div>
+
+        {/* 说明文字 */}
+        <div className="pt-2 text-xs text-muted-foreground">
+          <p>💡 基于近 60 天历史波动率（ATR）计算，适合震荡行情</p>
+        </div>
+      </div>
+    </div>
+  );
+}
