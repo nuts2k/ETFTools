@@ -1,0 +1,675 @@
+# ETFTool Docker 部署指南
+
+本文档介绍如何使用 Docker 部署 ETFTool 应用。
+
+## 目录
+
+- [快速开始](#快速开始)
+- [架构说明](#架构说明)
+- [环境变量配置](#环境变量配置)
+- [构建镜像](#构建镜像)
+- [运行容器](#运行容器)
+- [使用 Docker Compose](#使用-docker-compose)
+- [数据持久化](#数据持久化)
+- [健康检查](#健康检查)
+- [日志查看](#日志查看)
+- [故障排查](#故障排查)
+- [安全建议](#安全建议)
+
+---
+
+## 快速开始
+
+### 使用 Docker Compose（推荐）
+
+```bash
+# 1. 创建数据目录
+mkdir -p data/cache data/logs
+
+# 2. 生成 SECRET_KEY（必需）
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+# 3. 创建环境变量文件
+cat > .env.docker <<EOF
+SECRET_KEY=your-generated-secret-key-here
+ENABLE_RATE_LIMIT=true
+EOF
+
+# 4. 启动服务
+docker-compose up -d
+
+# 5. 查看日志
+docker-compose logs -f
+
+# 6. 访问应用
+# 浏览器打开: http://localhost:3000
+```
+
+### 使用 Docker 命令
+
+```bash
+# 1. 构建镜像
+docker build -t etftool:latest .
+
+# 2. 运行容器
+docker run -d \
+  --name etftool \
+  -p 3000:3000 \
+  -e SECRET_KEY="your-secret-key-at-least-32-characters" \
+  -v $(pwd)/data/etftool.db:/app/backend/etftool.db \
+  -v $(pwd)/data/cache:/app/backend/cache \
+  etftool:latest
+
+# 3. 访问应用
+# 浏览器打开: http://localhost:3000
+```
+
+---
+
+## 架构说明
+
+### 容器内部架构
+
+```
+┌─────────────────────────────────────────┐
+│         Docker 容器                      │
+├─────────────────────────────────────────┤
+│                                          │
+│  ┌──────────────────────────────────┐  │
+│  │      Nginx (Port 3000)           │  │
+│  │      反向代理 + 静态文件服务      │  │
+│  └────────┬─────────────────┬───────┘  │
+│           │                 │           │
+│           ▼                 ▼           │
+│  ┌─────────────┐   ┌─────────────┐    │
+│  │  Next.js    │   │  FastAPI    │    │
+│  │  Server     │   │  (uvicorn)  │    │
+│  │  Port 3001  │   │  Port 8000  │    │
+│  └─────────────┘   └─────────────┘    │
+│                                        │
+└────────────────────────────────────────┘
+         │
+         ▼
+    Host Port 3000
+```
+
+### 服务说明
+
+- **Nginx**: 统一入口，处理静态文件和反向代理
+- **Next.js Server**: 前端应用服务器（standalone 模式）
+- **FastAPI**: 后端 API 服务
+- **Supervisor**: 进程管理，确保所有服务正常运行
+
+### 请求路由
+
+- `/_next/static/*` → Nginx 直接返回静态文件
+- `/public/*` → Nginx 直接返回静态文件
+- `/api/*` → Nginx 代理到 FastAPI (port 8000)
+- `/*` → Nginx 代理到 Next.js Server (port 3001)
+
+---
+
+## 环境变量配置
+
+### 必需的环境变量
+
+| 变量名 | 说明 | 默认值 | 示例 |
+|--------|------|--------|------|
+| `SECRET_KEY` | JWT 签名密钥（至少 32 字符） | 无 | `your-super-secret-key-32-chars` |
+
+### 可选的环境变量
+
+| 变量名 | 说明 | 默认值 | 示例 |
+|--------|------|--------|------|
+| `PROJECT_NAME` | 项目名称 | `ETFTool` | `ETFTool` |
+| `API_V1_STR` | API 路径前缀 | `/api/v1` | `/api/v1` |
+| `ENVIRONMENT` | 运行环境 | `production` | `production` |
+| `DATABASE_URL` | 数据库连接 | `sqlite:///./etftool.db` | `sqlite:///./etftool.db` |
+| `CACHE_DIR` | 缓存目录 | `/app/backend/cache` | `/app/backend/cache` |
+| `CACHE_TTL` | 缓存过期时间（秒） | `3600` | `3600` |
+| `ENABLE_RATE_LIMIT` | 启用速率限制 | `false` | `true` |
+
+### 生成 SECRET_KEY
+
+**方法 1：使用 Python**
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+**方法 2：使用 OpenSSL**
+```bash
+openssl rand -base64 32
+```
+
+**方法 3：使用在线工具**
+```bash
+# 访问: https://generate-secret.vercel.app/32
+```
+
+---
+
+## 构建镜像
+
+### 单平台构建（本地测试）
+
+```bash
+# 构建 amd64 架构镜像
+docker build -t etftool:latest .
+
+# 或使用 buildx
+docker buildx build \
+  --platform linux/amd64 \
+  -t etftool:latest \
+  --load \
+  .
+```
+
+### 多平台构建（生产部署）
+
+```bash
+# 构建 amd64 和 arm64 架构镜像
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  -t your-registry/etftool:latest \
+  --push \
+  .
+```
+
+### 构建优化
+
+**使用构建缓存：**
+```bash
+# 使用 Docker 层缓存
+docker build --cache-from etftool:latest -t etftool:latest .
+```
+
+**查看镜像大小：**
+```bash
+docker images etftool
+```
+
+---
+
+## 运行容器
+
+### 基本运行
+
+```bash
+docker run -d \
+  --name etftool \
+  -p 3000:3000 \
+  -e SECRET_KEY="your-secret-key-here" \
+  etftool:latest
+```
+
+### 完整配置运行
+
+```bash
+docker run -d \
+  --name etftool \
+  -p 3000:3000 \
+  \
+  -e SECRET_KEY="your-secret-key-at-least-32-characters" \
+  -e ENABLE_RATE_LIMIT=true \
+  -e CACHE_TTL=7200 \
+  \
+  -v $(pwd)/data/etftool.db:/app/backend/etftool.db \
+  -v $(pwd)/data/cache:/app/backend/cache \
+  -v $(pwd)/data/logs:/var/log/supervisor \
+  \
+  --restart unless-stopped \
+  \
+  etftool:latest
+```
+
+### 容器管理命令
+
+```bash
+# 启动容器
+docker start etftool
+
+# 停止容器
+docker stop etftool
+
+# 重启容器
+docker restart etftool
+
+# 查看容器状态
+docker ps -a | grep etftool
+
+# 查看容器日志
+docker logs -f etftool
+
+# 进入容器
+docker exec -it etftool bash
+
+# 删除容器
+docker rm -f etftool
+```
+
+---
+
+## 使用 Docker Compose
+
+### docker-compose.yml 配置
+
+项目已包含 `docker-compose.yml` 文件，配置如下：
+
+```yaml
+version: '3.8'
+
+services:
+  etftool:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: etftool
+    ports:
+      - "3000:3000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - ENABLE_RATE_LIMIT=true
+    volumes:
+      - ./data/etftool.db:/app/backend/etftool.db
+      - ./data/cache:/app/backend/cache
+      - ./data/logs:/var/log/supervisor
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+```
+
+### 使用步骤
+
+```bash
+# 1. 创建数据目录
+mkdir -p data/cache data/logs
+
+# 2. 创建 .env.docker 文件
+cat > .env.docker <<EOF
+SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
+ENABLE_RATE_LIMIT=true
+EOF
+
+# 3. 启动服务
+docker-compose up -d
+
+# 4. 查看服务状态
+docker-compose ps
+
+# 5. 查看日志
+docker-compose logs -f
+
+# 6. 停止服务
+docker-compose down
+
+# 7. 重启服务
+docker-compose restart
+
+# 8. 重新构建并启动
+docker-compose up -d --build
+```
+
+---
+
+## 数据持久化
+
+### 推荐的数据目录结构
+
+```
+data/
+├── etftool.db      # SQLite 数据库文件
+├── cache/          # 缓存目录
+└── logs/           # 日志目录
+```
+
+### 创建数据目录
+
+```bash
+mkdir -p data/cache data/logs
+```
+
+### 数据备份
+
+```bash
+# 备份数据库
+cp data/etftool.db data/etftool.db.backup.$(date +%Y%m%d)
+
+# 备份整个数据目录
+tar -czf etftool-data-backup-$(date +%Y%m%d).tar.gz data/
+```
+
+### 数据恢复
+
+```bash
+# 恢复数据库
+cp data/etftool.db.backup.20260203 data/etftool.db
+
+# 恢复整个数据目录
+tar -xzf etftool-data-backup-20260203.tar.gz
+```
+
+---
+
+## 健康检查
+
+### 健康检查端点
+
+```bash
+# 检查应用健康状态
+curl http://localhost:3000/api/v1/health
+```
+
+**正常响应：**
+```json
+{
+  "status": "ok",
+  "data_ready": true,
+  "environment": "production"
+}
+```
+
+### Docker 健康检查
+
+```bash
+# 查看容器健康状态
+docker ps
+
+# 查看详细健康检查信息
+docker inspect etftool | grep -A 10 Health
+```
+
+### Supervisor 进程状态
+
+```bash
+# 进入容器查看进程状态
+docker exec -it etftool supervisorctl status
+
+# 预期输出：
+# nginx      RUNNING   pid 123, uptime 0:05:00
+# nextjs     RUNNING   pid 124, uptime 0:05:00
+# fastapi    RUNNING   pid 125, uptime 0:05:00
+```
+
+---
+
+## 日志查看
+
+### 容器日志
+
+```bash
+# 查看所有日志
+docker logs etftool
+
+# 实时查看日志
+docker logs -f etftool
+
+# 查看最近 100 行日志
+docker logs --tail 100 etftool
+```
+
+### 服务日志
+
+```bash
+# 进入容器
+docker exec -it etftool bash
+
+# 查看 Nginx 访问日志
+tail -f /var/log/nginx/access.log
+
+# 查看 Nginx 错误日志
+tail -f /var/log/nginx/error.log
+
+# 查看 Next.js 日志
+tail -f /var/log/supervisor/nextjs.log
+
+# 查看 FastAPI 日志
+tail -f /var/log/supervisor/fastapi.log
+
+# 查看 Supervisor 日志
+tail -f /var/log/supervisor/supervisord.log
+```
+
+### 使用 Docker Compose 查看日志
+
+```bash
+# 查看所有服务日志
+docker-compose logs -f
+
+# 查看特定服务日志
+docker-compose logs -f etftool
+```
+
+---
+
+## 故障排查
+
+### 问题 1：容器启动失败
+
+**症状：** 容器启动后立即退出
+
+**排查步骤：**
+```bash
+# 1. 查看容器日志
+docker logs etftool
+
+# 2. 检查 Supervisor 状态
+docker exec -it etftool supervisorctl status
+
+# 3. 手动重启服务
+docker exec -it etftool supervisorctl restart all
+```
+
+**常见原因：**
+- SECRET_KEY 未设置或长度不足
+- 端口 3000 已被占用
+- 数据目录权限问题
+
+### 问题 2：前端无法访问
+
+**症状：** 浏览器访问 http://localhost:3000 失败
+
+**排查步骤：**
+```bash
+# 1. 检查容器是否运行
+docker ps | grep etftool
+
+# 2. 检查端口映射
+docker port etftool
+
+# 3. 测试 Nginx
+docker exec -it etftool curl http://localhost:3000
+
+# 4. 查看 Nginx 错误日志
+docker exec -it etftool tail -f /var/log/nginx/error.log
+```
+
+### 问题 3：API 请求失败
+
+**症状：** 前端可以访问，但 API 请求返回 502/504
+
+**排查步骤：**
+```bash
+# 1. 检查 FastAPI 是否运行
+docker exec -it etftool supervisorctl status fastapi
+
+# 2. 测试 FastAPI 健康检查
+docker exec -it etftool curl http://127.0.0.1:8000/api/v1/health
+
+# 3. 查看 FastAPI 日志
+docker exec -it etftool tail -f /var/log/supervisor/fastapi.log
+
+# 4. 检查 Nginx 代理配置
+docker exec -it etftool cat /etc/nginx/nginx.conf
+```
+
+### 问题 4：数据丢失
+
+**症状：** 重启容器后数据丢失
+
+**原因：** 未正确挂载数据卷
+
+**解决方案：**
+```bash
+# 确保使用 -v 参数挂载数据目录
+docker run -d \
+  -v $(pwd)/data/etftool.db:/app/backend/etftool.db \
+  -v $(pwd)/data/cache:/app/backend/cache \
+  etftool:latest
+```
+
+### 问题 5：权限错误
+
+**症状：** 日志显示 Permission denied
+
+**排查步骤：**
+```bash
+# 1. 检查数据目录权限
+ls -la data/
+
+# 2. 修复权限（如果需要）
+chmod -R 755 data/
+chown -R $(id -u):$(id -g) data/
+
+# 3. 重启容器
+docker restart etftool
+```
+
+---
+
+## 安全建议
+
+### 1. SECRET_KEY 管理
+
+- ✅ 使用强随机密钥（至少 32 字符）
+- ✅ 不要在代码中硬编码
+- ✅ 使用环境变量或密钥管理服务
+- ❌ 不要使用默认值
+- ❌ 不要提交到 Git 仓库
+
+### 2. 网络安全
+
+- ✅ 只暴露必要的端口（3000）
+- ✅ 使用防火墙限制访问
+- ✅ 生产环境启用 HTTPS
+- ✅ 启用速率限制（ENABLE_RATE_LIMIT=true）
+
+### 3. 数据安全
+
+- ✅ 定期备份数据库
+- ✅ 使用独立的数据目录
+- ✅ 设置适当的文件权限
+- ✅ 加密敏感数据
+
+### 4. 容器安全
+
+- ✅ 使用官方基础镜像
+- ✅ 定期更新镜像
+- ✅ 应用进程使用非 root 用户（www-data）
+- ✅ 限制容器资源使用
+
+### 5. 生产环境配置
+
+```bash
+# 推荐的生产环境配置
+docker run -d \
+  --name etftool \
+  -p 3000:3000 \
+  \
+  -e SECRET_KEY="$(cat /run/secrets/etftool_secret_key)" \
+  -e ENABLE_RATE_LIMIT=true \
+  -e ENVIRONMENT=production \
+  \
+  -v /data/etftool/db:/app/backend/etftool.db \
+  -v /data/etftool/cache:/app/backend/cache \
+  -v /data/etftool/logs:/var/log/supervisor \
+  \
+  --restart unless-stopped \
+  --memory="2g" \
+  --cpus="2.0" \
+  \
+  etftool:latest
+```
+
+---
+
+## 局域网访问
+
+Docker 容器默认支持局域网访问，无需额外配置。
+
+### 访问步骤
+
+```bash
+# 1. 获取本机 IP 地址
+# macOS/Linux
+ifconfig | grep "inet " | grep -v 127.0.0.1
+
+# 输出示例: inet 192.168.1.100
+
+# 2. 启动容器
+docker-compose up -d
+
+# 3. 从局域网其他设备访问
+# 手机/平板/其他电脑浏览器打开:
+# http://192.168.1.100:3000
+```
+
+### 优势
+
+- 无需配置 CORS（Nginx 统一入口）
+- 所有请求都是同源请求
+- 比开发环境更简单
+
+---
+
+## 性能优化
+
+### 1. 资源限制
+
+```yaml
+# docker-compose.yml
+deploy:
+  resources:
+    limits:
+      cpus: '2.0'
+      memory: 2G
+    reservations:
+      cpus: '0.5'
+      memory: 512M
+```
+
+### 2. Nginx 缓存
+
+```nginx
+# 在 nginx.conf 中添加
+proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m max_size=1g inactive=60m;
+
+location /api {
+    proxy_cache my_cache;
+    proxy_cache_valid 200 5m;
+    # ...
+}
+```
+
+### 3. 增加 FastAPI 工作进程
+
+```bash
+# 修改 supervisord.conf
+command=uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 4
+```
+
+---
+
+## 更多信息
+
+- **设计文档**: [docs/docker-unified-design.md](docs/docker-unified-design.md)
+- **项目主页**: [README.md](README.md)
+- **问题反馈**: [GitHub Issues](https://github.com/your-repo/issues)
+
+---
+
+**文档版本**: 1.0
+**最后更新**: 2026-02-03

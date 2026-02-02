@@ -58,9 +58,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# 从构建阶段复制 Python 依赖
-COPY --from=backend-builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+# 从构建阶段复制 Python 依赖到系统路径
+COPY --from=backend-builder /root/.local /usr/local
 
 # 复制后端代码
 COPY backend/ /app/backend/

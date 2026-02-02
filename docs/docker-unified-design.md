@@ -3,9 +3,9 @@
 ## 文档信息
 
 - **项目名称**: ETFTool
-- **文档版本**: 2.0
+- **文档版本**: 2.1
 - **创建日期**: 2026-02-02
-- **最后更新**: 2026-02-02 23:30
+- **最后更新**: 2026-02-03
 - **作者**: Claude
 - **目标**: 将前后端统一构建到单个 Docker 镜像中，简化部署和管理
 
@@ -15,6 +15,7 @@
 |------|------|---------|
 | 1.0 | 2026-02-02 | 初始版本，基础架构设计 |
 | 2.0 | 2026-02-02 23:30 | 新增 Nginx 反向代理优势分析、CORS 环境感知配置、完善 Docker Compose 配置 |
+| 2.1 | 2026-02-03 | 更新架构图和配置，反映 Next.js standalone 模式需要 Node.js 服务器（非静态文件） |
 
 ---
 
@@ -60,15 +61,15 @@
 ├─────────────────────────────────────────┤
 │                                          │
 │  ┌──────────────────────────────────┐  │
-│  │         Nginx (Port 80)          │  │
+│  │      Nginx (Port 3000)           │  │
 │  │      反向代理 + 静态文件服务      │  │
 │  └────────┬─────────────────┬───────┘  │
 │           │                 │           │
 │           ▼                 ▼           │
 │  ┌─────────────┐   ┌─────────────┐    │
 │  │  Next.js    │   │  FastAPI    │    │
-│  │  静态文件    │   │  (uvicorn)  │    │
-│  │             │   │  Port 8000  │    │
+│  │  Server     │   │  (uvicorn)  │    │
+│  │  Port 3001  │   │  Port 8000  │    │
 │  └─────────────┘   └──────┬──────┘    │
 │                            │           │
 │                            ▼           │
@@ -80,15 +81,22 @@
 └────────────────────────────────────────┘
          │
          ▼
-    Host Port 80/3000
+    Host Port 3000
 ```
 
 **请求流程：**
 1. 用户访问 `http://localhost:3000`
 2. Nginx 接收请求
-3. 静态资源请求 → 直接返回 Next.js 构建的静态文件
+3. 静态资源请求 (`/_next/static/*`, `/public/*`) → 直接返回静态文件
 4. API 请求 (`/api/*`) → 反向代理到 FastAPI (localhost:8000)
-5. FastAPI 处理业务逻辑，访问 SQLite 数据库
+5. 页面请求 (`/*`) → 反向代理到 Next.js Server (localhost:3001)
+6. FastAPI 处理业务逻辑，访问 SQLite 数据库
+
+**重要说明：Next.js Standalone 模式**
+- Next.js standalone 输出模式生成的是一个 Node.js 服务器，而非纯静态文件
+- 需要运行 `node server.js` 来启动 Next.js 服务器（监听 3001 端口）
+- Nginx 将页面请求代理到 Next.js 服务器，而非直接返回 HTML 文件
+- 只有 `/_next/static` 和 `/public` 目录下的资源才是真正的静态文件
 
 ### 2.2 为什么使用 Nginx 反向代理
 
@@ -155,9 +163,9 @@
 
 **关键组件：**
 - **Nginx**: 反向代理和静态文件服务
-- **Supervisor**: 进程管理工具，同时管理 Nginx 和 uvicorn
+- **Supervisor**: 进程管理工具，同时管理 Nginx、Next.js Server 和 uvicorn
 - **uvicorn**: FastAPI ASGI 服务器
-- **Node.js**: 用于构建 Next.js（仅构建阶段）
+- **Node.js**: 运行 Next.js standalone 服务器（构建阶段和运行时都需要）
 
 ### 2.4 多阶段构建策略
 
@@ -178,11 +186,11 @@ Stage 2: Backend Builder
 
 Stage 3: Runtime
 ├─ 基础镜像: python:3.11-slim
-├─ 安装 Nginx + Supervisor
+├─ 安装 Nginx + Supervisor + Node.js 20.x
 ├─ 复制前端构建产物
 ├─ 复制后端代码和依赖
 ├─ 配置 Nginx 和 Supervisor
-└─ 创建非 root 用户
+└─ 配置非 root 用户权限
 ```
 
 ---
@@ -239,16 +247,22 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# 安装运行时依赖
+# 安装运行时依赖（包括 Node.js）
 RUN apt-get update && apt-get install -y --no-install-recommends \
     nginx \
     supervisor \
     curl \
+    ca-certificates \
+    gnupg \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# 从构建阶段复制 Python 依赖
-COPY --from=backend-builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+# 从构建阶段复制 Python 依赖到系统路径
+COPY --from=backend-builder /root/.local /usr/local
 
 # 复制后端代码
 COPY backend/ /app/backend/
@@ -267,9 +281,8 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # 创建必要的目录
 RUN mkdir -p /app/backend/cache /app/backend/logs /var/log/supervisor
 
-# 创建非 root 用户
-RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app /var/log/nginx /var/lib/nginx
+# 设置权限
+RUN chown -R www-data:www-data /app /var/log/nginx /var/lib/nginx /var/log/supervisor
 
 # 暴露端口
 EXPOSE 3000
@@ -347,6 +360,11 @@ http {
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_cache_bypass $http_upgrade;
+
+            # 超时配置
+            proxy_connect_timeout 60s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
         }
 
         # 健康检查端点
@@ -354,10 +372,22 @@ http {
             proxy_pass http://127.0.0.1:8000/health;
         }
 
-        # 所有其他请求返回 Next.js 页面
+        # 所有其他请求代理到 Next.js 服务器
         location / {
-            root /app/frontend;
-            try_files $uri $uri.html /index.html;
+            proxy_pass http://127.0.0.1:3001;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+
+            # 超时配置
+            proxy_connect_timeout 60s;
+            proxy_send_timeout 60s;
+            proxy_read_timeout 60s;
         }
     }
 }
@@ -374,24 +404,38 @@ user=root
 logfile=/var/log/supervisor/supervisord.log
 pidfile=/var/run/supervisord.pid
 
-[program:nginx]
-command=/usr/sbin/nginx -g "daemon off;"
+[program:nextjs]
+command=node server.js
+directory=/app/frontend
 autostart=true
 autorestart=true
-stdout_logfile=/var/log/supervisor/nginx.log
-stderr_logfile=/var/log/supervisor/nginx_error.log
+stdout_logfile=/var/log/supervisor/nextjs.log
+stderr_logfile=/var/log/supervisor/nextjs_error.log
 priority=10
+user=www-data
+environment=PORT="3001",HOSTNAME="127.0.0.1"
+startsecs=3
 
 [program:fastapi]
-command=/root/.local/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+command=uvicorn app.main:app --host 127.0.0.1 --port 8000
 directory=/app/backend
 autostart=true
 autorestart=true
 stdout_logfile=/var/log/supervisor/fastapi.log
 stderr_logfile=/var/log/supervisor/fastapi_error.log
 priority=20
-user=appuser
+user=www-data
 environment=PYTHONPATH="/app/backend"
+startsecs=3
+
+[program:nginx]
+command=/usr/sbin/nginx -g "daemon off;"
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/supervisor/nginx.log
+stderr_logfile=/var/log/supervisor/nginx_error.log
+priority=30
+startsecs=5
 ```
 
 ### 3.4 CORS 环境感知配置
@@ -1120,6 +1164,40 @@ data/
 - 健康检查路径：/health → /api/v1/health
 - 数据持久化路径：./backend/ → ./data/
 - Docker Compose 优先级：低 → 推荐
+
+### v2.1 (2026-02-03)
+
+**架构更新：**
+1. **Next.js Standalone 模式说明**
+   - 明确 Next.js standalone 输出需要 Node.js 服务器运行
+   - 更新架构图：Next.js Server (Port 3001) 而非静态文件
+   - 添加请求流程说明：页面请求代理到 Next.js Server
+
+2. **Dockerfile 改进**
+   - 运行时阶段添加 Node.js 20.x 安装
+   - Python 依赖从 /root/.local 改为 /usr/local（支持非 root 用户）
+   - 使用 www-data 用户而非自定义 appuser
+
+3. **Nginx 配置优化**
+   - 添加 Next.js Server 代理配置（location /）
+   - 为 API 和前端代理添加超时配置（60s）
+   - 保留静态文件直接服务（/_next/static, /public）
+
+4. **Supervisor 配置完善**
+   - 添加 nextjs 进程配置（port 3001）
+   - 调整启动优先级：Next.js (10) → FastAPI (20) → Nginx (30)
+   - 添加 startsecs 确保服务稳定启动
+   - 所有应用进程使用 www-data 用户运行
+
+5. **安全改进**
+   - 后端添加 SECRET_KEY 生产环境验证
+   - 拒绝默认 SECRET_KEY 值
+   - 应用进程使用非 root 用户（www-data）
+
+**技术要点：**
+- Next.js standalone 模式 = Node.js 服务器 + 静态资源，而非纯静态 HTML
+- 需要同时运行 3 个进程：Nginx、Next.js Server、FastAPI
+- Nginx 作为统一入口，代理到后端服务
 
 ### v1.0 (2026-02-02)
 

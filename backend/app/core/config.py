@@ -69,6 +69,19 @@ class Settings(BaseSettings):
                 "SECRET_KEY must be at least 32 characters. "
                 "Generate one using: python scripts/generate_secret.py"
             )
+
+        # 生产环境下拒绝默认 SECRET_KEY
+        default_keys = [
+            "your-secret-key-here-change-in-production",
+            "change-me-in-production",
+            "insecure-secret-key",
+            "default-secret-key"
+        ]
+        if not self.is_development and self.SECRET_KEY in default_keys:
+            raise ValueError(
+                "Cannot use default SECRET_KEY in production environment. "
+                "Generate a secure key using: python scripts/generate_secret.py"
+            )
         
         # CORS 安全检查
         if not self.is_development and "*" in self.cors_origins:
