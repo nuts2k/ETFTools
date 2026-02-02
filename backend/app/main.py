@@ -53,21 +53,25 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, rate_limit_handler)
 
-# CORS Configuration
-# 支持局域网访问（仅开发环境支持正则匹配）
-allow_origin_regex = None
+# CORS Configuration - 环境感知
 if settings.is_development:
+    # 开发环境：启用 CORS（支持本地开发 + 局域网访问）
     # 匹配局域网 IP (192.168.x.x, 10.x.x.x, 172.16-31.x.x) 和常用端口
-    allow_origin_regex = r"http://(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+):(3000|8000)"
+    allow_origin_regex = r"http://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+):(3000|8000)"
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    allow_origin_regex=allow_origin_regex
-)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        allow_origin_regex=allow_origin_regex
+    )
+    logger.info("✅ CORS enabled for development (local + LAN access)")
+else:
+    # 生产环境（Docker）：禁用 CORS
+    # Nginx 反向代理确保同源，无需 CORS
+    logger.info("✅ CORS disabled (production mode with Nginx reverse proxy)")
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 

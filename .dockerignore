@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.pytest_cache/
+*.log
+
+# Node.js
+node_modules/
+.next/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/
+.claude/
+.agents/
+.trae/
+.opencode/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 文档
+*.md
+docs/
+design/
+
+# 测试
+tests/
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+
+# 缓存和数据
+.cache/
+cache/
+*.db
+*.db-journal
+
+# 其他
+.DS_Store
+*.pid

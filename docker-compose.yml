@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  etftool:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: etftool
+
+    # 端口映射
+    ports:
+      - "3000:3000"
+
+    # 环境变量配置
+    environment:
+      # 应用配置
+      - PROJECT_NAME=ETFTool
+      - API_V1_STR=/api/v1
+      - ENVIRONMENT=production
+
+      # 安全配置（生产环境必须修改）
+      - SECRET_KEY=${SECRET_KEY:-please-change-this-secret-key-in-production-min-32-chars}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=10080
+
+      # 服务器配置（Docker 环境）
+      - BACKEND_HOST=127.0.0.1
+      - BACKEND_PORT=8000
+
+      # 数据库配置
+      - DATABASE_URL=sqlite:///./etftool.db
+
+      # 缓存配置
+      - CACHE_DIR=/app/backend/cache
+      - CACHE_TTL=3600
+
+      # 速率限制（生产环境建议启用）
+      - ENABLE_RATE_LIMIT=true
+
+    # 数据持久化
+    volumes:
+      - ./data/etftool.db:/app/backend/etftool.db
+      - ./data/cache:/app/backend/cache
+      - ./data/logs:/var/log/supervisor
+
+    # 重启策略
+    restart: unless-stopped
+
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+
+    # 资源限制（可选）
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M

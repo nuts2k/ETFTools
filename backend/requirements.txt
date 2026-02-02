@@ -3,7 +3,6 @@ annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.12.1
 asttokens==3.0.1
-backports.asyncio.runner==1.2.0
 bcrypt==5.0.0
 beautifulsoup4==4.14.3
 cachetools==6.2.4
@@ -19,7 +18,6 @@ Deprecated==1.3.1
 diskcache==5.6.3
 ecdsa==0.19.1
 et_xmlfile==2.0.0
--e git+https://github.com/nuts2k/ETFTools.git@bd7d9616a4b0ffd5447dddb9e2629afd9fcdce5c#egg=etftool_backend&subdirectory=backend
 exceptiongroup==1.3.1
 executing==2.2.1
 fastapi==0.128.0
