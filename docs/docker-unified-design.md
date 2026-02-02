@@ -3,10 +3,18 @@
 ## 文档信息
 
 - **项目名称**: ETFTool
-- **文档版本**: 1.0
+- **文档版本**: 2.0
 - **创建日期**: 2026-02-02
+- **最后更新**: 2026-02-02 23:30
 - **作者**: Claude
 - **目标**: 将前后端统一构建到单个 Docker 镜像中，简化部署和管理
+
+## 版本历史
+
+| 版本 | 日期 | 更新内容 |
+|------|------|---------|
+| 1.0 | 2026-02-02 | 初始版本，基础架构设计 |
+| 2.0 | 2026-02-02 23:30 | 新增 Nginx 反向代理优势分析、CORS 环境感知配置、完善 Docker Compose 配置 |
 
 ---
 
@@ -82,7 +90,60 @@
 4. API 请求 (`/api/*`) → 反向代理到 FastAPI (localhost:8000)
 5. FastAPI 处理业务逻辑，访问 SQLite 数据库
 
-### 2.2 核心技术栈
+### 2.2 为什么使用 Nginx 反向代理
+
+**核心问题：为什么不直接暴露前后端端口？**
+
+**方案对比：**
+
+| 特性 | 直接暴露端口 | Nginx 反向代理 |
+|------|-------------|---------------|
+| 端口数量 | 2 个（3000 + 8000） | 1 个（3000） |
+| CORS 配置 | 必需（跨域） | 不需要（同源） |
+| 安全性 | 后端直接暴露 | 后端仅内部访问 |
+| 静态文件性能 | Node.js 处理 | Nginx 原生处理（快 2-3 倍） |
+| SSL 终止 | 前后端都需配置 | 统一在 Nginx 层 |
+| 负载均衡 | 需要额外工具 | Nginx 内置支持 |
+
+**主要优势：**
+
+1. **安全性提升** 🔒
+   - 后端只监听 `127.0.0.1:8000`（容器内部），不直接暴露到外部
+   - 统一入口便于实施安全策略（IP 白名单、WAF 规则）
+   - 减少攻击面
+
+2. **无需 CORS 配置** ✅
+   - 前后端都通过 `localhost:3000` 访问，同源请求
+   - 避免复杂的 CORS 配置和安全风险
+   - 减少 preflight 请求，提升性能
+
+3. **静态文件服务性能** ⚡
+   - Nginx 处理静态文件比 Node.js 快 2-3 倍
+   - 内置 Gzip 压缩和缓存优化
+   - 支持高并发（10000+ 连接）
+
+4. **统一的请求路由** 🎯
+   - 前端无需知道后端地址，使用相对路径即可
+   - 便于环境切换（开发/测试/生产）
+   - 统一的 URL 结构
+
+5. **部署简化** 🚀
+   - 只需管理一个端口
+   - 防火墙只需开放一个端口
+   - 便于负载均衡和扩展
+
+6. **SSL/TLS 终止** 🔐
+   - 在 Nginx 层统一处理 HTTPS
+   - 后端无需处理加密，减少 CPU 开销
+   - 统一的证书管理
+
+**适用场景：**
+- ✅ 生产环境部署（强烈推荐）
+- ✅ 需要 HTTPS 的场景
+- ✅ 高并发访问
+- ✅ 对安全性有要求
+
+### 2.3 核心技术栈
 
 **基础镜像：** `python:3.11-slim`
 
@@ -98,7 +159,7 @@
 - **uvicorn**: FastAPI ASGI 服务器
 - **Node.js**: 用于构建 Next.js（仅构建阶段）
 
-### 2.3 多阶段构建策略
+### 2.4 多阶段构建策略
 
 采用多阶段构建，分离构建环境和运行环境：
 
@@ -333,6 +394,59 @@ user=appuser
 environment=PYTHONPATH="/app/backend"
 ```
 
+### 3.4 CORS 环境感知配置
+
+**核心原则：根据环境动态启用/禁用 CORS**
+
+**环境对比：**
+
+| 环境 | CORS 状态 | 原因 | 后端监听地址 |
+|------|----------|------|-------------|
+| 开发环境 | ✅ 启用 | 前后端分离运行，跨域访问 | 0.0.0.0:8000 |
+| Docker 生产环境 | ❌ 禁用 | Nginx 反向代理，同源访问 | 127.0.0.1:8000 |
+
+**backend/app/main.py 配置：**
+
+```python
+# CORS Configuration - 环境感知
+if settings.is_development:
+    # 开发环境：启用 CORS（支持本地开发 + 局域网访问）
+    allow_origin_regex = r"http://(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+):(3000|8000)"
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        allow_origin_regex=allow_origin_regex
+    )
+    logger.info("✅ CORS enabled for development (local + LAN access)")
+else:
+    # 生产环境（Docker）：禁用 CORS
+    # Nginx 反向代理确保同源，无需 CORS
+    logger.info("✅ CORS disabled (production mode with Nginx reverse proxy)")
+```
+
+**环境变量配置：**
+
+```bash
+# 开发环境 (.env)
+ENVIRONMENT=development
+BACKEND_HOST=0.0.0.0
+BACKEND_CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# Docker 生产环境 (Dockerfile ENV)
+ENVIRONMENT=production
+BACKEND_HOST=127.0.0.1
+# 不需要设置 BACKEND_CORS_ORIGINS
+```
+
+**优势：**
+- 开发环境保留 CORS，支持本地开发和局域网访问（手机测试）
+- 生产环境禁用 CORS，提升安全性和性能
+- 自动根据环境切换，无需手动修改代码
+
 ---
 
 ## 4. 配置文件清单
@@ -354,8 +468,9 @@ environment=PYTHONPATH="/app/backend"
 | 文件路径 | 修改内容 | 原因 |
 |---------|---------|------|
 | `frontend/next.config.ts` | 添加 `output: 'standalone'` | 启用独立输出 |
-| `backend/.env.example` | 添加 Docker 配置说明 | 文档完善 |
-| `backend/app/main.py` | 确保 CORS 配置正确 | 允许同源请求 |
+| `backend/.env.example` | 添加 Docker 环境变量说明 | 文档完善 |
+| `backend/app/main.py` | 添加环境感知的 CORS 配置 | 开发环境启用 CORS，生产环境禁用 |
+| `Dockerfile` | 设置生产环境变量 | 确保 Docker 环境使用正确配置 |
 
 ---
 
@@ -405,41 +520,166 @@ docker run -d \
   etftool:latest
 ```
 
-### 5.3 Docker Compose 配置（可选）
+### 5.3 Docker Compose 配置（推荐）
 
-**docker-compose.yml：**
+**为什么使用 Docker Compose：**
+- 简化容器管理和配置
+- 环境变量集中管理
+- 便于版本控制和团队协作
+- 支持一键启动和停止
+
+**docker-compose.yml（生产环境）：**
 ```yaml
 version: '3.8'
 
 services:
   etftool:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: etftool
+
+    # 端口映射
     ports:
       - "3000:3000"
+
+    # 环境变量配置
     environment:
+      # 应用配置
+      - PROJECT_NAME=ETFTool
+      - API_V1_STR=/api/v1
+      - ENVIRONMENT=production
+
+      # 安全配置（生产环境必须修改）
+      - SECRET_KEY=${SECRET_KEY:-please-change-this-secret-key-in-production-min-32-chars}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=10080
+
+      # 服务器配置（Docker 环境）
+      - BACKEND_HOST=127.0.0.1
+      - BACKEND_PORT=8000
+
+      # 数据库配置
       - DATABASE_URL=sqlite:///./etftool.db
+
+      # 缓存配置
+      - CACHE_DIR=/app/backend/cache
+      - CACHE_TTL=3600
+
+      # 速率限制（生产环境建议启用）
+      - ENABLE_RATE_LIMIT=true
+
+    # 数据持久化
     volumes:
-      - ./backend/cache:/app/backend/cache
-      - ./backend/etftool.db:/app/backend/etftool.db
+      - ./data/etftool.db:/app/backend/etftool.db
+      - ./data/cache:/app/backend/cache
+      - ./data/logs:/var/log/supervisor
+
+    # 重启策略
     restart: unless-stopped
+
+    # 健康检查
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/health"]
       interval: 30s
       timeout: 3s
       retries: 3
+      start_period: 40s
+
+    # 资源限制（可选）
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 ```
 
 **使用方式：**
+
 ```bash
-# 启动
+# 1. 创建数据目录
+mkdir -p data/cache data/logs
+
+# 2. 创建环境变量文件（可选）
+cp .env.docker.example .env.docker
+# 编辑 .env.docker，设置 SECRET_KEY
+
+# 3. 启动服务
 docker-compose up -d
 
-# 查看日志
+# 4. 查看日志
 docker-compose logs -f
 
-# 停止
+# 5. 查看服务状态
+docker-compose ps
+
+# 6. 停止服务
 docker-compose down
+
+# 7. 重启服务
+docker-compose restart
+
+# 8. 查看资源使用
+docker stats etftool
 ```
+
+**使用 .env 文件管理环境变量：**
+
+创建 `.env.docker` 文件：
+
+```bash
+# .env.docker
+SECRET_KEY=your-super-secret-key-at-least-32-characters-long
+ENABLE_RATE_LIMIT=true
+```
+
+修改 `docker-compose.yml`：
+
+```yaml
+services:
+  etftool:
+    env_file:
+      - .env.docker
+    # ... 其他配置
+```
+
+### 5.4 局域网访问配置
+
+**Docker 环境的局域网访问：**
+
+Docker 容器默认支持局域网访问，无需额外配置 CORS。
+
+**访问方式：**
+
+```bash
+# 1. 获取本机 IP 地址
+# macOS/Linux
+ifconfig | grep "inet " | grep -v 127.0.0.1
+
+# 输出示例: inet 192.168.1.100
+
+# 2. 启动 Docker 容器
+docker-compose up -d
+
+# 3. 从局域网其他设备访问
+# 手机/平板/其他电脑访问:
+# http://192.168.1.100:3000
+```
+
+**环境对比：**
+
+| 环境 | 前端地址 | 后端地址 | CORS | 局域网访问 |
+|------|---------|---------|------|-----------|
+| 本地开发 | localhost:3000 | localhost:8000 | ✅ 需要 | ✅ 支持（需配置 CORS） |
+| Docker 部署 | localhost:3000 | 内部 127.0.0.1:8000 | ❌ 不需要 | ✅ 支持（Nginx 统一入口） |
+
+**优势：**
+- Docker 环境通过 Nginx 统一入口，局域网访问无需 CORS
+- 手机访问 `http://192.168.1.100:3000` 即可，所有请求都是同源
+- 比开发环境更简单，无需复杂的 CORS 正则配置
 
 ---
 
@@ -696,39 +936,50 @@ curl http://127.0.0.1:3000/
 
 **核心优势：**
 - 单一镜像，部署简单
-- Nginx 反向代理，性能优秀
+- Nginx 反向代理，性能优秀（静态文件服务快 2-3 倍）
+- 无需 CORS 配置，安全性更高
 - Supervisor 进程管理，稳定可靠
 - 多平台支持，兼容性好
+- 支持局域网访问，无需额外配置
 
 **技术要点：**
 - 多阶段构建优化镜像体积
 - Nginx 处理静态文件和反向代理
+- 环境感知的 CORS 配置（开发启用，生产禁用）
 - Supervisor 管理多个进程
 - 健康检查确保服务可用
+- 完善的 Docker Compose 配置
 
 ### 11.2 实施步骤
 
-**阶段 1：准备配置文件（1 小时）**
-1. 创建 Dockerfile
-2. 创建 Nginx 配置
-3. 创建 Supervisor 配置
-4. 创建 .dockerignore
+**阶段 1：准备配置文件**
+1. 创建 `Dockerfile`（统一镜像定义）
+2. 创建 `docker/nginx.conf`（Nginx 配置）
+3. 创建 `docker/supervisord.conf`（Supervisor 配置）
+4. 创建 `.dockerignore`（构建排除文件）
+5. 创建 `docker-compose.yml`（编排配置）
+6. 创建 `.env.docker.example`（环境变量示例）
 
-**阶段 2：构建测试（30 分钟）**
-1. 单平台构建测试
+**阶段 2：修改现有代码**
+1. 修改 `frontend/next.config.ts`（添加 standalone 输出）
+2. 修改 `backend/app/main.py`（添加环境感知 CORS 配置）
+3. 更新 `backend/.env.example`（添加 Docker 环境说明）
+
+**阶段 3：构建测试**
+1. 单平台构建测试（linux/amd64）
 2. 本地运行验证
-3. 功能测试
+3. 功能测试（前端访问、API 调用、健康检查）
+4. 局域网访问测试
 
-**阶段 3：多平台构建（1 小时）**
+**阶段 4：多平台构建（可选）**
 1. 配置 buildx
-2. 多平台构建测试
-3. 推送到镜像仓库（可选）
+2. 多平台构建测试（linux/amd64 + linux/arm64）
+3. 推送到镜像仓库
 
-**阶段 4：文档完善（30 分钟）**
-1. 编写使用文档
+**阶段 5：文档完善**
+1. 编写 `README-Docker.md`（使用文档）
 2. 添加故障排查指南
-
-**总计：约 3 小时**
+3. 更新项目 README
 
 ### 11.3 后续优化
 
@@ -749,7 +1000,70 @@ curl http://127.0.0.1:3000/
 
 ---
 
-## 12. 参考资料
+## 12. 关键决策点总结
+
+### 12.1 Nginx 反向代理 vs 直接暴露端口
+
+**决策：使用 Nginx 反向代理** ✅
+
+**理由：**
+1. **安全性**：后端只监听 127.0.0.1，不直接暴露
+2. **无需 CORS**：同源请求，避免跨域问题
+3. **性能**：静态文件服务快 2-3 倍
+4. **简化部署**：只需一个端口
+5. **SSL 终止**：统一在 Nginx 层处理 HTTPS
+
+**适用场景：** 生产环境部署（强烈推荐）
+
+### 12.2 CORS 配置策略
+
+**决策：环境感知的 CORS 配置** ✅
+
+**策略：**
+- **开发环境**：启用 CORS（支持本地开发 + 局域网访问）
+- **Docker 生产环境**：禁用 CORS（Nginx 反向代理，同源）
+
+**优势：**
+- 开发环境保留灵活性（支持手机测试）
+- 生产环境提升安全性和性能
+- 自动根据 `ENVIRONMENT` 环境变量切换
+
+### 12.3 数据持久化路径
+
+**决策：使用独立的 data/ 目录** ✅
+
+**路径规划：**
+```
+data/
+├── etftool.db      # 数据库文件
+├── cache/          # 缓存目录
+└── logs/           # 日志目录
+```
+
+**理由：**
+- 与源码分离，便于备份
+- 避免污染 backend/ 目录
+- 符合 Docker 最佳实践
+
+### 12.4 Docker Compose 配置
+
+**决策：提供完善的 Docker Compose 配置** ✅
+
+**包含内容：**
+- 完整的环境变量配置
+- 健康检查（正确的 API 路径）
+- 资源限制
+- 数据持久化
+- 重启策略
+
+**优势：**
+- 简化部署流程
+- 环境变量集中管理
+- 便于版本控制
+
+---
+
+## 13. 参考资料
 
 - [Docker Multi-stage builds](https://docs.docker.com/build/building/multi-stage/)
 - [Nginx 官方文档](https://nginx.org/en/docs/)
@@ -762,3 +1076,56 @@ curl http://127.0.0.1:3000/
 **文档结束**
 
 *本文档描述了 ETFTool 项目的 Docker 统一镜像构建方案，将前后端打包到单个容器中，简化部署流程。*
+
+---
+
+## 更新日志
+
+### v2.0 (2026-02-02 23:30)
+
+**新增内容：**
+1. 添加"为什么使用 Nginx 反向代理"章节（2.2）
+   - 详细对比直接暴露端口 vs Nginx 反向代理
+   - 分析 6 大核心优势（安全性、CORS、性能、路由、部署、SSL）
+
+2. 添加"CORS 环境感知配置"章节（3.4）
+   - 开发环境启用 CORS（支持本地 + 局域网）
+   - 生产环境禁用 CORS（Nginx 同源）
+   - 提供完整的代码示例
+
+3. 添加"局域网访问配置"章节（5.4）
+   - Docker 环境局域网访问说明
+   - 环境对比表格
+   - 访问方式示例
+
+4. 完善"Docker Compose 配置"章节（5.3）
+   - 添加完整的环境变量配置
+   - 修正健康检查路径（/api/v1/health）
+   - 添加资源限制配置
+   - 添加 .env 文件管理方式
+   - 优化数据持久化路径（使用 data/ 目录）
+
+5. 添加"关键决策点总结"章节（12）
+   - 总结 4 个关键技术决策
+   - 说明决策理由和优势
+
+**改进内容：**
+- 更新文档版本信息（添加版本历史表格）
+- 更新章节编号（2.2 → 2.3 → 2.4）
+- 完善"需要修改的文件"说明
+- 优化"实施步骤"，添加更详细的任务清单
+- 增强"方案特点"，突出新增优势
+
+**修正内容：**
+- 健康检查路径：/health → /api/v1/health
+- 数据持久化路径：./backend/ → ./data/
+- Docker Compose 优先级：低 → 推荐
+
+### v1.0 (2026-02-02)
+
+**初始版本：**
+- 基础架构设计
+- Dockerfile 多阶段构建
+- Nginx 和 Supervisor 配置
+- 基础 Docker Compose 示例
+
