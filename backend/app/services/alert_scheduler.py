@@ -35,11 +35,24 @@ class AlertScheduler:
         self._scheduler: Optional[AsyncIOScheduler] = None
 
     def start(self) -> None:
-        """启动调度器"""
+        """启动调度器（支持盘中和收盘检查）"""
         if self._scheduler is not None:
             return
 
         self._scheduler = AsyncIOScheduler()
+
+        # 盘中检查 (每 30 分钟，09:00-14:30，周一到周五)
+        self._scheduler.add_job(
+            self._run_daily_check,
+            CronTrigger(
+                minute="0,30",      # 每小时的 0 分和 30 分
+                hour="9-14",        # 9:00-14:59 之间
+                day_of_week="mon-fri"
+            ),
+            id="intraday_alert_check",
+            replace_existing=True,
+        )
+        logger.info("Intraday alert check scheduled: every 30 minutes (09:00-14:30)")
 
         # 收盘后检查 (每天 15:30)
         self._scheduler.add_job(
@@ -48,9 +61,10 @@ class AlertScheduler:
             id="daily_alert_check",
             replace_existing=True,
         )
+        logger.info("Daily alert check scheduled: 15:30")
 
         self._scheduler.start()
-        logger.info("Alert scheduler started")
+        logger.info("Alert scheduler started with intraday and daily checks")
 
     def stop(self) -> None:
         """停止调度器"""
