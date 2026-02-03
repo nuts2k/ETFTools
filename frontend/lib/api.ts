@@ -147,3 +147,67 @@ export interface ETFMetrics {
   daily_trend?: DailyTrend | null;
   temperature?: Temperature | null;
 }
+
+// Telegram 配置类型
+export interface TelegramConfig {
+  enabled: boolean;
+  botToken: string;
+  chatId: string;
+  verified?: boolean;
+  lastTestAt?: string | null;
+}
+
+// Telegram 配置相关 API
+export async function getTelegramConfig(token: string) {
+  const response = await fetch(`${API_BASE_URL}/notifications/telegram/config`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: '获取配置失败' }));
+    throw new Error(error.detail || '获取配置失败');
+  }
+  return response.json();
+}
+
+export async function saveTelegramConfig(
+  token: string,
+  config: { enabled: boolean; botToken: string; chatId: string }
+) {
+  const response = await fetch(`${API_BASE_URL}/notifications/telegram/config`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(config)
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: '保存配置失败' }));
+    throw new Error(error.detail || '保存配置失败');
+  }
+  return response.json();
+}
+
+export async function testTelegramConfig(token: string) {
+  const response = await fetch(`${API_BASE_URL}/notifications/telegram/test`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: '测试失败' }));
+    throw new Error(error.detail || '测试失败');
+  }
+  return response.json();
+}
+
+export async function deleteTelegramConfig(token: string) {
+  const response = await fetch(`${API_BASE_URL}/notifications/telegram/config`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: '删除配置失败' }));
+    throw new Error(error.detail || '删除配置失败');
+  }
+  return response.json();
+}

@@ -165,6 +165,23 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* Notification Settings */}
+        <section>
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 pl-3">通知设置</h2>
+          <div className="bg-card rounded-xl overflow-hidden shadow-sm ring-1 ring-border/50 divide-y divide-border/50">
+            <Link
+              href="/settings/notifications"
+              className="flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
+            >
+              <div>
+                <p className="font-medium">Telegram 通知</p>
+                <p className="text-xs text-muted-foreground">配置 Telegram Bot 接收通知</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+            </Link>
+          </div>
+        </section>
+
         {/* Data & Storage */}
         <section>
           <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 pl-3">数据与存储</h2>

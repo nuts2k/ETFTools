@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     
     # 安全配置
     SECRET_KEY: str
+    ENCRYPTION_SALT: str = "etftool_telegram_salt"  # 加密 salt，建议在生产环境中修改
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7天
     

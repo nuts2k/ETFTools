@@ -16,6 +16,7 @@
 | 1.0 | 2026-02-02 | 初始版本，基础架构设计 |
 | 2.0 | 2026-02-02 23:30 | 新增 Nginx 反向代理优势分析、CORS 环境感知配置、完善 Docker Compose 配置 |
 | 2.1 | 2026-02-03 | 更新架构图和配置，反映 Next.js standalone 模式需要 Node.js 服务器（非静态文件） |
+| 2.2 | 2026-02-03 | 新增 ENCRYPTION_SALT 配置项，用于加密敏感信息 |
 
 ---
 
@@ -479,11 +480,13 @@ else:
 ENVIRONMENT=development
 BACKEND_HOST=0.0.0.0
 BACKEND_CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+SECRET_KEY=your-dev-secret-key-min-32-chars
+ENCRYPTION_SALT=etftool_telegram_salt
 
-# Docker 生产环境 (Dockerfile ENV)
-ENVIRONMENT=production
-BACKEND_HOST=127.0.0.1
-# 不需要设置 BACKEND_CORS_ORIGINS
+# Docker 生产环境 (.env.docker 文件)
+# 在 docker-compose.yml 中通过 ${SECRET_KEY} 引用
+SECRET_KEY=your-super-secret-key-at-least-32-characters-long
+ENCRYPTION_SALT=etftool_telegram_salt
 ```
 
 **优势：**
@@ -596,6 +599,7 @@ services:
 
       # 安全配置（生产环境必须修改）
       - SECRET_KEY=${SECRET_KEY:-please-change-this-secret-key-in-production-min-32-chars}
+      - ENCRYPTION_SALT=${ENCRYPTION_SALT:-etftool_telegram_salt}
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=10080
 
@@ -649,7 +653,9 @@ mkdir -p data/cache data/logs
 
 # 2. 创建环境变量文件（可选）
 cp .env.docker.example .env.docker
-# 编辑 .env.docker，设置 SECRET_KEY
+# 编辑 .env.docker，设置必要的安全配置：
+# - SECRET_KEY: 应用密钥（必须修改）
+# - ENCRYPTION_SALT: 加密 salt（生产环境建议修改）
 
 # 3. 启动服务
 docker-compose up -d
@@ -727,7 +733,93 @@ docker-compose up -d
 
 ---
 
-## 6. 镜像优化
+## 6. 安全配置说明
+
+### 6.1 必需的安全配置
+
+#### SECRET_KEY
+- **用途**: JWT token 签名和应用安全
+- **要求**: 至少 32 字符的随机字符串
+- **生成方法**:
+  ```bash
+  python -c "import secrets; print(secrets.token_urlsafe(32))"
+  ```
+- **重要性**: ⚠️ 生产环境必须修改，否则应用拒绝启动
+
+#### ENCRYPTION_SALT
+- **用途**: 加密敏感信息（如 Telegram Bot Token）
+- **要求**: 随机字符串，建议 16 字符以上
+- **生成方法**:
+  ```bash
+  python -c "import secrets; print(secrets.token_urlsafe(16))"
+  ```
+- **重要性**: 🔒 生产环境强烈建议修改，提高加密安全性
+- **默认值**: `etftool_telegram_salt`（仅用于开发环境）
+
+### 6.2 配置示例
+
+**开发环境 (.env)**:
+```bash
+SECRET_KEY=dev-secret-key-for-testing-only-min-32-chars
+ENCRYPTION_SALT=dev_encryption_salt
+```
+
+**生产环境 (.env.docker)**:
+```bash
+SECRET_KEY=<使用上述命令生成的随机密钥>
+ENCRYPTION_SALT=<使用上述命令生成的随机 salt>
+```
+
+### 6.3 安全最佳实践
+
+1. **永远不要**在代码仓库中提交真实的密钥
+2. **使用环境变量**管理敏感配置
+3. **定期轮换**密钥和 salt（建议每 6-12 个月）
+4. **备份配置**：更换密钥前备份旧配置，避免数据无法解密
+5. **不同环境使用不同密钥**：开发、测试、生产环境应使用不同的密钥
+
+### 6.4 密钥轮换指南
+
+**⚠️ 重要警告**：更换 `SECRET_KEY` 或 `ENCRYPTION_SALT` 会导致所有已加密的数据（如 Telegram Bot Token）无法解密。
+
+**密钥轮换步骤**：
+
+1. **备份当前配置**：
+   ```bash
+   # 备份环境变量文件
+   cp .env.docker .env.docker.backup
+   # 备份数据库
+   cp data/etftool.db data/etftool.db.backup
+   ```
+
+2. **导出敏感数据**（如果需要保留）：
+   - 在更换密钥前，先在设置页面重新输入 Telegram Bot Token
+   - 或者记录下需要保留的敏感信息
+
+3. **生成新密钥**：
+   ```bash
+   # 生成新的 SECRET_KEY
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
+
+   # 生成新的 ENCRYPTION_SALT
+   python -c "import secrets; print(secrets.token_urlsafe(16))"
+   ```
+
+4. **更新配置文件**：
+   - 编辑 `.env.docker` 文件，替换新密钥
+
+5. **重启服务**：
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+6. **重新配置敏感信息**：
+   - 登录应用，在设置页面重新输入 Telegram Bot Token 等敏感信息
+
+---
+
+## 7. 镜像优化
 
 ### 6.1 预估镜像大小
 
@@ -740,7 +832,7 @@ docker-compose up -d
 
 **总计：约 300MB**
 
-### 6.2 优化策略
+### 7.2 优化策略
 
 **1. 层缓存优化**
 - 先复制依赖文件，再复制源码
@@ -797,9 +889,9 @@ tests/
 
 ---
 
-## 7. 安全考虑
+## 8. 安全考虑
 
-### 7.1 镜像安全
+### 8.1 镜像安全
 
 **最佳实践：**
 1. 使用官方基础镜像
@@ -807,7 +899,7 @@ tests/
 3. 最小化安装的包
 4. 使用非 root 用户运行应用（Supervisor 以 root 启动，但应用以 appuser 运行）
 
-### 7.2 运行时安全
+### 8.2 运行时安全
 
 **环境变量管理：**
 - 敏感信息通过环境变量传递
@@ -821,9 +913,9 @@ tests/
 
 ---
 
-## 8. 监控和日志
+## 9. 监控和日志
 
-### 8.1 日志管理
+### 9.1 日志管理
 
 **日志位置：**
 - Supervisor 日志: `/var/log/supervisor/`
@@ -842,7 +934,7 @@ tail -f /var/log/supervisor/fastapi.log
 tail -f /var/log/nginx/access.log
 ```
 
-### 8.2 健康检查
+### 9.2 健康检查
 
 **健康检查配置：**
 - 检查间隔: 30 秒
@@ -858,9 +950,9 @@ docker inspect etftool | grep Health -A 10
 
 ---
 
-## 9. 故障排查
+## 10. 故障排查
 
-### 9.1 常见问题
+### 10.1 常见问题
 
 **问题 1：容器启动失败**
 
@@ -903,7 +995,7 @@ docker exec -it etftool ls -la /app/frontend/public
 docker exec -it etftool cat /etc/nginx/nginx.conf
 ```
 
-### 9.2 调试技巧
+### 10.2 调试技巧
 
 **进入容器调试：**
 ```bash
@@ -924,9 +1016,9 @@ curl http://127.0.0.1:3000/
 
 ---
 
-## 10. 与多容器方案对比
+## 11. 与多容器方案对比
 
-### 10.1 优势
+### 11.1 优势
 
 ✅ **部署简单**
 - 单个镜像，单个容器
@@ -943,7 +1035,7 @@ curl http://127.0.0.1:3000/
 - 统一的健康检查
 - 统一的版本管理
 
-### 10.2 劣势
+### 11.2 劣势
 
 ❌ **灵活性较低**
 - 前后端无法独立扩展
@@ -958,7 +1050,7 @@ curl http://127.0.0.1:3000/
 - 需要构建前后端
 - 任何改动都需要重建整个镜像
 
-### 10.3 适用场景
+### 11.3 适用场景
 
 **统一镜像方案适合：**
 - 小型应用
@@ -974,9 +1066,9 @@ curl http://127.0.0.1:3000/
 
 ---
 
-## 11. 总结
+## 12. 总结
 
-### 11.1 方案特点
+### 12.1 方案特点
 
 **核心优势：**
 - 单一镜像，部署简单
@@ -994,7 +1086,7 @@ curl http://127.0.0.1:3000/
 - 健康检查确保服务可用
 - 完善的 Docker Compose 配置
 
-### 11.2 实施步骤
+### 12.2 实施步骤
 
 **阶段 1：准备配置文件**
 1. 创建 `Dockerfile`（统一镜像定义）
@@ -1025,7 +1117,7 @@ curl http://127.0.0.1:3000/
 2. 添加故障排查指南
 3. 更新项目 README
 
-### 11.3 后续优化
+### 12.3 后续优化
 
 1. **性能优化**
    - 配置 Nginx 缓存
@@ -1044,9 +1136,9 @@ curl http://127.0.0.1:3000/
 
 ---
 
-## 12. 关键决策点总结
+## 13. 关键决策点总结
 
-### 12.1 Nginx 反向代理 vs 直接暴露端口
+### 13.1 Nginx 反向代理 vs 直接暴露端口
 
 **决策：使用 Nginx 反向代理** ✅
 
@@ -1059,7 +1151,7 @@ curl http://127.0.0.1:3000/
 
 **适用场景：** 生产环境部署（强烈推荐）
 
-### 12.2 CORS 配置策略
+### 13.2 CORS 配置策略
 
 **决策：环境感知的 CORS 配置** ✅
 
@@ -1072,7 +1164,7 @@ curl http://127.0.0.1:3000/
 - 生产环境提升安全性和性能
 - 自动根据 `ENVIRONMENT` 环境变量切换
 
-### 12.3 数据持久化路径
+### 13.3 数据持久化路径
 
 **决策：使用独立的 data/ 目录** ✅
 
@@ -1089,7 +1181,7 @@ data/
 - 避免污染 backend/ 目录
 - 符合 Docker 最佳实践
 
-### 12.4 Docker Compose 配置
+### 13.4 Docker Compose 配置
 
 **决策：提供完善的 Docker Compose 配置** ✅
 
@@ -1107,7 +1199,7 @@ data/
 
 ---
 
-## 13. 参考资料
+## 14. 参考资料
 
 - [Docker Multi-stage builds](https://docs.docker.com/build/building/multi-stage/)
 - [Nginx 官方文档](https://nginx.org/en/docs/)

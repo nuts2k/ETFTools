@@ -20,6 +20,7 @@ services:
 
       # 安全配置（生产环境必须修改）
       - SECRET_KEY=${SECRET_KEY:-please-change-this-secret-key-in-production-min-32-chars}
+      - ENCRYPTION_SALT=${ENCRYPTION_SALT:-etftool_telegram_salt}
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=10080
 
