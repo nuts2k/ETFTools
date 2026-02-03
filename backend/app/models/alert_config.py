@@ -32,6 +32,7 @@ class UserAlertPreferences(BaseModel):
     # 信号类型开关
     temperature_change: bool = True      # 温度等级变化
     extreme_temperature: bool = True     # 极端温度
+    rsi_signal: bool = True              # RSI 超买超卖
     ma_crossover: bool = True            # 均线上穿/下穿
     ma_alignment: bool = True            # 均线排列变化
     weekly_signal: bool = True           # 周线信号

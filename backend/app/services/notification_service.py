@@ -6,7 +6,10 @@
 
 from telegram import Bot
 from telegram.error import TelegramError
-from typing import Dict, Any
+from typing import Dict, Any, List, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.alert_config import SignalItem
 
 
 class TelegramNotificationService:
@@ -59,7 +62,7 @@ class TelegramNotificationService:
             return {"success": False, "message": str(e)}
 
     @staticmethod
-    def format_alert_message(signals: list, check_time: str) -> str:
+    def format_alert_message(signals: List["SignalItem"], check_time: str) -> str:
         """
         格式化告警消息
 
@@ -70,21 +73,21 @@ class TelegramNotificationService:
         Returns:
             格式化的 HTML 消息
         """
-        high_priority = [s for s in signals if s.get("priority") == "high"]
-        medium_priority = [s for s in signals if s.get("priority") == "medium"]
+        high_priority = [s for s in signals if s.priority == "high"]
+        medium_priority = [s for s in signals if s.priority == "medium"]
 
         lines = [f"📊 <b>ETF 信号提醒</b> ({check_time})", ""]
 
         if high_priority:
             lines.append("🔥 <b>高优先级:</b>")
             for s in high_priority:
-                lines.append(f"• {s['etf_code']} {s['etf_name']}: {s['signal_detail']}")
+                lines.append(f"• {s.etf_code} {s.etf_name}: {s.signal_detail}")
             lines.append("")
 
         if medium_priority:
             lines.append("📈 <b>中优先级:</b>")
             for s in medium_priority:
-                lines.append(f"• {s['etf_code']} {s['etf_name']}: {s['signal_detail']}")
+                lines.append(f"• {s.etf_code} {s.etf_name}: {s.signal_detail}")
             lines.append("")
 
         lines.append(f"共 {len(signals)} 个信号")

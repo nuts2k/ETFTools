@@ -37,6 +37,7 @@ export default function AlertsSettingsPage() {
     enabled: true,
     temperature_change: true,
     extreme_temperature: true,
+    rsi_signal: true,
     ma_crossover: true,
     ma_alignment: true,
     weekly_signal: true,
@@ -198,6 +199,22 @@ export default function AlertsSettingsPage() {
                 onChange={(v) =>
                   setConfig({ ...config, extreme_temperature: v })
                 }
+              />
+            </div>
+
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-5 w-5 text-cyan-500" />
+                <div>
+                  <span className="text-base">RSI 超买超卖</span>
+                  <p className="text-xs text-muted-foreground">
+                    RSI &gt; 70 或 &lt; 30
+                  </p>
+                </div>
+              </div>
+              <Toggle
+                checked={config.rsi_signal}
+                onChange={(v) => setConfig({ ...config, rsi_signal: v })}
               />
             </div>
 

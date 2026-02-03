@@ -162,6 +162,7 @@ export interface AlertConfig {
   enabled: boolean;
   temperature_change: boolean;
   extreme_temperature: boolean;
+  rsi_signal: boolean;
   ma_crossover: boolean;
   ma_alignment: boolean;
   weekly_signal: boolean;

@@ -22,6 +22,7 @@ class AlertConfigRequest(BaseModel):
     enabled: bool = True
     temperature_change: bool = True
     extreme_temperature: bool = True
+    rsi_signal: bool = True
     ma_crossover: bool = True
     ma_alignment: bool = True
     weekly_signal: bool = True
@@ -33,6 +34,7 @@ class AlertConfigResponse(BaseModel):
     enabled: bool
     temperature_change: bool
     extreme_temperature: bool
+    rsi_signal: bool
     ma_crossover: bool
     ma_alignment: bool
     weekly_signal: bool

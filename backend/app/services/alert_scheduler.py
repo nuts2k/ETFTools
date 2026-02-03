@@ -180,38 +180,14 @@ class AlertScheduler:
         bot_token = decrypt_token(telegram_config["botToken"], settings.SECRET_KEY)
         chat_id = telegram_config["chatId"]
 
-        message = self._format_message(signals)
+        now = datetime.now().strftime("%H:%M")
+        message = TelegramNotificationService.format_alert_message(signals, now)
 
         try:
             await TelegramNotificationService.send_message(bot_token, chat_id, message)
             logger.info(f"Sent {len(signals)} alerts to user {user.id}")
         except Exception as e:
             logger.error(f"Failed to send alert to user {user.id}: {e}")
-
-    def _format_message(self, signals: List[SignalItem]) -> str:
-        """格式化告警消息"""
-        now = datetime.now().strftime("%H:%M")
-
-        high_priority = [s for s in signals if s.priority == "high"]
-        medium_priority = [s for s in signals if s.priority == "medium"]
-
-        lines = [f"📊 <b>ETF 信号提醒</b> ({now})", ""]
-
-        if high_priority:
-            lines.append("🔥 <b>高优先级:</b>")
-            for s in high_priority:
-                lines.append(f"• {s.etf_code} {s.etf_name}: {s.signal_detail}")
-            lines.append("")
-
-        if medium_priority:
-            lines.append("📈 <b>中优先级:</b>")
-            for s in medium_priority:
-                lines.append(f"• {s.etf_code} {s.etf_name}: {s.signal_detail}")
-            lines.append("")
-
-        lines.append(f"共 {len(signals)} 个信号")
-
-        return "\n".join(lines)
 
     async def trigger_check(self, user_id: int) -> dict:
         """手动触发检查（用于测试）"""

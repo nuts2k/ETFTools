@@ -76,7 +76,7 @@ class AlertService:
                 ))
 
         # RSI 超买超卖
-        if rsi is not None:
+        if prefs.rsi_signal and rsi is not None:
             prev_rsi = previous.rsi_value if previous else None
             if rsi > 70 and (prev_rsi is None or prev_rsi <= 70):
                 signals.append(SignalItem(
