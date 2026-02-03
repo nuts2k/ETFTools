@@ -4,6 +4,7 @@
 使用 APScheduler 管理定时任务
 """
 
+import asyncio
 import logging
 from datetime import datetime
 from typing import List, Optional
@@ -63,8 +64,16 @@ class AlertScheduler:
         logger.info("Running daily alert check...")
 
         with Session(engine) as session:
-            # 获取所有启用告警的用户
-            users = session.exec(select(User)).all()
+            # 获取所有用户，在内存中过滤启用告警的用户
+            # 注：SQLite JSON 查询支持有限，使用内存过滤
+            all_users = session.exec(select(User)).all()
+            users = [
+                u for u in all_users
+                if (u.settings or {}).get("alerts", {}).get("enabled", True)
+                and (u.settings or {}).get("telegram", {}).get("enabled")
+                and (u.settings or {}).get("telegram", {}).get("verified")
+            ]
+            logger.info(f"Found {len(users)} users with alerts enabled")
 
             for user in users:
                 try:
@@ -96,6 +105,13 @@ class AlertScheduler:
 
         all_signals: List[SignalItem] = []
 
+        # 检查今日已发送数量
+        sent_count = alert_state_service.get_daily_sent_count(user.id)
+        remaining = prefs.max_alerts_per_day - sent_count
+        if remaining <= 0:
+            logger.info(f"User {user.id} reached daily alert limit")
+            return
+
         for item in watchlist:
             try:
                 signals = await self._check_etf_signals(
@@ -105,9 +121,15 @@ class AlertScheduler:
             except Exception as e:
                 logger.error(f"Error checking ETF {item.etf_code}: {e}")
 
-        # 发送合并消息
+        # 发送合并消息（限制数量）
         if all_signals:
-            await self._send_alert_message(user, telegram_config, all_signals)
+            # 截断到剩余配额
+            signals_to_send = all_signals[:remaining]
+            if len(all_signals) > remaining:
+                logger.info(
+                    f"User {user.id}: truncated {len(all_signals)} signals to {remaining}"
+                )
+            await self._send_alert_message(user, telegram_config, signals_to_send)
 
     async def _check_etf_signals(
         self,
@@ -117,33 +139,34 @@ class AlertScheduler:
         prefs: UserAlertPreferences,
     ) -> List[SignalItem]:
         """检查单个 ETF 的信号"""
-        # 获取历史数据
-        df = ak_service.fetch_etf_history(etf_code)
+        # 获取历史数据（使用 asyncio.to_thread 避免阻塞事件循环）
+        df = await asyncio.to_thread(ak_service.fetch_etf_history, etf_code)
         if df is None or df.empty:
             return []
 
-        # 计算指标
-        metrics = {
-            "temperature": temperature_service.calculate_temperature(df),
-            "daily_trend": trend_service.get_daily_trend(df),
-            "weekly_trend": trend_service.get_weekly_trend(df),
-        }
+        # 计算指标（同样使用线程池）
+        def compute_metrics():
+            return {
+                "temperature": temperature_service.calculate_temperature(df),
+                "daily_trend": trend_service.get_daily_trend(df),
+                "weekly_trend": trend_service.get_weekly_trend(df),
+            }
+        metrics = await asyncio.to_thread(compute_metrics)
 
         # 检测信号
         signals = alert_service.detect_signals(
             user_id, etf_code, etf_name, metrics, prefs
         )
 
-        # 更新状态
-        if signals:
-            state = alert_service.build_current_state(etf_code, metrics)
-            alert_state_service.save_state(user_id, state)
+        # 无论是否有信号都更新状态（避免下次重复检测相同变化）
+        state = alert_service.build_current_state(etf_code, metrics)
+        alert_state_service.save_state(user_id, state)
 
-            # 标记信号已发送
-            for signal in signals:
-                alert_state_service.mark_signal_sent(
-                    user_id, etf_code, signal.signal_type
-                )
+        # 标记信号已发送
+        for signal in signals:
+            alert_state_service.mark_signal_sent(
+                user_id, etf_code, signal.signal_type
+            )
 
         return signals
 
