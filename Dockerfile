@@ -14,6 +14,9 @@ RUN npm ci --only=production
 # 复制前端源码
 COPY frontend/ ./
 
+# 设置前端环境变量（Docker 环境使用相对路径通过 Nginx 代理）
+ENV NEXT_PUBLIC_API_URL=/api/v1
+
 # 构建 Next.js（standalone 模式）
 RUN npm run build
 
