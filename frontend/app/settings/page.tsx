@@ -179,6 +179,16 @@ export default function SettingsPage() {
               </div>
               <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
             </Link>
+            <Link
+              href="/settings/alerts"
+              className="flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
+            >
+              <div>
+                <p className="font-medium">信号通知</p>
+                <p className="text-xs text-muted-foreground">配置 ETF 指标变化提醒</p>
+              </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+            </Link>
           </div>
         </section>
 
