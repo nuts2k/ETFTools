@@ -7,7 +7,7 @@
 import asyncio
 import logging
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -60,115 +60,151 @@ class AlertScheduler:
             logger.info("Alert scheduler stopped")
 
     async def _run_daily_check(self) -> None:
-        """执行每日告警检查"""
-        logger.info("Running daily alert check...")
+        """执行告警检查（优化版：按 ETF 去重）"""
+        logger.info("Running alert check...")
 
         with Session(engine) as session:
-            # 获取所有用户，在内存中过滤启用告警的用户
-            # 注：SQLite JSON 查询支持有限，使用内存过滤
-            all_users = session.exec(select(User)).all()
-            users = [
-                u for u in all_users
-                if (u.settings or {}).get("alerts", {}).get("enabled", True)
-                and (u.settings or {}).get("telegram", {}).get("enabled")
-                and (u.settings or {}).get("telegram", {}).get("verified")
-            ]
-            logger.info(f"Found {len(users)} users with alerts enabled")
+            # 步骤 1: 收集所有需要检查的 ETF 及其关联用户
+            etf_users_map = self._collect_etf_users(session)
 
-            for user in users:
+            if not etf_users_map:
+                logger.info("No ETFs to check")
+                return
+
+            logger.info(f"Checking {len(etf_users_map)} unique ETFs for alerts")
+
+            # 步骤 2: 为每个用户收集信号
+            user_signals_map: Dict[int, List[SignalItem]] = {}
+
+            for etf_code, users_data in etf_users_map.items():
                 try:
-                    await self._check_user_alerts(session, user)
+                    # 获取 ETF 数据并计算指标（每个 ETF 只计算一次）
+                    df = await asyncio.to_thread(ak_service.fetch_etf_history, etf_code)
+                    if df is None or df.empty:
+                        logger.warning(f"No data for ETF {etf_code}")
+                        continue
+
+                    # 计算所有指标（只计算一次）
+                    def compute_metrics():
+                        return {
+                            "temperature": temperature_service.calculate_temperature(df),
+                            "daily_trend": trend_service.get_daily_trend(df),
+                            "weekly_trend": trend_service.get_weekly_trend(df),
+                        }
+                    metrics = await asyncio.to_thread(compute_metrics)
+
+                    # 为每个用户检测信号
+                    for user_data in users_data:
+                        user_id = user_data["user"].id
+                        signals = alert_service.detect_signals(
+                            user_id=user_id,
+                            etf_code=etf_code,
+                            etf_name=user_data["etf_name"],
+                            current_metrics=metrics,
+                            prefs=user_data["prefs"],
+                        )
+
+                        if signals:
+                            # 更新状态
+                            state = alert_service.build_current_state(etf_code, metrics)
+                            alert_state_service.save_state(user_id, state)
+
+                            # 标记信号已发送
+                            for signal in signals:
+                                alert_state_service.mark_signal_sent(
+                                    user_id, etf_code, signal.signal_type
+                                )
+
+                            # 收集信号
+                            if user_id not in user_signals_map:
+                                user_signals_map[user_id] = []
+                            user_signals_map[user_id].extend(signals)
+
                 except Exception as e:
-                    logger.error(f"Error checking alerts for user {user.id}: {e}")
+                    logger.error(f"Error processing ETF {etf_code}: {e}")
+                    continue
 
-    async def _check_user_alerts(self, session: Session, user: User) -> None:
-        """检查单个用户的告警"""
-        # 获取用户告警配置
-        alert_settings = (user.settings or {}).get("alerts", {})
-        prefs = UserAlertPreferences(**alert_settings)
+            # 步骤 3: 为每个用户发送合并消息
+            for user_id, signals in user_signals_map.items():
+                try:
+                    # 从 etf_users_map 中找到用户信息
+                    user_info = self._find_user_info(etf_users_map, user_id)
+                    if user_info:
+                        await self._send_alert_message(
+                            user_info["user"],
+                            user_info["telegram_config"],
+                            signals,
+                        )
+                        logger.info(f"Sent {len(signals)} alerts to user {user_id}")
+                except Exception as e:
+                    logger.error(f"Error sending message to user {user_id}: {e}")
 
-        if not prefs.enabled:
-            return
+    def _collect_etf_users(self, session: Session) -> Dict[str, List[Dict]]:
+        """
+        收集所有需要检查的 ETF 及其关联用户
 
-        # 检查 Telegram 配置
-        telegram_config = (user.settings or {}).get("telegram", {})
-        if not telegram_config.get("enabled") or not telegram_config.get("verified"):
-            return
-
-        # 获取用户自选股
-        watchlist = session.exec(
-            select(Watchlist).where(Watchlist.user_id == user.id)
-        ).all()
-
-        if not watchlist:
-            return
-
-        all_signals: List[SignalItem] = []
-
-        # 检查今日已发送数量
-        sent_count = alert_state_service.get_daily_sent_count(user.id)
-        remaining = prefs.max_alerts_per_day - sent_count
-        if remaining <= 0:
-            logger.info(f"User {user.id} reached daily alert limit")
-            return
-
-        for item in watchlist:
-            try:
-                signals = await self._check_etf_signals(
-                    user.id, item.etf_code, item.etf_name or item.etf_code, prefs
-                )
-                all_signals.extend(signals)
-            except Exception as e:
-                logger.error(f"Error checking ETF {item.etf_code}: {e}")
-
-        # 发送合并消息（限制数量）
-        if all_signals:
-            # 截断到剩余配额
-            signals_to_send = all_signals[:remaining]
-            if len(all_signals) > remaining:
-                logger.info(
-                    f"User {user.id}: truncated {len(all_signals)} signals to {remaining}"
-                )
-            await self._send_alert_message(user, telegram_config, signals_to_send)
-
-    async def _check_etf_signals(
-        self,
-        user_id: int,
-        etf_code: str,
-        etf_name: str,
-        prefs: UserAlertPreferences,
-    ) -> List[SignalItem]:
-        """检查单个 ETF 的信号"""
-        # 获取历史数据（使用 asyncio.to_thread 避免阻塞事件循环）
-        df = await asyncio.to_thread(ak_service.fetch_etf_history, etf_code)
-        if df is None or df.empty:
-            return []
-
-        # 计算指标（同样使用线程池）
-        def compute_metrics():
-            return {
-                "temperature": temperature_service.calculate_temperature(df),
-                "daily_trend": trend_service.get_daily_trend(df),
-                "weekly_trend": trend_service.get_weekly_trend(df),
+        Returns:
+            {
+                "510300": [
+                    {"user": User对象, "etf_name": "沪深300ETF", "prefs": UserAlertPreferences对象, "telegram_config": dict},
+                    ...
+                ],
+                "510500": [...]
             }
-        metrics = await asyncio.to_thread(compute_metrics)
+        """
+        etf_users_map: Dict[str, List[Dict]] = {}
 
-        # 检测信号
-        signals = alert_service.detect_signals(
-            user_id, etf_code, etf_name, metrics, prefs
-        )
+        # 获取所有用户
+        users = session.exec(select(User)).all()
 
-        # 无论是否有信号都更新状态（避免下次重复检测相同变化）
-        state = alert_service.build_current_state(etf_code, metrics)
-        alert_state_service.save_state(user_id, state)
+        for user in users:
+            # 获取用户告警配置
+            alert_settings = (user.settings or {}).get("alerts", {})
+            prefs = UserAlertPreferences(**alert_settings)
 
-        # 标记信号已发送
-        for signal in signals:
-            alert_state_service.mark_signal_sent(
-                user_id, etf_code, signal.signal_type
-            )
+            if not prefs.enabled:
+                continue
 
-        return signals
+            # 检查 Telegram 配置
+            telegram_config = (user.settings or {}).get("telegram", {})
+            if not telegram_config.get("enabled") or not telegram_config.get("verified"):
+                continue
+
+            # 获取用户自选股
+            watchlist = session.exec(
+                select(Watchlist).where(Watchlist.user_id == user.id)
+            ).all()
+
+            if not watchlist:
+                continue
+
+            for item in watchlist:
+                etf_code = item.etf_code
+
+                if etf_code not in etf_users_map:
+                    etf_users_map[etf_code] = []
+
+                etf_users_map[etf_code].append({
+                    "user": user,
+                    "etf_name": item.etf_name or etf_code,
+                    "prefs": prefs,
+                    "telegram_config": telegram_config,
+                })
+
+        return etf_users_map
+
+    def _find_user_info(
+        self,
+        etf_users_map: Dict[str, List[Dict]],
+        user_id: int
+    ) -> Optional[Dict]:
+        """从 ETF-用户映射中找到用户信息"""
+        for users_data in etf_users_map.values():
+            for user_data in users_data:
+                if user_data["user"].id == user_id:
+                    return user_data
+        return None
+
 
     async def _send_alert_message(
         self,
