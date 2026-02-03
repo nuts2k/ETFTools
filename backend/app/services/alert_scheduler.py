@@ -143,13 +143,29 @@ class AlertScheduler:
                 try:
                     # 从 etf_users_map 中找到用户信息
                     user_info = self._find_user_info(etf_users_map, user_id)
-                    if user_info:
-                        await self._send_alert_message(
-                            user_info["user"],
-                            user_info["telegram_config"],
-                            signals,
-                        )
-                        logger.info(f"Sent {len(signals)} alerts to user {user_id}")
+                    if not user_info:
+                        continue
+
+                    # 检查每日告警数量限制
+                    prefs = user_info["prefs"]
+                    sent_count = alert_state_service.get_daily_sent_count(user_id)
+                    remaining = prefs.max_alerts_per_day - sent_count
+
+                    if remaining <= 0:
+                        logger.info(f"User {user_id} reached daily alert limit ({sent_count} sent)")
+                        continue
+
+                    # 如果信号数量超过剩余配额，则截断
+                    signals_to_send = signals[:remaining]
+                    if len(signals) > remaining:
+                        logger.info(f"User {user_id}: truncated {len(signals)} signals to {remaining}")
+
+                    await self._send_alert_message(
+                        user_info["user"],
+                        user_info["telegram_config"],
+                        signals_to_send,
+                    )
+                    logger.info(f"Sent {len(signals_to_send)} alerts to user {user_id}")
                 except Exception as e:
                     logger.error(f"Error sending message to user {user_id}: {e}")
 
@@ -239,18 +255,14 @@ class AlertScheduler:
         except Exception as e:
             logger.error(f"Failed to send alert to user {user.id}: {e}")
 
-    async def trigger_check(self, user_id: int) -> dict:
+    async def trigger_check(self) -> dict:
         """手动触发检查（用于测试）"""
-        with Session(engine) as session:
-            user = session.get(User, user_id)
-            if not user:
-                return {"success": False, "message": "用户不存在"}
-
-            try:
-                await self._check_user_alerts(session, user)
-                return {"success": True, "message": "检查完成"}
-            except Exception as e:
-                return {"success": False, "message": str(e)}
+        try:
+            await self._run_daily_check()
+            return {"success": True, "message": "检查完成"}
+        except Exception as e:
+            logger.error(f"Manual trigger failed: {e}")
+            return {"success": False, "message": str(e)}
 
 
 # 全局单例
