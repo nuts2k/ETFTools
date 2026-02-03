@@ -157,6 +157,17 @@ export interface TelegramConfig {
   lastTestAt?: string | null;
 }
 
+// 告警配置类型
+export interface AlertConfig {
+  enabled: boolean;
+  temperature_change: boolean;
+  extreme_temperature: boolean;
+  ma_crossover: boolean;
+  ma_alignment: boolean;
+  weekly_signal: boolean;
+  max_alerts_per_day: number;
+}
+
 // Telegram 配置相关 API
 export async function getTelegramConfig(token: string) {
   const response = await fetch(`${API_BASE_URL}/notifications/telegram/config`, {
@@ -208,6 +219,51 @@ export async function deleteTelegramConfig(token: string) {
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: '删除配置失败' }));
     throw new Error(error.detail || '删除配置失败');
+  }
+  return response.json();
+}
+
+// 告警配置相关 API
+export async function getAlertConfig(token: string): Promise<AlertConfig> {
+  const response = await fetch(`${API_BASE_URL}/alerts/config`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: '获取配置失败' }));
+    throw new Error(error.detail || '获取配置失败');
+  }
+  return response.json();
+}
+
+export async function saveAlertConfig(
+  token: string,
+  config: AlertConfig
+): Promise<{ message: string }> {
+  const response = await fetch(`${API_BASE_URL}/alerts/config`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(config)
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: '保存配置失败' }));
+    throw new Error(error.detail || '保存配置失败');
+  }
+  return response.json();
+}
+
+export async function triggerAlertCheck(
+  token: string
+): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE_URL}/alerts/trigger`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: '触发检查失败' }));
+    throw new Error(error.detail || '触发检查失败');
   }
   return response.json();
 }
