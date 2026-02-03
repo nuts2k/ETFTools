@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.core.cache import etf_cache
 from app.core.database import create_db_and_tables
 from app.services.akshare_service import ak_service
+from app.services.alert_scheduler import alert_scheduler
 from app.api.v1.api import api_router
 from app.middleware.rate_limit import limiter, rate_limit_handler
 from slowapi.errors import RateLimitExceeded
@@ -37,10 +38,16 @@ async def lifespan(app: FastAPI):
     thread = threading.Thread(target=load_initial_data)
     thread.daemon = True
     thread.start()
-    
+
+    # 启动告警调度器
+    alert_scheduler.start()
+    logger.info("Alert scheduler started.")
+
     yield
-    
+
     # Shutdown
+    alert_scheduler.stop()
+    logger.info("Alert scheduler stopped.")
     logger.info("Application shutting down...")
 
 app = FastAPI(
