@@ -11,6 +11,7 @@ from typing import Optional, List, Dict, Any
 from app.models.alert_config import (
     ETFAlertState,
     SignalItem,
+    SignalPriority,
     UserAlertPreferences,
 )
 from app.services.temperature_service import temperature_service
@@ -53,7 +54,7 @@ class AlertService:
                     etf_name=etf_name,
                     signal_type="temperature_change",
                     signal_detail=f"温度 {previous.temperature_level} → {curr_level}",
-                    priority="high",
+                    priority=SignalPriority.HIGH,
                 ))
 
         # 极端温度
@@ -64,7 +65,7 @@ class AlertService:
                     etf_name=etf_name,
                     signal_type="extreme_temperature",
                     signal_detail=f"进入冰点区域 (温度={curr_score})",
-                    priority="high",
+                    priority=SignalPriority.HIGH,
                 ))
             elif curr_level == "hot" and (not previous or previous.temperature_level != "hot"):
                 signals.append(SignalItem(
@@ -72,7 +73,7 @@ class AlertService:
                     etf_name=etf_name,
                     signal_type="extreme_temperature",
                     signal_detail=f"进入过热区域 (温度={curr_score})",
-                    priority="high",
+                    priority=SignalPriority.HIGH,
                 ))
 
         # RSI 超买超卖
@@ -84,7 +85,7 @@ class AlertService:
                     etf_name=etf_name,
                     signal_type="rsi_overbought",
                     signal_detail=f"RSI 超买 ({rsi:.1f})",
-                    priority="medium",
+                    priority=SignalPriority.MEDIUM,
                 ))
             elif rsi < 30 and (prev_rsi is None or prev_rsi >= 30):
                 signals.append(SignalItem(
@@ -92,7 +93,7 @@ class AlertService:
                     etf_name=etf_name,
                     signal_type="rsi_oversold",
                     signal_detail=f"RSI 超卖 ({rsi:.1f})",
-                    priority="medium",
+                    priority=SignalPriority.MEDIUM,
                 ))
 
         return signals
@@ -122,7 +123,7 @@ class AlertService:
                         etf_name=etf_name,
                         signal_type=f"ma_cross_up_{ma_key}",
                         signal_detail=f"上穿 {ma_label}",
-                        priority="high" if ma_key == "ma60" else "medium",
+                        priority=SignalPriority.HIGH if ma_key == "ma60" else SignalPriority.MEDIUM,
                     ))
                 elif position == "crossing_down":
                     signals.append(SignalItem(
@@ -130,7 +131,7 @@ class AlertService:
                         etf_name=etf_name,
                         signal_type=f"ma_cross_down_{ma_key}",
                         signal_detail=f"下穿 {ma_label}",
-                        priority="high" if ma_key == "ma60" else "medium",
+                        priority=SignalPriority.HIGH if ma_key == "ma60" else SignalPriority.MEDIUM,
                     ))
 
         # 均线排列变化
@@ -143,7 +144,7 @@ class AlertService:
                         etf_name=etf_name,
                         signal_type="ma_alignment_bullish",
                         signal_detail="均线多头排列形成",
-                        priority="medium",
+                        priority=SignalPriority.MEDIUM,
                     ))
                 elif curr_align == "bearish":
                     signals.append(SignalItem(
@@ -151,7 +152,7 @@ class AlertService:
                         etf_name=etf_name,
                         signal_type="ma_alignment_bearish",
                         signal_detail="均线空头排列形成",
-                        priority="medium",
+                        priority=SignalPriority.MEDIUM,
                     ))
 
         return signals
@@ -185,7 +186,7 @@ class AlertService:
                         etf_name=etf_name,
                         signal_type="weekly_trend_bullish",
                         signal_detail="周线空转多",
-                        priority="high",
+                        priority=SignalPriority.HIGH,
                     ))
                 elif curr_status == "bearish" and previous.weekly_alignment == "bullish":
                     signals.append(SignalItem(
@@ -193,7 +194,7 @@ class AlertService:
                         etf_name=etf_name,
                         signal_type="weekly_trend_bearish",
                         signal_detail="周线多转空",
-                        priority="high",
+                        priority=SignalPriority.HIGH,
                     ))
 
         return signals

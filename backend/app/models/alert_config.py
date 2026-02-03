@@ -4,9 +4,41 @@
 定义全局调度配置和用户告警偏好
 """
 
-from pydantic import BaseModel, Field
+import re
+from enum import Enum
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import datetime
+
+
+class TemperatureLevel(str, Enum):
+    """温度等级"""
+    FREEZING = "freezing"
+    COOL = "cool"
+    WARM = "warm"
+    HOT = "hot"
+
+
+class MAAlignment(str, Enum):
+    """均线排列状态"""
+    BULLISH = "bullish"
+    BEARISH = "bearish"
+    MIXED = "mixed"
+
+
+class MAPosition(str, Enum):
+    """均线位置状态"""
+    ABOVE = "above"
+    BELOW = "below"
+    CROSSING_UP = "crossing_up"
+    CROSSING_DOWN = "crossing_down"
+
+
+class SignalPriority(str, Enum):
+    """信号优先级"""
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
 
 
 class AlertScheduleConfig(BaseModel):
@@ -23,6 +55,14 @@ class AlertScheduleConfig(BaseModel):
 
     # 交易日判断
     skip_weekends: bool = True
+
+    @field_validator('intraday_start_time', 'intraday_end_time', 'daily_summary_time')
+    @classmethod
+    def validate_time_format(cls, v: str) -> str:
+        """验证时间格式 HH:MM"""
+        if not re.match(r'^([01]\d|2[0-3]):[0-5]\d$', v):
+            raise ValueError(f'时间格式错误，应为 HH:MM: {v}')
+        return v
 
 
 class UserAlertPreferences(BaseModel):
@@ -47,18 +87,18 @@ class ETFAlertState(BaseModel):
     last_check_time: datetime
 
     # 温度计状态
-    temperature_level: Optional[str] = None  # freezing/cool/warm/hot
+    temperature_level: Optional[TemperatureLevel] = None
     temperature_score: Optional[float] = None
     rsi_value: Optional[float] = None
 
     # 日线均线状态
-    ma5_position: Optional[str] = None   # above/below/crossing_up/crossing_down
-    ma20_position: Optional[str] = None
-    ma60_position: Optional[str] = None
-    ma_alignment: Optional[str] = None   # bullish/bearish/mixed
+    ma5_position: Optional[MAPosition] = None
+    ma20_position: Optional[MAPosition] = None
+    ma60_position: Optional[MAPosition] = None
+    ma_alignment: Optional[MAAlignment] = None
 
     # 周线状态
-    weekly_alignment: Optional[str] = None  # bullish/bearish/mixed
+    weekly_alignment: Optional[MAAlignment] = None
 
 
 class SignalItem(BaseModel):
@@ -67,7 +107,7 @@ class SignalItem(BaseModel):
     etf_name: str
     signal_type: str       # temperature_change, ma_crossover, etc.
     signal_detail: str     # 具体描述
-    priority: str          # high, medium, low
+    priority: SignalPriority
 
 
 class AlertMessage(BaseModel):

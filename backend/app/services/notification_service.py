@@ -11,6 +11,8 @@ from typing import Dict, Any, List, TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.alert_config import SignalItem
 
+from app.models.alert_config import SignalPriority
+
 
 class TelegramNotificationService:
     """Telegram 通知服务"""
@@ -73,8 +75,8 @@ class TelegramNotificationService:
         Returns:
             格式化的 HTML 消息
         """
-        high_priority = [s for s in signals if s.priority == "high"]
-        medium_priority = [s for s in signals if s.priority == "medium"]
+        high_priority = [s for s in signals if s.priority == SignalPriority.HIGH]
+        medium_priority = [s for s in signals if s.priority == SignalPriority.MEDIUM]
 
         lines = [f"📊 <b>ETF 信号提醒</b> ({check_time})", ""]
 
