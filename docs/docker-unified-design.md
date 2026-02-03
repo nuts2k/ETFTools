@@ -17,6 +17,7 @@
 | 2.0 | 2026-02-02 23:30 | 新增 Nginx 反向代理优势分析、CORS 环境感知配置、完善 Docker Compose 配置 |
 | 2.1 | 2026-02-03 | 更新架构图和配置，反映 Next.js standalone 模式需要 Node.js 服务器（非静态文件） |
 | 2.2 | 2026-02-03 | 新增 ENCRYPTION_SALT 配置项，用于加密敏感信息 |
+| 2.3 | 2026-02-03 | 新增告警通知系统说明，包括 Telegram 通知和 APScheduler 调度器 |
 
 ---
 
@@ -73,11 +74,14 @@
 │  │  Port 3001  │   │  Port 8000  │    │
 │  └─────────────┘   └──────┬──────┘    │
 │                            │           │
-│                            ▼           │
-│                    ┌──────────────┐   │
-│                    │  SQLite DB   │   │
-│                    │  + Cache     │   │
-│                    └──────────────┘   │
+│                     ┌──────┴──────┐   │
+│                     │             │   │
+│                     ▼             ▼   │
+│            ┌──────────────┐  ┌────────────┐
+│            │  SQLite DB   │  │  Alert     │
+│            │  + Cache     │  │  Scheduler │
+│            └──────────────┘  │ (APScheduler)│
+│                              └────────────┘
 │                                        │
 └────────────────────────────────────────┘
          │
@@ -92,6 +96,7 @@
 4. API 请求 (`/api/*`) → 反向代理到 FastAPI (localhost:8000)
 5. 页面请求 (`/*`) → 反向代理到 Next.js Server (localhost:3001)
 6. FastAPI 处理业务逻辑，访问 SQLite 数据库
+7. Alert Scheduler 定时触发告警检查（每天 15:30，周一至周五）
 
 **重要说明：Next.js Standalone 模式**
 - Next.js standalone 输出模式生成的是一个 Node.js 服务器，而非纯静态文件
@@ -167,6 +172,8 @@
 - **Supervisor**: 进程管理工具，同时管理 Nginx、Next.js Server 和 uvicorn
 - **uvicorn**: FastAPI ASGI 服务器
 - **Node.js**: 运行 Next.js standalone 服务器（构建阶段和运行时都需要）
+- **APScheduler**: 定时任务调度器，用于告警通知自动触发
+- **python-telegram-bot**: Telegram Bot API 客户端，用于发送告警消息
 
 ### 2.4 多阶段构建策略
 
@@ -486,7 +493,14 @@ ENCRYPTION_SALT=etftool_telegram_salt
 # Docker 生产环境 (.env.docker 文件)
 # 在 docker-compose.yml 中通过 ${SECRET_KEY} 引用
 SECRET_KEY=your-super-secret-key-at-least-32-characters-long
-ENCRYPTION_SALT=etftool_telegram_salt
+ENCRYPTION_SALT=your-random-salt-16-chars
+
+# ENCRYPTION_SALT 说明：
+# - 用途：加密敏感信息（如 Telegram Bot Token）
+# - 要求：随机字符串，建议 16 字符以上
+# - 生成方法：python -c "import secrets; print(secrets.token_urlsafe(16))"
+# - 重要性：生产环境强烈建议修改默认值
+# - 注意：更改此值会导致已加密的数据无法解密，需重新配置
 ```
 
 **优势：**
@@ -1290,6 +1304,38 @@ data/
 - Next.js standalone 模式 = Node.js 服务器 + 静态资源，而非纯静态 HTML
 - 需要同时运行 3 个进程：Nginx、Next.js Server、FastAPI
 - Nginx 作为统一入口，代理到后端服务
+
+### v2.3 (2026-02-03)
+
+**告警通知系统：**
+1. **新增功能**
+   - Telegram 通知服务集成
+   - APScheduler 定时任务调度器
+   - 告警自动触发（每天 15:30，周一至周五）
+   - Telegram Bot Token 加密存储（Fernet）
+
+2. **依赖更新**
+   - 添加 `python-telegram-bot==21.0`
+   - 添加 `apscheduler==3.10.4`
+   - 添加 `cryptography` (Fernet 加密)
+
+3. **环境变量**
+   - 新增 `ENCRYPTION_SALT` 配置项
+   - 用于加密 Telegram Bot Token 等敏感信息
+   - 默认值：`etftool_telegram_salt`（生产环境建议修改）
+
+4. **架构更新**
+   - FastAPI 集成 Alert Scheduler
+   - 调度器在应用启动时自动初始化
+   - 支持手动触发和自动调度两种模式
+
+5. **API 端点**
+   - `/api/v1/notifications/telegram/*` - Telegram 配置管理
+   - `/api/v1/alerts/*` - 告警配置管理
+
+6. **网络要求**
+   - 容器需要访问 `api.telegram.org`
+   - 如使用代理，需配置相应环境变量
 
 ### v1.0 (2026-02-02)
 

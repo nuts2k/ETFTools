@@ -29,19 +29,23 @@ mkdir -p data/cache data/logs
 # 2. 生成 SECRET_KEY（必需）
 python -c "import secrets; print(secrets.token_urlsafe(32))"
 
-# 3. 创建环境变量文件
+# 3. 生成 ENCRYPTION_SALT（推荐）
+python -c "import secrets; print(secrets.token_urlsafe(16))"
+
+# 4. 创建环境变量文件
 cat > .env.docker <<EOF
 SECRET_KEY=your-generated-secret-key-here
+ENCRYPTION_SALT=your-generated-salt-here
 ENABLE_RATE_LIMIT=true
 EOF
 
-# 4. 启动服务
+# 5. 启动服务
 docker-compose up -d
 
-# 5. 查看日志
+# 6. 查看日志
 docker-compose logs -f
 
-# 6. 访问应用
+# 7. 访问应用
 # 浏览器打开: http://localhost:3000
 ```
 
@@ -128,6 +132,7 @@ docker run -d \
 | `CACHE_DIR` | 缓存目录 | `/app/backend/cache` | `/app/backend/cache` |
 | `CACHE_TTL` | 缓存过期时间（秒） | `3600` | `3600` |
 | `ENABLE_RATE_LIMIT` | 启用速率限制 | `false` | `true` |
+| `ENCRYPTION_SALT` | 加密 Salt（用于 Telegram Token 加密） | `etftool_telegram_salt` | `your-random-salt-16-chars` |
 
 ### 生成 SECRET_KEY
 
@@ -593,6 +598,97 @@ docker run -d \
   \
   etftool:latest
 ```
+
+---
+
+## 告警通知功能
+
+ETFTool 支持通过 Telegram 发送 ETF 信号告警通知。
+
+### 功能说明
+
+- **自动调度**: 每天 15:30（周一至周五）自动检查并发送告警
+- **手动触发**: 支持通过 API 手动触发告警检查
+- **加密存储**: Telegram Bot Token 使用 Fernet 加密存储
+- **优先级过滤**: 支持按信号优先级（HIGH/MEDIUM/LOW）过滤
+
+### 配置步骤
+
+1. **创建 Telegram Bot**
+   ```bash
+   # 1. 在 Telegram 中搜索 @BotFather
+   # 2. 发送 /newbot 创建新 Bot
+   # 3. 获取 Bot Token（格式: 123456789:ABCdefGHIjklMNOpqrsTUVwxyz）
+   ```
+
+2. **获取 Chat ID**
+   ```bash
+   # 1. 在 Telegram 中搜索你的 Bot 并发送任意消息
+   # 2. 访问: https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
+   # 3. 在返回的 JSON 中找到 "chat":{"id":123456789}
+   ```
+
+3. **在应用中配置**
+   - 登录 ETFTool
+   - 进入"设置" → "告警设置"
+   - 填写 Bot Token 和 Chat ID
+   - 点击"测试连接"验证配置
+   - 保存配置
+
+### 网络要求
+
+- 容器需要能够访问 Telegram API (`api.telegram.org`)
+- 如果使用代理，需要配置相应的环境变量
+
+### 测试连接
+
+```bash
+# 方法 1: 使用 Web UI
+# 在"告警设置"页面点击"测试连接"按钮
+
+# 方法 2: 使用 API
+curl -X POST http://localhost:3000/api/v1/notifications/telegram/test \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json"
+```
+
+### 告警调度
+
+- **调度时间**: 每天 15:30（周一至周五）
+- **时区**: 使用系统时区
+- **调度器**: APScheduler (AsyncIOScheduler)
+- **日志位置**: `/var/log/supervisor/fastapi.log`
+
+### 查看调度日志
+
+```bash
+# 查看 FastAPI 日志（包含调度信息）
+docker exec -it etftool tail -f /var/log/supervisor/fastapi.log
+
+# 查看启动日志
+docker logs etftool | grep "Alert scheduler"
+```
+
+### 故障排查
+
+**问题 1: 无法发送 Telegram 消息**
+- 检查 Bot Token 是否正确
+- 检查 Chat ID 是否正确
+- 确认容器可以访问互联网
+- 查看 FastAPI 日志中的错误信息
+
+**问题 2: 调度器未运行**
+```bash
+# 检查 FastAPI 进程状态
+docker exec -it etftool supervisorctl status fastapi
+
+# 查看启动日志
+docker logs etftool | grep "Alert scheduler"
+```
+
+**问题 3: Token 解密失败**
+- 确认 ENCRYPTION_SALT 环境变量已设置
+- 如果更改了 ENCRYPTION_SALT，需要重新配置 Telegram
 
 ---
 
