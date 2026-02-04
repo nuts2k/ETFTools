@@ -60,7 +60,10 @@ frontend/.env.production.local
 # Backend runtime files
 backend/.cache/
 backend/etf_tool.db
+backend/etftool.db
 backend/*.db
+data/etftool.db
+data/*.db
 .cache/
 
 # AI Agent configurations (local development)
