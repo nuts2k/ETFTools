@@ -118,11 +118,11 @@ class AlertScheduler:
                             prefs=user_data["prefs"],
                         )
 
-                        if signals:
-                            # 更新状态
-                            state = alert_service.build_current_state(etf_code, metrics)
-                            alert_state_service.save_state(user_id, state)
+                        # 无论是否有信号都更新状态（避免下次重复检测相同变化）
+                        state = alert_service.build_current_state(etf_code, metrics)
+                        alert_state_service.save_state(user_id, state)
 
+                        if signals:
                             # 标记信号已发送
                             for signal in signals:
                                 alert_state_service.mark_signal_sent(
