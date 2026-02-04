@@ -23,8 +23,9 @@
 ### 使用 Docker Compose（推荐）
 
 ```bash
-# 1. 创建数据目录
+# 1. 创建数据目录和数据库文件
 mkdir -p data/cache data/logs
+touch data/etftool.db
 
 # 2. 生成 SECRET_KEY（必需）
 python -c "import secrets; print(secrets.token_urlsafe(32))"
@@ -49,13 +50,20 @@ docker-compose logs -f
 # 浏览器打开: http://localhost:3000
 ```
 
+> ⚠️ **重要提示**：必须在启动容器前创建 `data/etftool.db` 文件。
+> 如果该文件不存在，Docker 会将其创建为目录，导致容器启动失败并出现 "not a directory" 错误。
+
 ### 使用 Docker 命令
 
 ```bash
-# 1. 构建镜像
+# 1. 创建数据目录和数据库文件
+mkdir -p data/cache data/logs
+touch data/etftool.db
+
+# 2. 构建镜像
 docker build -t etftool:latest .
 
-# 2. 运行容器
+# 3. 运行容器
 docker run -d \
   --name etftool \
   -p 3000:3000 \
@@ -64,7 +72,7 @@ docker run -d \
   -v $(pwd)/data/cache:/app/backend/cache \
   etftool:latest
 
-# 3. 访问应用
+# 4. 访问应用
 # 浏览器打开: http://localhost:3000
 ```
 
@@ -290,8 +298,9 @@ services:
 ### 使用步骤
 
 ```bash
-# 1. 创建数据目录
+# 1. 创建数据目录和数据库文件
 mkdir -p data/cache data/logs
+touch data/etftool.db
 
 # 2. 创建 .env.docker 文件
 cat > .env.docker <<EOF
@@ -335,7 +344,10 @@ data/
 
 ```bash
 mkdir -p data/cache data/logs
+touch data/etftool.db
 ```
+
+> ⚠️ **重要**：必须预先创建 `data/etftool.db` 文件，否则 Docker 会将其创建为目录导致挂载失败。
 
 ### 数据备份
 
@@ -356,6 +368,37 @@ cp data/etftool.db.backup.20260203 data/etftool.db
 # 恢复整个数据目录
 tar -xzf etftool-data-backup-20260203.tar.gz
 ```
+
+### ⚠️ 常见问题：数据库文件被创建为目录
+
+**问题现象**：
+容器启动失败，错误信息包含 "not a directory" 或 "vice-versa"
+
+```
+error mounting "/host_mnt/.../data/etftool.db" to rootfs at "/app/backend/etftool.db":
+not a directory: Are you trying to mount a directory onto a file (or vice-versa)?
+```
+
+**原因**：
+Docker 挂载不存在的文件时会自动创建为目录，导致应用无法正常写入数据库文件。
+
+**解决方法**：
+```bash
+# 1. 停止并删除容器
+docker-compose down
+
+# 2. 删除错误的目录
+rm -rf data/etftool.db
+
+# 3. 创建正确的空文件
+touch data/etftool.db
+
+# 4. 重新启动
+docker-compose up -d
+```
+
+**预防措施**：
+在首次部署时，务必按照快速开始部分的步骤，先创建数据库文件再启动容器。
 
 ---
 
