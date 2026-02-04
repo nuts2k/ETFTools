@@ -78,7 +78,7 @@ class UserAlertPreferences(BaseModel):
     weekly_signal: bool = True           # 周线信号
 
     # 通知频率控制
-    max_alerts_per_day: int = Field(default=20, ge=1, le=100)
+    max_alerts_per_day: int = Field(default=100, ge=1, le=100)
 
 
 class ETFAlertState(BaseModel):

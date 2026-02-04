@@ -73,6 +73,149 @@ class AlertScheduler:
             self._scheduler = None
             logger.info("Alert scheduler stopped")
 
+    async def _fetch_and_compute_etf_metrics(self, etf_code: str) -> Optional[Dict[str, Any]]:
+        """获取 ETF 数据并计算指标
+
+        Args:
+            etf_code: ETF 代码
+
+        Returns:
+            包含 temperature, daily_trend, weekly_trend 的字典，如果获取失败则返回 None
+        """
+        df = await asyncio.to_thread(ak_service.fetch_etf_history, etf_code)
+        if df is None or df.empty:
+            logger.warning(f"No data for ETF {etf_code}")
+            return None
+
+        def compute_metrics():
+            return {
+                "temperature": temperature_service.calculate_temperature(df),
+                "daily_trend": trend_service.get_daily_trend(df),
+                "weekly_trend": trend_service.get_weekly_trend(df),
+            }
+        return await asyncio.to_thread(compute_metrics)
+
+    def _process_user_signals(
+        self,
+        user_id: int,
+        etf_code: str,
+        user_data: Dict[str, Any],
+        metrics: Dict[str, Any]
+    ) -> List[SignalItem]:
+        """检测信号并更新状态
+
+        Args:
+            user_id: 用户 ID
+            etf_code: ETF 代码
+            user_data: 用户数据字典
+            metrics: 计算好的指标
+
+        Returns:
+            检测到的信号列表
+        """
+        signals = alert_service.detect_signals(
+            user_id=user_id,
+            etf_code=etf_code,
+            etf_name=user_data["etf_name"],
+            current_metrics=metrics,
+            prefs=user_data["prefs"],
+        )
+
+        # 无论是否有信号都更新状态（避免下次重复检测相同变化）
+        state = alert_service.build_current_state(etf_code, metrics)
+        alert_state_service.save_state(user_id, state)
+
+        if signals:
+            # 标记信号已发送
+            for signal in signals:
+                alert_state_service.mark_signal_sent(
+                    user_id, etf_code, signal.signal_type
+                )
+
+        return signals
+
+    async def _run_user_check(self, user_id: int) -> None:
+        """执行单个用户的告警检查"""
+        logger.info(f"Running alert check for user {user_id}...")
+
+        with Session(engine) as session:
+            # 收集该用户需要检查的 ETF
+            etf_users_map = self._collect_etf_users(session, user_id=user_id)
+
+            if not etf_users_map:
+                logger.info(f"No ETFs to check for user {user_id}")
+                return
+
+            logger.info(f"Checking {len(etf_users_map)} ETFs for user {user_id}")
+
+            # 收集信号
+            signals: List[SignalItem] = []
+
+            for etf_code, users_data in etf_users_map.items():
+                try:
+                    # 防御性检查：确保 users_data 不为空
+                    if not users_data:
+                        logger.error(f"No user data found for ETF {etf_code}, user {user_id}")
+                        continue
+
+                    # 获取 ETF 数据并计算指标
+                    metrics = await self._fetch_and_compute_etf_metrics(etf_code)
+                    if metrics is None:
+                        continue
+
+                    # 检测信号（只有一个用户）
+                    user_data = users_data[0]
+                    user_signals = self._process_user_signals(
+                        user_id=user_id,
+                        etf_code=etf_code,
+                        user_data=user_data,
+                        metrics=metrics
+                    )
+
+                    if user_signals:
+                        signals.extend(user_signals)
+
+                except Exception as e:
+                    logger.error(f"Error processing ETF {etf_code} for user {user_id}: {e}", exc_info=True)
+                    continue
+
+            # 发送消息
+            if signals:
+                # 防御性检查：确保 etf_users_map 不为空
+                if not etf_users_map:
+                    logger.error(f"No ETF users map available for user {user_id}")
+                    return
+
+                first_etf_users = list(etf_users_map.values())[0]
+                if not first_etf_users:
+                    logger.error(f"No user data in first ETF entry for user {user_id}")
+                    return
+
+                user_data = first_etf_users[0]
+
+                # 检查每日告警数量限制
+                prefs = user_data["prefs"]
+                sent_count = alert_state_service.get_daily_sent_count(user_id)
+                remaining = prefs.max_alerts_per_day - sent_count
+
+                if remaining <= 0:
+                    logger.info(f"User {user_id} reached daily alert limit ({sent_count} sent)")
+                    return
+
+                # 如果信号数量超过剩余配额，则截断
+                signals_to_send = signals[:remaining]
+                if len(signals) > remaining:
+                    logger.info(f"User {user_id}: truncated {len(signals)} signals to {remaining}")
+
+                await self._send_alert_message(
+                    user_data["user"],
+                    user_data["telegram_config"],
+                    signals_to_send,
+                )
+                logger.info(f"Sent {len(signals_to_send)} alerts to user {user_id}")
+            else:
+                logger.info(f"No signals detected for user {user_id}")
+
     async def _run_daily_check(self) -> None:
         """执行告警检查（优化版：按 ETF 去重）"""
         logger.info("Running alert check...")
@@ -93,49 +236,28 @@ class AlertScheduler:
             for etf_code, users_data in etf_users_map.items():
                 try:
                     # 获取 ETF 数据并计算指标（每个 ETF 只计算一次）
-                    df = await asyncio.to_thread(ak_service.fetch_etf_history, etf_code)
-                    if df is None or df.empty:
-                        logger.warning(f"No data for ETF {etf_code}")
+                    metrics = await self._fetch_and_compute_etf_metrics(etf_code)
+                    if metrics is None:
                         continue
-
-                    # 计算所有指标（只计算一次）
-                    def compute_metrics():
-                        return {
-                            "temperature": temperature_service.calculate_temperature(df),
-                            "daily_trend": trend_service.get_daily_trend(df),
-                            "weekly_trend": trend_service.get_weekly_trend(df),
-                        }
-                    metrics = await asyncio.to_thread(compute_metrics)
 
                     # 为每个用户检测信号
                     for user_data in users_data:
                         user_id = user_data["user"].id
-                        signals = alert_service.detect_signals(
+                        signals = self._process_user_signals(
                             user_id=user_id,
                             etf_code=etf_code,
-                            etf_name=user_data["etf_name"],
-                            current_metrics=metrics,
-                            prefs=user_data["prefs"],
+                            user_data=user_data,
+                            metrics=metrics
                         )
 
-                        # 无论是否有信号都更新状态（避免下次重复检测相同变化）
-                        state = alert_service.build_current_state(etf_code, metrics)
-                        alert_state_service.save_state(user_id, state)
-
                         if signals:
-                            # 标记信号已发送
-                            for signal in signals:
-                                alert_state_service.mark_signal_sent(
-                                    user_id, etf_code, signal.signal_type
-                                )
-
                             # 收集信号
                             if user_id not in user_signals_map:
                                 user_signals_map[user_id] = []
                             user_signals_map[user_id].extend(signals)
 
                 except Exception as e:
-                    logger.error(f"Error processing ETF {etf_code}: {e}")
+                    logger.error(f"Error processing ETF {etf_code}: {e}", exc_info=True)
                     continue
 
             # 步骤 3: 为每个用户发送合并消息
@@ -169,9 +291,12 @@ class AlertScheduler:
                 except Exception as e:
                     logger.error(f"Error sending message to user {user_id}: {e}")
 
-    def _collect_etf_users(self, session: Session) -> Dict[str, List[Dict]]:
+    def _collect_etf_users(self, session: Session, user_id: Optional[int] = None) -> Dict[str, List[Dict]]:
         """
         收集所有需要检查的 ETF 及其关联用户
+
+        Args:
+            user_id: 如果提供，则只收集该用户的数据
 
         Returns:
             {
@@ -184,8 +309,12 @@ class AlertScheduler:
         """
         etf_users_map: Dict[str, List[Dict]] = {}
 
-        # 获取所有用户
-        users = session.exec(select(User)).all()
+        # 获取用户（所有或特定用户）
+        if user_id is not None:
+            user = session.get(User, user_id)
+            users = [user] if user else []
+        else:
+            users = session.exec(select(User)).all()
 
         for user in users:
             # 获取用户告警配置
@@ -193,11 +322,17 @@ class AlertScheduler:
             prefs = UserAlertPreferences(**alert_settings)
 
             if not prefs.enabled:
+                # 只在调试特定用户时输出日志
+                if user_id is not None:
+                    logger.info(f"User {user.id}: alert not enabled")
                 continue
 
             # 检查 Telegram 配置
             telegram_config = (user.settings or {}).get("telegram", {})
             if not telegram_config.get("enabled") or not telegram_config.get("verified"):
+                # 只在调试特定用户时输出日志
+                if user_id is not None:
+                    logger.info(f"User {user.id}: telegram not enabled or not verified (enabled={telegram_config.get('enabled')}, verified={telegram_config.get('verified')})")
                 continue
 
             # 获取用户自选股
@@ -206,6 +341,9 @@ class AlertScheduler:
             ).all()
 
             if not watchlist:
+                # 只在调试特定用户时输出日志
+                if user_id is not None:
+                    logger.info(f"User {user.id}: no watchlist")
                 continue
 
             for item in watchlist:
@@ -216,7 +354,7 @@ class AlertScheduler:
 
                 etf_users_map[etf_code].append({
                     "user": user,
-                    "etf_name": item.etf_name or etf_code,
+                    "etf_name": item.name or etf_code,
                     "prefs": prefs,
                     "telegram_config": telegram_config,
                 })
@@ -255,10 +393,17 @@ class AlertScheduler:
         except Exception as e:
             logger.error(f"Failed to send alert to user {user.id}: {e}")
 
-    async def trigger_check(self) -> dict:
-        """手动触发检查（用于测试）"""
+    async def trigger_check(self, user_id: Optional[int] = None) -> dict:
+        """手动触发检查（用于测试）
+
+        Args:
+            user_id: 如果提供，则只检查该用户的告警；否则检查所有用户
+        """
         try:
-            await self._run_daily_check()
+            if user_id is not None:
+                await self._run_user_check(user_id)
+            else:
+                await self._run_daily_check()
             return {"success": True, "message": "检查完成"}
         except Exception as e:
             logger.error(f"Manual trigger failed: {e}")
