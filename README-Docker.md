@@ -50,8 +50,10 @@ docker-compose logs -f
 # 浏览器打开: http://localhost:3000
 ```
 
-> ⚠️ **重要提示**：必须在启动容器前创建 `data/etftool.db` 文件。
-> 如果该文件不存在，Docker 会将其创建为目录，导致容器启动失败并出现 "not a directory" 错误。
+> ⚠️ **重要提示**：
+> - 必须在启动容器前创建 `data/etftool.db` 文件（使用 `touch` 命令）
+> - 如果该文件不存在，Docker 会将其创建为目录，导致容器启动失败
+> - **无需手动设置文件权限**：容器启动时会自动检测并修复数据库文件权限
 
 ### 使用 Docker 命令
 
@@ -157,6 +159,74 @@ openssl rand -base64 32
 **方法 3：使用在线工具**
 ```bash
 # 访问: https://generate-secret.vercel.app/32
+```
+
+### 数据库配置
+
+应用默认使用 SQLite 数据库。数据库位置通过 `DATABASE_URL` 环境变量配置。
+
+#### 支持的数据库 URL 格式
+
+**相对路径（推荐）：**
+```bash
+# 相对于 backend 目录
+DATABASE_URL=sqlite:///./etftool.db
+# 结果：容器内 /app/backend/etftool.db
+```
+
+**绝对路径：**
+```bash
+# 使用四个斜杠表示绝对路径
+DATABASE_URL=sqlite:////data/custom/mydb.db
+# 结果：容器内 /data/custom/mydb.db
+```
+
+**其他数据库：**
+```bash
+# PostgreSQL
+DATABASE_URL=postgresql://user:password@host:5432/dbname
+
+# MySQL
+DATABASE_URL=mysql://user:password@host:3306/dbname
+```
+
+#### 重要说明
+
+1. **文件必须预先创建**：在启动容器前，必须使用 `touch` 创建数据库文件，否则 Docker 会将其创建为目录
+2. **卷挂载必须匹配**：`docker-compose.yml` 中的卷挂载路径必须与 `DATABASE_URL` 配置的路径一致
+3. **相对路径解析**：相对路径（`sqlite:///./filename.db`）会自动解析为相对于 backend 目录的绝对路径
+4. **安全限制**：为防止路径遍历攻击，相对路径中不允许使用 `../`
+
+#### 安全考虑
+
+**数据库文件权限**：
+- 容器启动时会自动将数据库文件权限设置为 `660`（所有者和组可读写）
+- 文件所有权自动设置为 `www-data:www-data`
+- 这确保只有应用进程可以访问数据库
+
+**生产环境建议**：
+- 对于生产部署，建议使用专用数据库服务器（PostgreSQL/MySQL）
+- 定期备份数据库文件并加密存储
+- 限制容器访问权限
+- 定期进行安全审计
+- 不要在 `DATABASE_URL` 中硬编码数据库密码，使用环境变量
+
+#### 示例配置
+
+**默认配置（docker-compose.yml）：**
+```yaml
+environment:
+  - DATABASE_URL=sqlite:///./etftool.db
+volumes:
+  - ./data/etftool.db:/app/backend/etftool.db
+```
+
+**自定义路径：**
+```yaml
+environment:
+  - DATABASE_URL=sqlite:////data/myapp.db
+volumes:
+  - ./data/myapp.db:/data/myapp.db
 ```
 
 ---

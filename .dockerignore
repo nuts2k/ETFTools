@@ -53,6 +53,8 @@ tests/
 cache/
 *.db
 *.db-journal
+*.db.backup
+*.backup
 
 # 其他
 .DS_Store

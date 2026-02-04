@@ -78,6 +78,10 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 # 复制 Supervisor 配置
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# 复制启动脚本
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # 创建必要的目录
 RUN mkdir -p /app/backend/cache /app/backend/logs /var/log/supervisor
 
@@ -96,5 +100,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 --start-period=40s \
     CMD curl -f http://localhost:3000/api/v1/health || exit 1
 
-# 使用 Supervisor 启动所有服务
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# 使用启动脚本（会自动处理数据库权限并启动 Supervisor）
+ENTRYPOINT ["/entrypoint.sh"]
