@@ -26,7 +26,7 @@ class AlertConfigRequest(BaseModel):
     ma_crossover: bool = True
     ma_alignment: bool = True
     weekly_signal: bool = True
-    max_alerts_per_day: int = 20
+    max_alerts_per_day: int = 100
 
 
 class AlertConfigResponse(BaseModel):
