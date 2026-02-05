@@ -1,216 +1,231 @@
-# ETFTool - AI 协作上下文 (AGENTS.md)
+# ETFTool - AI 协作快速参考手册
 
-本文档旨在为 AI 代理（Agent）和开发者提供项目的全景视图，包含技术栈、架构决策、核心原则及关键代码路径，以便快速理解和维护项目。
+本文档为 AI 代理和开发者提供项目核心信息的快速参考，包含强制性开发规范、技术栈、关键代码路径等。
 
-## 1. 项目概览 (Project Identity)
+## 1. 项目身份 (Project Identity)
 
 *   **项目名称**: ETFTool (A股版)
-*   **目标**: 打造一款专注于 **前复权 (QFQ)** 收益分析的专业 A 股 ETF 工具。
-*   **平台**: Web 应用 (FastAPI + Next.js)，采用 **移动端优先 (Mobile-First)** 设计理念。
-*   **核心价值**: 解决市场上大多数工具未对历史价格进行复权处理的问题，提供真实的长期收益回测数据。
+*   **核心价值**: 专注于 **前复权 (QFQ)** 收益分析的专业 A 股 ETF 工具
+*   **平台定位**: Web 应用 (FastAPI + Next.js)，**移动端优先 (Mobile-First)** 设计
 
-## 2. 技术栈 (Tech Stack)
+## 2. 技术栈速查 (Tech Stack)
 
-### 后端 (Backend)
-*   **语言**: Python 3.9+
-*   **框架**: FastAPI
-*   **数据源**: `akshare` (东方财富接口)
-*   **数据处理**: `pandas` (时间序列分析)
-*   **缓存层**: 
-    *   **DiskCache**: 持久化缓存，用于存储历史数据和计算结果（默认 4 小时过期）。
-    *   **In-Memory**: 用于高频访问的实时行情数据。
-*   **数据库**: SQLite + SQLModel (用于存储用户数据和自选列表)。
-*   **认证**: OAuth2 + JWT。
+| 层级 | 技术 | 说明 |
+|------|------|------|
+| **后端框架** | FastAPI + Python 3.9+ | 异步 Web 框架 |
+| **数据源** | akshare | 东方财富接口 |
+| **数据处理** | pandas | 时间序列分析 |
+| **缓存** | DiskCache + In-Memory | 持久化缓存（4h）+ 实时数据缓存 |
+| **数据库** | SQLite + SQLModel | 用户数据和自选列表 |
+| **认证** | OAuth2 + JWT | 用户认证和授权 |
+| **前端框架** | Next.js 16 (App Router) + TypeScript | React 框架 |
+| **UI 组件** | Shadcn/UI + Tailwind CSS | 组件库和样式 |
+| **图表** | Recharts | 响应式、触摸友好 |
+| **交互** | @dnd-kit, use-long-press | 拖拽排序、长按操作 |
+| **状态管理** | React Context | Auth, Watchlist, Settings |
 
-### 前端 (Frontend)
-*   **框架**: Next.js 16 (App Router)
-*   **语言**: TypeScript
-*   **UI 组件库**: Shadcn/UI + Tailwind CSS
-*   **图表库**: Recharts (响应式、触摸友好)
-*   **交互**: `@dnd-kit` (拖拽排序), `use-long-press` (长按操作)
-*   **状态管理**: React Context (Auth, Watchlist, Settings)
+## 3. 快速启动 (Quick Start)
 
-## 3. 快速开始 (Quick Start)
+**一键启动**: `./manage.sh start` (同时启动前后端)
+**手动启动**:
+- 后端: `cd backend && uvicorn app.main:app --reload --port 8000`
+- 前端: `cd frontend && npm run dev`
 
-项目提供了一键管理脚本 `manage.sh`，用于快速启动和管理服务。
+## 4. 强制性开发规范 (Mandatory Standards)
 
-### 常用命令
-*   **启动服务**: `./manage.sh start` (同时启动前后端)
-*   **安装依赖并启动**: `./manage.sh start --install`
-*   **停止服务**: `./manage.sh stop`
-*   **查看状态**: `./manage.sh status`
-*   **重启服务**: `./manage.sh restart`
+### 4.1 数据一致性规范
 
-### 手动启动
-*   **后端**: `cd backend && uvicorn app.main:app --reload --port 8000`
-*   **前端**: `cd frontend && npm run dev` (运行在 3000 端口)
+⚠️ **【强制】前复权数据**
+- 所有历史价格图表和收益率计算**必须**使用前复权数据 (`adjust="qfq"`)
+- 示例：`ak.fund_etf_hist_em(symbol=code, adjust="qfq")`
 
-## 4. 项目结构 (Project Structure)
+⚠️ **【强制】实时数据拼接**
+- 历史收盘价数据必须与当日实时价格无缝拼接
+- 确保图表显示最新动态，避免数据断层
 
-### 后端结构 (`backend/app/`)
-*   **`main.py`**: 应用入口，CORS 配置，生命周期管理。
-*   **`core/`**: 核心配置 (`config.py`)，数据库 (`database.py`)，缓存 (`cache.py`)。
-*   **`api/v1/endpoints/`**:
-    *   `etf.py`: 核心 ETF 业务（搜索、行情、历史、指标）。
-    *   `watchlist.py`: 自选股管理与云端同步。
-    *   `auth.py`: 用户注册与登录。
-*   **`services/`**:
-    *   `akshare_service.py`: 数据获取层，包含 DiskCache 和降级逻辑。
-    *   `metrics_service.py`: 指标计算服务 (ATR, 回撤)。
-    *   `valuation_service.py`: 估值分位服务（可选）。
-*   **`data/`**: 静态数据和配置文件 (`metrics_config.json`, `etf_fallback.json`)。
+⚠️ **【强制】本地优先策略**
+- 自选列表和用户设置优先读取本地 LocalStorage
+- 登录后进行云端合并（并集策略）
 
-### 前端结构 (`frontend/app/`)
-*   **`page.tsx`**: 首页（自选列表），支持拖拽排序。
-*   **`search/page.tsx`**: 搜索页，支持模糊搜索。
-*   **`etf/[code]/page.tsx`**: ETF 详情页，包含图表和核心指标卡片。
-*   **`settings/page.tsx`**: 设置页（主题、刷新频率、密码修改）。
-*   **`login/` & `register/`**: 认证页面。
+### 4.2 UI/UX 强制规范
 
-## 5. 核心开发原则 (Core Principles)
+⚠️ **【强制】配色规范**
+- 遵循国内习惯：**红涨 (#ef4444)** / **绿跌 (#22c55e)**
+- 禁止使用国际惯例的绿涨红跌
 
-### 5.1 数据一致性
-*   **前复权 (QFQ)**: 所有历史价格图表和收益率计算**必须**使用前复权数据 (`adjust="qfq"`)。
-*   **实时拼接**: 历史收盘价数据必须与当日实时价格无缝拼接，确保图表显示最新动态。
-*   **本地优先**: 自选列表和用户设置优先读取本地 LocalStorage，登录后进行云端合并。
+⚠️ **【强制】移动端优先**
+- 布局必须适应窄屏（320px+）
+- Tooltip 需防止手指遮挡
+- 按钮可点击区域 ≥ 44x44px
 
-### 5.2 性能策略
-*   **预加载**: 服务启动时后台线程预加载 ETF 列表。
-*   **缓存降级**: 优先读取 DiskCache → 内存 → 实时接口。
-*   **防抖**: 搜索输入框需配置 `useDebounce` (300ms)。
+### 4.3 性能强制规范
 
-### 5.3 UI/UX 规范
-*   **配色**: 遵循国内习惯，**红涨 (#ef4444)** / **绿跌 (#22c55e)**。
-*   **移动适配**: 布局需适应窄屏，Tooltip 需防止手指遮挡，按钮需有合适的可点击区域。
+⚠️ **【强制】防抖处理**
+- 搜索输入框必须配置 `useDebounce` (300ms)
+- 避免频繁 API 调用
+
+⚠️ **【强制】缓存策略**
+- 优先级：DiskCache → 内存缓存 → 实时接口
+- DiskCache 默认 4 小时过期
+
+### 4.4 安全规范
+
+⚠️ **【强制】输入验证**
+- 所有用户输入必须进行验证和清理
+- API 端点必须验证请求参数的类型和范围
+
+⚠️ **【强制】SQL 注入防护**
+- 使用 SQLModel 的参数化查询，禁止字符串拼接 SQL
+- 示例：`session.exec(select(User).where(User.id == user_id))` ✓
+
+⚠️ **【强制】XSS 防护**
+- 前端输出用户内容时必须转义
+- React 默认转义，但使用 `dangerouslySetInnerHTML` 时需特别注意
+
+⚠️ **【强制】认证和授权**
+- 敏感操作必须验证 JWT token
+- 检查用户权限后再执行操作
+
+### 4.5 测试规范
+
+⚠️ **【强制】单元测试**
+- 新增业务逻辑函数必须编写单元测试
+- 测试文件位置：`backend/tests/` 和 `frontend/__tests__/`
+
+⚠️ **【强制】API 测试**
+- 新增或修改 API 端点必须有集成测试
+- 使用 pytest 和 FastAPI TestClient
+
+⚠️ **【推荐】测试覆盖率**
+- 核心业务逻辑测试覆盖率应达到 80% 以上
+- 使用 `pytest --cov` 检查覆盖率
+
+### 4.6 文档维护规范
+
+⚠️ **【强制】提交前更新文档**
+- 代码变更必须同步更新相关文档，禁止"先提交代码，后补文档"
+- 文档更新与代码变更必须在同一个 commit 中提交
+
+⚠️ **【强制】文档更新检查清单**
+
+根据变更类型，必须检查并更新以下文档：
+
+| 变更类型 | 必须检查的文档 | 更新内容 |
+|---------|---------------|---------|
+| **新增/修改 API 接口** | `AGENTS.md` 第 6 节 | 更新 API 接口速查表 |
+| **修改技术栈** | `AGENTS.md` 第 2 节, `README.md` | 更新技术栈列表 |
+| **新增/修改配置文件** | `AGENTS.md` 第 7 节 | 更新关键配置文件说明 |
+| **修改核心代码路径** | `AGENTS.md` 第 5 节 | 更新核心代码导航表 |
+| **新增强制性规范** | `AGENTS.md` 第 4 节 | 添加新的强制规范 |
+| **修改 Docker 配置** | `docs/deployment/docker-*.md` | 更新部署文档 |
+| **新增功能特性** | `README.md`, `docs/planning/PRD.md` | 更新功能列表和产品需求 |
+| **修改启动方式** | `AGENTS.md` 第 3 节, `README.md` | 更新快速启动说明 |
+| **架构/设计变更** | `docs/design/` | 创建或更新设计文档 |
+| **实现重要功能** | `docs/implementation/` | 创建实现文档 |
+
+⚠️ **【强制】文档更新标准**
+- 保持文档与代码实现完全一致，不允许过时信息
+- 更新涉及日期的文档时，修改文档底部的"最后更新"日期
+- 使用清晰、准确的语言描述变更内容
+- 表格、列表等结构化内容必须保持格式一致
+
+⚠️ **【推荐】文档审查**
+- 提交前通读修改的文档，确保逻辑连贯
+- 检查文档中的链接是否有效
+- 确认代码示例与实际代码一致
+
+## 5. 核心代码导航 (Key Paths)
+
+### 后端关键文件
+
+| 功能模块 | 文件路径 | 说明 |
+|---------|---------|------|
+| **应用入口** | `backend/app/main.py` | CORS 配置、生命周期管理 |
+| **核心配置** | `backend/app/core/config.py` | 环境变量、SECRET_KEY |
+| **数据库** | `backend/app/core/database.py` | SQLite 连接和会话管理 |
+| **缓存管理** | `backend/app/core/cache.py` | DiskCache 配置 |
+| **ETF 接口** | `backend/app/api/v1/endpoints/etf.py` | 搜索、行情、历史、指标计算 |
+| **自选管理** | `backend/app/api/v1/endpoints/watchlist.py` | 云端同步逻辑 |
+| **用户认证** | `backend/app/api/v1/endpoints/auth.py` | 注册、登录、JWT |
+| **数据源** | `backend/app/services/akshare_service.py` | AkShare 接口封装、缓存降级 |
+| **指标计算** | `backend/app/services/metrics_service.py` | ATR, 回撤, CAGR 算法 |
+| **估值服务** | `backend/app/services/valuation_service.py` | PE 分位数（可选） |
+| **静态配置** | `backend/app/data/metrics_config.json` | 动态指标参数 |
+
+### 前端关键文件
+
+| 功能模块 | 文件路径 | 说明 |
+|---------|---------|------|
+| **首页** | `frontend/app/page.tsx` | 自选列表、拖拽排序 |
+| **搜索页** | `frontend/app/search/page.tsx` | 模糊搜索、防抖 |
+| **详情页** | `frontend/app/etf/[code]/page.tsx` | 图表、指标卡片 |
+| **设置页** | `frontend/app/settings/page.tsx` | 主题、刷新频率 |
+| **登录/注册** | `frontend/app/login/`, `frontend/app/register/` | 认证页面 |
+| **图表组件** | `frontend/components/ETFChart.tsx` | Recharts 配置、交互 |
+| **自选逻辑** | `frontend/hooks/use-watchlist.ts` | 本地存储、云端同步 |
+| **认证上下文** | `frontend/contexts/AuthContext.tsx` | JWT 管理 |
 
 ## 6. API 接口速查 (API Reference)
 
-所有 API 前缀均为 `/api/v1`。
+所有 API 前缀均为 `/api/v1`
 
-### ETF 数据
-*   `GET /etf/search?q={keyword}`: 搜索 ETF。
-*   `GET /etf/{code}/info`: 获取实时基础信息（含交易状态）。
-*   `GET /etf/{code}/history`: 获取 QFQ 历史数据。
-*   `GET /etf/{code}/metrics`: 获取核心指标 (CAGR, MDD, ATR, Volatility)。
+| 端点 | 方法 | 说明 |
+|------|------|------|
+| `/etf/search?q={keyword}` | GET | 搜索 ETF |
+| `/etf/{code}/info` | GET | 获取实时基础信息（含交易状态） |
+| `/etf/{code}/history` | GET | 获取 QFQ 历史数据 |
+| `/etf/{code}/metrics` | GET | 获取核心指标 (CAGR, MDD, ATR, Volatility) |
+| `/watchlist` | GET | 获取云端自选列表 |
+| `/watchlist/sync` | POST | 同步本地自选数据到云端（并集策略） |
+| `/auth/token` | POST | 用户登录，获取 JWT |
+| `/auth/register` | POST | 用户注册 |
 
-### 自选与用户
-*   `GET /watchlist`: 获取云端自选列表。
-*   `POST /watchlist/sync`: 同步本地自选数据到云端（并集策略）。
-*   `POST /auth/token`: 用户登录，获取 JWT。
+## 7. 关键配置文件 (Configuration Files)
 
-## 7. 功能开关与配置 (Configuration)
+| 配置文件 | 位置 | 说明 |
+|---------|------|------|
+| **环境配置** | `backend/.env` | SECRET_KEY, CORS, 速率限制 |
+| **动态指标** | `backend/app/data/metrics_config.json` | `drawdown_days`, `atr_period` (无需重启) |
+| **ETF 映射** | `backend/app/data/etf_index_map.json` | ETF 到指数的映射表（估值功能） |
+| **降级数据** | `backend/app/data/etf_fallback.json` | 接口失败时的备用数据 |
 
-### 7.1 动态指标配置
-文件位置: `backend/app/data/metrics_config.json`
-*   `drawdown_days`: 计算当前回撤的历史回溯天数（默认 120 天）。
-*   `atr_period`: ATR 指标计算周期（默认 14 天）。
-无需重启服务，修改 JSON 后自动生效（由 `config_loader.py` 管理）。
+**估值分位功能开关**：
+- 默认关闭，节省 API 资源
+- 开启方法：在 `backend/app/api/v1/endpoints/etf.py:get_etf_metrics` 中取消 `valuation_service.get_valuation(code)` 的注释
 
-### 7.2 估值分位功能 (Feature Toggle)
-目前该功能默认**关闭**，以节省 API 资源。
-*   **开启方法**: 在 `backend/app/api/v1/endpoints/etf.py` 的 `get_etf_metrics` 函数中取消 `valuation_service.get_valuation(code)` 的注释。
-*   **依赖文件**: `backend/app/data/etf_index_map.json` (ETF 到指数的映射表)。
+## 8. 文档导航 (Documentation)
 
-## 8. 关键代码导航 (Key Paths)
+**完整文档索引**: [docs/README.md](docs/README.md) - 包含所有文档的分类导航和查找指南
 
-| 功能模块 | 关键文件路径 | 说明 |
-| :--- | :--- | :--- |
-| **指标计算** | `backend/app/api/v1/endpoints/etf.py` | CAGR, MaxDrawdown 等核心算法实现位置 |
-| **数据源** | `backend/app/services/akshare_service.py` | AkShare 接口调用封装与缓存逻辑 |
-| **图表组件** | `frontend/components/ETFChart.tsx` | Recharts 图表配置与交互逻辑 |
-| **自选逻辑** | `frontend/hooks/use-watchlist.ts` | 本地存储与云端同步的混合逻辑 |
-| **应用配置** | `backend/app/core/config.py` | CORS, SECRET_KEY 等环境配置 |
+**快速链接**:
+- **项目规划**: [PRD](docs/planning/PRD.md), [PLAN](docs/planning/PLAN.md)
+- **部署指南**: [Docker 部署](docs/deployment/docker-guide.md), [多架构支持](docs/deployment/docker-multiarch-guide.md)
+- **技术研究**: [ETF 估值](docs/research/etf-valuation-research.md), [PE 分位数](docs/research/pe-percentile-research.md)
+- **测试报告**: [docs/testing/](docs/testing/)
 
-## 9. 文档组织规范 (Documentation Structure)
-
-### 9.1 文档目录结构
-
-项目文档采用分类组织的方式，所有文档集中在 `docs/` 目录下，按功能和用途分为 6 个子目录：
-
+**文档目录结构**:
 ```
-ETFTool/
-├── README.md              # 项目主文档
-├── AGENTS.md              # AI 协作上下文（本文档）
-├── CHANGELOG.md           # 版本变更记录
-│
-└── docs/                  # 文档根目录
-    ├── README.md          # 文档导航索引
-    ├── planning/          # 规划类文档
-    ├── research/          # 研究类文档
-    ├── design/            # 设计文档
-    ├── implementation/    # 实现计划
-    ├── deployment/        # 部署文档
-    └── testing/           # 测试报告
+docs/
+├── planning/          # 项目规划、产品需求
+├── research/          # 技术研究、算法分析
+├── design/            # 功能设计、架构设计
+├── implementation/    # 实现计划、技术细节
+├── deployment/        # 部署指南、运维手册
+└── testing/           # 测试计划、测试报告
 ```
 
-### 9.2 文档分类说明
+## 9. 常见任务快速指引 (Quick Task Guide)
 
-| 目录 | 用途 | 典型文档 |
-|------|------|---------|
-| **planning/** | 项目规划、产品需求等战略性文档 | PRD.md, PLAN.md |
-| **research/** | 技术研究、算法分析、业务逻辑研究 | etf-valuation-research.md, pe-percentile-research.md |
-| **design/** | 功能设计、架构设计、技术方案设计 | *-design.md |
-| **implementation/** | 具体功能的实现步骤、技术细节 | *-impl.md, *-implementation.md |
-| **deployment/** | 部署指南、运维手册、环境配置 | docker-guide.md, docker-multiarch-guide.md |
-| **testing/** | 测试计划、测试报告、测试结果 | *-test-report.md |
-
-### 9.3 文档命名规范
-
-为保持文档的一致性和可维护性，请遵循以下命名规范：
-
-| 文档类型 | 命名格式 | 示例 |
-|---------|---------|------|
-| 设计文档 | `YYYY-MM-DD-feature-design.md` | `2026-02-04-admin-system-design.md` |
-| 实现计划 | `YYYY-MM-DD-feature-impl.md` | `2026-02-03-alert-notification-impl.md` |
-| 测试报告 | `feature-test-report.md` | `auth-flow-test-report.md` |
-| 研究文档 | `topic-research.md` | `etf-valuation-research.md` |
-| 部署指南 | `platform-guide.md` | `docker-guide.md` |
-
-**命名原则：**
-- 使用小写字母和连字符（kebab-case）
-- 设计和实现文档使用日期前缀（YYYY-MM-DD）便于追溯
-- 使用描述性的功能名称
-- 文件扩展名统一使用 `.md`
-
-### 9.4 文档查找指南
-
-**按需求查找：**
-- **了解项目整体** → 阅读 `README.md` 和 `docs/planning/PRD.md`
-- **部署项目** → 查看 `docs/deployment/` 目录
-- **了解功能设计** → 在 `docs/design/` 目录中搜索功能名称
-- **了解实现细节** → 在 `docs/implementation/` 目录中查找对应文档
-- **查看测试情况** → 查看 `docs/testing/` 目录
-- **了解技术原理** → 查看 `docs/research/` 目录
-
-**按时间查找：**
-设计和实现文档使用日期前缀，可按时间顺序查看项目演进：
-```bash
-ls -lt docs/design/        # 查看最近的设计文档
-ls -lt docs/implementation/ # 查看最近的实现文档
-```
-
-### 9.5 文档维护原则
-
-- **及时更新**：代码变更后及时更新相关文档
-- **保持同步**：确保文档与实际实现保持一致
-- **清晰简洁**：使用清晰的语言，避免冗余
-- **结构化**：使用标题、列表、表格等组织内容
-- **中文优先**：项目文档使用中文撰写，专业术语可保留英文
-
-### 9.6 常用文档快速链接
-
-**核心文档：**
-- [文档导航索引](docs/README.md) - 完整的文档目录和查找指南
-- [产品需求文档](docs/planning/PRD.md) - 产品功能需求和规格说明
-- [项目开发计划](docs/planning/PLAN.md) - 开发路线图和里程碑
-
-**部署相关：**
-- [Docker 部署指南](docs/deployment/docker-guide.md) - 容器化部署说明
-- [Docker 多架构支持](docs/deployment/docker-multiarch-guide.md) - 多平台镜像构建
-
-**技术研究：**
-- [ETF 估值研究](docs/research/etf-valuation-research.md) - 估值方法和指标研究
-- [PE 分位数研究](docs/research/pe-percentile-research.md) - PE 分位数计算和应用
+| 任务 | 关键文件 |
+|------|---------|
+| **添加新 ETF 指标** | `backend/app/services/metrics_service.py`, `backend/app/api/v1/endpoints/etf.py` |
+| **修改图表样式** | `frontend/components/ETFChart.tsx` |
+| **调整缓存策略** | `backend/app/core/cache.py`, `backend/app/services/akshare_service.py` |
+| **修改配色方案** | `frontend/app/globals.css` (Tailwind 变量) |
+| **添加新 API 端点** | `backend/app/api/v1/endpoints/` (新建或修改文件) |
+| **修改自选同步逻辑** | `frontend/hooks/use-watchlist.ts`, `backend/app/api/v1/endpoints/watchlist.py` |
+| **调整指标参数** | `backend/app/data/metrics_config.json` (无需重启) |
+| **添加单元测试** | `backend/tests/` (后端), `frontend/__tests__/` (前端) |
 
 ---
-**注意**: 在修改代码时，请务必遵守上述原则，特别是保持数据口径的一致性（QFQ）。
+**重要提醒**: 修改代码时务必遵守第 4 节的强制性开发规范，特别是数据一致性（QFQ）和安全规范。
