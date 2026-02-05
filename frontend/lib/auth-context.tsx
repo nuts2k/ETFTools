@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation"
 import { API_BASE_URL } from "./api"
 
 interface User {
+  id: number
   username: string
   settings: Record<string, any>
+  is_admin: boolean
+  is_active: boolean
 }
 
 interface AuthContextType {
