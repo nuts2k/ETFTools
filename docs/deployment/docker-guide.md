@@ -7,6 +7,8 @@
 - [快速开始](#快速开始)
 - [架构说明](#架构说明)
 - [环境变量配置](#环境变量配置)
+- [数据库迁移](#数据库迁移)
+- [管理员初始化](#管理员初始化)
 - [构建镜像](#构建镜像)
 - [运行容器](#运行容器)
 - [使用 Docker Compose](#使用-docker-compose)
@@ -38,6 +40,8 @@ cat > .env.docker <<EOF
 SECRET_KEY=your-generated-secret-key-here
 ENCRYPTION_SALT=your-generated-salt-here
 ENABLE_RATE_LIMIT=true
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-secure-password-here
 EOF
 
 # 5. 启动服务
@@ -143,6 +147,40 @@ docker run -d \
 | `CACHE_TTL` | 缓存过期时间（秒） | `3600` | `3600` |
 | `ENABLE_RATE_LIMIT` | 启用速率限制 | `false` | `true` |
 | `ENCRYPTION_SALT` | 加密 Salt（用于 Telegram Token 加密） | `etftool_telegram_salt` | `your-random-salt-16-chars` |
+| `ADMIN_USERNAME` | 初始管理员用户名（可选） | 无 | `admin` |
+| `ADMIN_PASSWORD` | 初始管理员密码（可选） | 无 | `your-secure-password` |
+
+### 管理员账户配置
+
+ETFTool 支持通过环境变量自动初始化管理员账户（推荐用于 Docker 部署）。
+
+**环境变量说明：**
+
+| 变量名 | 说明 | 是否必需 | 示例 |
+|--------|------|---------|------|
+| `ADMIN_USERNAME` | 初始管理员用户名 | 可选 | `admin` |
+| `ADMIN_PASSWORD` | 初始管理员密码 | 可选 | `your-secure-password` |
+
+**自动初始化机制：**
+- 如果同时设置了 `ADMIN_USERNAME` 和 `ADMIN_PASSWORD`，应用启动时会自动创建管理员账户
+- 如果用户名已存在但不是管理员，会自动升级为管理员
+- 如果用户名已存在且已是管理员，不会重复创建
+- 如果未设置这两个环境变量，跳过自动初始化（可后续手动创建）
+
+**配置示例：**
+```bash
+# 在 .env.docker 文件中添加
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-secure-password-here
+```
+
+**安全建议：**
+- ✅ 生产环境密码至少 12 位，包含大小写字母、数字和特殊字符
+- ✅ 不要使用默认密码（如 `admin`、`123456`）
+- ✅ 首次登录后立即修改密码
+- ✅ 定期更换管理员密码
+- ❌ 不要在代码或公开文档中硬编码密码
+- ❌ 不要将包含密码的 `.env.docker` 文件提交到 Git
 
 ### 生成 SECRET_KEY
 
@@ -231,6 +269,122 @@ volumes:
 
 ---
 
+## 数据库迁移
+
+### 管理员字段迁移
+
+管理员系统需要在 User 表中添加新字段（`is_admin`、`is_active`、`updated_at`）。
+
+**迁移命令：**
+```bash
+# 在容器内执行迁移脚本
+docker exec etftool python scripts/migrate_add_admin_fields.py
+```
+
+**迁移说明：**
+- 脚本会自动检查字段是否已存在，避免重复添加
+- 迁移脚本是幂等的，可以安全地重复执行
+- 如果字段已存在，会跳过并显示提示信息
+- 迁移完成后会显示成功消息
+
+**预期输出：**
+```
+开始数据库迁移...
+✅ 添加 is_admin 字段
+✅ 添加 is_active 字段
+✅ 添加 updated_at 字段
+✅ 数据库迁移完成
+```
+
+**注意事项：**
+- 首次部署时需要执行此迁移
+- 如果是全新部署（空数据库），应用启动时会自动创建完整的表结构，无需手动迁移
+- 仅在从旧版本升级时需要执行此迁移
+
+---
+
+## 管理员初始化
+
+管理员账户可以通过两种方式创建：
+
+### 方式一：环境变量自动初始化（推荐用于 Docker）
+
+**步骤：**
+
+1. 在 `.env.docker` 文件中添加管理员配置：
+```bash
+cat >> .env.docker <<EOF
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-secure-password-here
+EOF
+```
+
+2. 启动或重启容器：
+```bash
+docker-compose up -d
+```
+
+3. 查看日志确认创建成功：
+```bash
+docker-compose logs | grep "管理员"
+# 预期输出: 管理员 'admin' 创建成功
+```
+
+**优势：**
+- 自动化部署，无需手动干预
+- 适合 CI/CD 流程
+- 容器重启时自动检查和创建
+
+### 方式二：交互式脚本创建
+
+**步骤：**
+
+1. 进入容器并执行创建脚本：
+```bash
+docker exec -it etftool bash
+cd /app/backend
+python scripts/create_admin.py
+```
+
+2. 按提示输入用户名和密码：
+```
+=== ETFTool 管理员创建工具 ===
+
+用户名: admin
+密码: ********
+确认密码: ********
+
+✅ 管理员创建成功! 用户名: admin, ID: 1
+```
+
+**优势：**
+- 交互式输入，密码不会显示在命令历史中
+- 可以在运行时随时创建新管理员
+- 会检查现有管理员并提示确认
+
+### 验证管理员账户
+
+创建完成后，可以通过以下方式验证：
+
+1. **登录测试：**
+   - 访问 http://localhost:3000
+   - 使用管理员账户登录
+   - 进入"设置" → "管理员"页面（仅管理员可见）
+
+2. **API 测试：**
+```bash
+# 获取 Token
+curl -X POST http://localhost:3000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"your-password"}'
+
+# 使用 Token 访问管理员 API
+curl http://localhost:3000/api/v1/admin/users \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+---
+
 ## 构建镜像
 
 ### 单平台构建（本地测试）
@@ -295,6 +449,8 @@ docker run -d \
   -e SECRET_KEY="your-secret-key-at-least-32-characters" \
   -e ENABLE_RATE_LIMIT=true \
   -e CACHE_TTL=7200 \
+  -e ADMIN_USERNAME="admin" \
+  -e ADMIN_PASSWORD="your-secure-password" \
   \
   -v $(pwd)/data/etftool.db:/app/backend/etftool.db \
   -v $(pwd)/data/cache:/app/backend/cache \
@@ -376,6 +532,8 @@ touch data/etftool.db
 cat > .env.docker <<EOF
 SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
 ENABLE_RATE_LIMIT=true
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-secure-password-here
 EOF
 
 # 3. 启动服务
@@ -700,6 +858,8 @@ docker run -d \
   -e SECRET_KEY="$(cat /run/secrets/etftool_secret_key)" \
   -e ENABLE_RATE_LIMIT=true \
   -e ENVIRONMENT=production \
+  -e ADMIN_USERNAME="$(cat /run/secrets/admin_username)" \
+  -e ADMIN_PASSWORD="$(cat /run/secrets/admin_password)" \
   \
   -v /data/etftool/db:/app/backend/etftool.db \
   -v /data/etftool/cache:/app/backend/cache \
@@ -880,5 +1040,5 @@ command=uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 4
 
 ---
 
-**文档版本**: 1.0
-**最后更新**: 2026-02-03
+**文档版本**: 1.1
+**最后更新**: 2026-02-05
