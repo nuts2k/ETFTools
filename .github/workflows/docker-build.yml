@@ -1,0 +1,216 @@
+name: Docker Multi-Platform Build
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: 'Custom tag for the image (optional)'
+        required: false
+        type: string
+      push_to_dockerhub:
+        description: 'Push to DockerHub'
+        required: false
+        type: boolean
+        default: false
+
+# 并发控制：同一分支/PR 只运行最新的工作流
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/etftool
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 用于创建 Release
+      packages: write  # 用于推送镜像
+
+    steps:
+      # ============================================
+      # 步骤 1: Checkout 代码
+      # ============================================
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ============================================
+      # 步骤 2: 设置 QEMU（多平台支持）
+      # ============================================
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      # ============================================
+      # 步骤 3: 设置 Docker Buildx
+      # ============================================
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
+
+      # ============================================
+      # 步骤 4: 登录 DockerHub
+      # ============================================
+      - name: Login to DockerHub
+        # 仅在非 PR 或手动触发且选择推送时登录
+        if: github.event_name != 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true')
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # ============================================
+      # 步骤 5: 提取 Docker 元数据（标签和注释）
+      # ============================================
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            # 分支名称（例如：main）
+            type=ref,event=branch
+            # PR 编号（例如：pr-123）
+            type=ref,event=pr
+            # 语义化版本（例如：v1.2.3）
+            type=semver,pattern={{version}}
+            # 主版本.次版本（例如：v1.2）
+            type=semver,pattern={{major}}.{{minor}}
+            # 主版本（例如：v1）
+            type=semver,pattern={{major}}
+            # 为 main 分支添加 latest 标签
+            type=raw,value=latest,enable={{is_default_branch}}
+            # 为版本标签添加 latest 标签
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            # 自定义标签（手动触发时）
+            type=raw,value=${{ github.event.inputs.custom_tag }},enable=${{ github.event.inputs.custom_tag != '' }}
+          labels: |
+            org.opencontainers.image.title=ETFTool
+            org.opencontainers.image.description=A股 ETF 分析工具 - 前复权收益分析专家
+            org.opencontainers.image.vendor=ETFTool
+
+      # ============================================
+      # 步骤 6: 构建并推送 Docker 镜像
+      # ============================================
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          # 仅在非 PR 或手动触发且选择推送时推送
+          push: ${{ github.event_name != 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # 使用 GitHub Actions 缓存
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # 构建参数
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      # ============================================
+      # 步骤 7: 生成构建摘要
+      # ============================================
+      - name: Generate build summary
+        if: always()
+        run: |
+          echo "## 🐳 Docker 构建摘要" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 构建信息" >> $GITHUB_STEP_SUMMARY
+          echo "- **触发事件**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **分支/标签**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **构建状态**: ${{ steps.build.outcome }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.build.outcome }}" == "success" ]; then
+            echo "### 📦 生成的镜像标签" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            if [ "${{ github.event_name }}" != "pull_request" ] || [ "${{ github.event.inputs.push_to_dockerhub }}" == "true" ]; then
+              echo "### ✅ 镜像已推送到 DockerHub" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "拉取镜像:" >> $GITHUB_STEP_SUMMARY
+              echo '```bash' >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+              echo '```' >> $GITHUB_STEP_SUMMARY
+            else
+              echo "### ℹ️ 镜像仅构建验证，未推送" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "### ❌ 构建失败" >> $GITHUB_STEP_SUMMARY
+            echo "请查看构建日志以获取详细信息。" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # ============================================
+      # 步骤 8: 验证多架构清单
+      # ============================================
+      - name: Verify multi-arch manifest
+        if: steps.build.outcome == 'success' && (github.event_name != 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true'))
+        run: |
+          echo "验证多架构镜像清单..."
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏗️ 多架构支持" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }} >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      # ============================================
+      # 步骤 9: 创建 GitHub Release（仅版本标签）
+      # ============================================
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v') && steps.build.outcome == 'success'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## 🚀 ETFTool ${{ github.ref_name }}
+
+            ### Docker 镜像
+
+            多平台支持（linux/amd64, linux/arm64）:
+
+            ```bash
+            docker pull ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}
+            ```
+
+            ### 快速启动
+
+            ```bash
+            docker run -d \
+              -p 3000:3000 \
+              -v etftool-data:/app/backend/data \
+              --name etftool \
+              ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}
+            ```
+
+            访问: http://localhost:3000
+
+            ### 更新日志
+
+            请查看提交历史以获取详细更改。
+          draft: false
+          prerelease: false

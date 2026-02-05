@@ -10,6 +10,7 @@
 - [数据库迁移](#数据库迁移)
 - [管理员初始化](#管理员初始化)
 - [构建镜像](#构建镜像)
+  - [CI/CD 自动化构建](#cicd-自动化构建)
 - [运行容器](#运行容器)
 - [使用 Docker Compose](#使用-docker-compose)
 - [数据持久化](#数据持久化)
@@ -423,6 +424,29 @@ docker build --cache-from etftool:latest -t etftool:latest .
 **查看镜像大小：**
 ```bash
 docker images etftool
+```
+
+### CI/CD 自动化构建
+
+本项目已配置 GitHub Actions 自动化工作流，支持：
+- ✅ 多平台镜像构建（linux/amd64, linux/arm64）
+- ✅ 自动推送到 DockerHub
+- ✅ 语义化版本标签管理
+- ✅ 自动创建 GitHub Release
+
+**详细配置指南**: [GitHub Actions 配置指南](github-actions-setup.md)
+
+**快速使用：**
+```bash
+# 推送到 main 分支 → 自动构建并推送 latest 标签
+git push origin main
+
+# 创建版本标签 → 自动构建并推送版本镜像
+git tag v1.0.0
+git push origin v1.0.0
+
+# 拉取自动构建的镜像
+docker pull yourname/etftool:latest
 ```
 
 ---

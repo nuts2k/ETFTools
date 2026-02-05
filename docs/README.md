@@ -12,6 +12,7 @@
 ### 部署运维
 - [Docker 部署指南](deployment/docker-guide.md) - Docker 容器化部署说明
 - [Docker 多架构支持](deployment/docker-multiarch-guide.md) - 多平台镜像构建指南
+- [GitHub Actions 配置指南](deployment/github-actions-setup.md) - CI/CD 自动化构建配置
 - [Docker 统一设计](deployment/docker-unified-design.md) - Docker 架构设计文档
 - [Docker 多平台设计](deployment/docker-multiplatform-design.md) - 多平台构建设计方案
 
@@ -67,6 +68,7 @@
 - `2026-01-30-grid-cache-phase1.md` - 网格缓存第一阶段实现
 - `2026-02-03-alert-intraday-check-impl.md` - 告警盘中检查实现
 - `2026-02-03-alert-notification-impl.md` - 告警通知实现
+- `2026-02-05-github-actions-docker-build.md` - GitHub Actions Docker 多平台构建实现
 
 ### deployment/ - 部署文档
 部署指南、运维手册、环境配置等。
@@ -74,6 +76,7 @@
 **文档列表：**
 - `docker-guide.md` - Docker 部署指南
 - `docker-multiarch-guide.md` - Docker 多架构支持指南
+- `github-actions-setup.md` - GitHub Actions CI/CD 配置指南
 - `docker-unified-design.md` - Docker 统一设计方案
 - `docker-multiplatform-design.md` - Docker 多平台设计方案
 
