@@ -2,11 +2,12 @@
 
 import { useTheme } from "next-themes";
 import { useSettings, type ColorMode, type RefreshRate } from "@/hooks/use-settings";
-import { Moon, Sun, Monitor, Trash2, ChevronRight, Check } from "lucide-react";
+import { Moon, Sun, Monitor, Trash2, ChevronRight, Check, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useAuth } from "@/lib/auth-context";
+import { isAdmin } from "@/lib/admin-guard";
 import Link from "next/link";
 
 export default function SettingsPage() {
@@ -86,6 +87,23 @@ export default function SettingsPage() {
             )}
           </div>
         </section>
+
+        {/* Admin Section - Only visible to admins */}
+        {isAdmin(user) && (
+          <section>
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 pl-3">管理</h2>
+            <div className="bg-card rounded-xl overflow-hidden shadow-sm ring-1 ring-border/50">
+              <Link href="/admin" className="flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors">
+                <Shield className="h-5 w-5 text-red-500" />
+                <div>
+                  <div className="font-medium">管理员控制台</div>
+                  <div className="text-xs text-muted-foreground">用户管理、系统设置</div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground/50 ml-auto" />
+              </Link>
+            </div>
+          </section>
+        )}
 
         {/* General Settings */}
         <section>
