@@ -44,7 +44,26 @@ jobs:
         uses: actions/checkout@v4
 
       # ============================================
-      # 步骤 2: 设置 QEMU（多平台支持）
+      # 步骤 2: 提取版本号
+      # ============================================
+      - name: Extract version from git
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # 标签发布: 使用标签版本（移除 'v' 前缀）
+            VERSION=${GITHUB_REF#refs/tags/v}
+          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
+            # Main 分支: 使用 main-{hash}
+            VERSION="main-$(git rev-parse --short HEAD)"
+          else
+            # 其他分支: 使用 {branch}-{hash}
+            VERSION="${GITHUB_REF_NAME}-$(git rev-parse --short HEAD)"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      # ============================================
+      # 步骤 3: 设置 QEMU（多平台支持）
       # ============================================
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -122,6 +141,7 @@ jobs:
           # 构建参数
           build-args: |
             BUILDKIT_INLINE_CACHE=1
+            APP_VERSION=${{ steps.version.outputs.version }}
 
       # ============================================
       # 步骤 7: 生成构建摘要

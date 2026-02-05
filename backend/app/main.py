@@ -86,18 +86,17 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():
-    status = "ready" if etf_cache.is_initialized else "initializing"
     return {
         "message": "Welcome to ETFTool API",
-        "status": status,
-        "cache_size": len(etf_cache.get_etf_list()),
-        "environment": settings.ENVIRONMENT
+        "version": settings.VERSION,
+        "status": "ok"
     }
 
 @app.get("/api/v1/health")
 async def health_check():
     return {
-        "status": "ok", 
+        "status": "ok",
+        "version": settings.VERSION,
         "data_ready": etf_cache.is_initialized,
         "environment": settings.ENVIRONMENT
     }

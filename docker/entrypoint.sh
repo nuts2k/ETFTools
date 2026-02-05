@@ -18,6 +18,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}[ETFTool]${NC} 容器启动中..."
+echo -e "${BLUE}[ETFTool]${NC} 版本: ${APP_VERSION:-unknown}"
+echo -e "${BLUE}[ETFTool]${NC} 环境: ${ENVIRONMENT}"
 
 # 数据库文件路径
 DB_FILE="/app/backend/etftool.db"

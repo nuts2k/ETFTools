@@ -173,6 +173,8 @@
 
 | 端点 | 方法 | 说明 |
 |------|------|------|
+| `/` | GET | API 根端点（含版本信息） |
+| `/health` | GET | 健康检查（含版本信息、数据就绪状态） |
 | `/etf/search?q={keyword}` | GET | 搜索 ETF |
 | `/etf/{code}/info` | GET | 获取实时基础信息（含交易状态） |
 | `/etf/{code}/history` | GET | 获取 QFQ 历史数据 |
@@ -189,6 +191,8 @@
 | `/admin/system/config/registration` | POST | 开关用户注册 |
 | `/admin/system/config/max-watchlist` | POST | 设置自选列表最大数量 |
 
+**版本信息**: `/` 和 `/api/v1/health` 端点返回 `version` 字段，格式遵循语义化版本规范（Semantic Versioning 2.0.0）。
+
 ## 7. 关键配置文件 (Configuration Files)
 
 | 配置文件 | 位置 | 说明 |
@@ -197,6 +201,12 @@
 | **动态指标** | `backend/app/data/metrics_config.json` | `drawdown_days`, `atr_period` (无需重启) |
 | **ETF 映射** | `backend/app/data/etf_index_map.json` | ETF 到指数的映射表（估值功能） |
 | **降级数据** | `backend/app/data/etf_fallback.json` | 接口失败时的备用数据 |
+| **版本提取** | `scripts/get_version.sh` | 从 Git 标签提取版本号 |
+| **版本升级** | `scripts/bump_version.sh` | 语义化版本升级脚本 |
+
+**版本管理环境变量**：
+- `APP_VERSION`: 后端应用版本（自动从 Git 标签提取，默认 `dev`）
+- `NEXT_PUBLIC_APP_VERSION`: 前端应用版本（构建时注入）
 
 **估值分位功能开关**：
 - 默认关闭，节省 API 资源

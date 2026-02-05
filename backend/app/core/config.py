@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     
     # 基础配置
     PROJECT_NAME: str = "ETFTool"
+    VERSION: str = os.getenv("APP_VERSION", "dev")
     API_V1_STR: str = "/api/v1"
     ENVIRONMENT: str = "development"
     

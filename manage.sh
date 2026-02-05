@@ -217,6 +217,15 @@ check_status() {
     fi
 }
 
+# 提取并设置版本
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/scripts/get_version.sh" ]; then
+    VERSION=$("$SCRIPT_DIR/scripts/get_version.sh")
+    export APP_VERSION="$VERSION"
+    export NEXT_PUBLIC_APP_VERSION="$VERSION"
+    log_info "ETFTool version: $VERSION"
+fi
+
 # Main Logic
 case "$1" in
     start)

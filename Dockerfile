@@ -1,7 +1,13 @@
+# 定义全局构建参数
+ARG APP_VERSION=dev
+
 # ============================================
 # Stage 1: 前端构建
 # ============================================
 FROM node:20-alpine AS frontend-builder
+
+# 接收构建参数
+ARG APP_VERSION
 
 WORKDIR /frontend
 
@@ -16,6 +22,7 @@ COPY frontend/ ./
 
 # 设置前端环境变量（Docker 环境使用相对路径通过 Nginx 代理）
 ENV NEXT_PUBLIC_API_URL=/api/v1
+ENV NEXT_PUBLIC_APP_VERSION=${APP_VERSION}
 
 # 构建 Next.js（standalone 模式）
 RUN npm run build
@@ -44,6 +51,9 @@ RUN pip install --no-cache-dir --user -r requirements.txt
 # Stage 3: 运行时环境
 # ============================================
 FROM python:3.11-slim
+
+# 接收构建参数
+ARG APP_VERSION
 
 WORKDIR /app
 
@@ -90,6 +100,7 @@ RUN chown -R www-data:www-data /app /var/log/nginx /var/lib/nginx /var/log/super
 
 # 设置生产环境变量
 ENV ENVIRONMENT=production
+ENV APP_VERSION=${APP_VERSION}
 ENV BACKEND_HOST=127.0.0.1
 ENV BACKEND_PORT=8000
 

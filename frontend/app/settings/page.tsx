@@ -9,6 +9,7 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useAuth } from "@/lib/auth-context";
 import { isAdmin } from "@/lib/admin-guard";
 import Link from "next/link";
+import { getVersion } from "@/lib/api";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -17,6 +18,7 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [cacheSize, setCacheSize] = useState("0 KB");
   const [showClearCacheDialog, setShowClearCacheDialog] = useState(false);
+  const [appVersion, setAppVersion] = useState<string>("loading...");
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -31,6 +33,11 @@ export default function SettingsPage() {
         }
     }
     setCacheSize((total / 1024).toFixed(2) + " KB");
+  }, []);
+
+  // 获取应用版本
+  useEffect(() => {
+    getVersion().then(setAppVersion);
   }, []);
 
   const handleClearCacheConfirm = () => {
@@ -187,26 +194,37 @@ export default function SettingsPage() {
         <section>
           <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 pl-3">通知设置</h2>
           <div className="bg-card rounded-xl overflow-hidden shadow-sm ring-1 ring-border/50 divide-y divide-border/50">
-            <Link
-              href="/settings/notifications"
-              className="flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
-            >
-              <div>
-                <p className="font-medium">Telegram 通知</p>
-                <p className="text-xs text-muted-foreground">配置 Telegram Bot 接收通知</p>
+            {user ? (
+              <>
+                <Link
+                  href="/settings/notifications"
+                  className="flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
+                >
+                  <div>
+                    <p className="font-medium">Telegram 通知</p>
+                    <p className="text-xs text-muted-foreground">配置 Telegram Bot 接收通知</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+                </Link>
+                <Link
+                  href="/settings/alerts"
+                  className="flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
+                >
+                  <div>
+                    <p className="font-medium">信号通知</p>
+                    <p className="text-xs text-muted-foreground">配置 ETF 指标变化提醒</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
+                </Link>
+              </>
+            ) : (
+              <div className="p-4 text-center">
+                <p className="text-sm text-muted-foreground mb-2">登录后可配置通知功能</p>
+                <Link href="/login" className="text-sm text-primary hover:underline">
+                  立即登录
+                </Link>
               </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
-            </Link>
-            <Link
-              href="/settings/alerts"
-              className="flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors"
-            >
-              <div>
-                <p className="font-medium">信号通知</p>
-                <p className="text-xs text-muted-foreground">配置 ETF 指标变化提醒</p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground/50" />
-            </Link>
+            )}
           </div>
         </section>
 
@@ -230,7 +248,7 @@ export default function SettingsPage() {
         </section>
 
         <div className="py-8 text-center">
-            <p className="text-xs text-muted-foreground/50">ETFTool v0.1.0 • Designed for Simplicity</p>
+            <p className="text-xs text-muted-foreground/50">ETFTool v{appVersion} • Designed for Simplicity</p>
         </div>
       </main>
 
