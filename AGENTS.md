@@ -147,6 +147,8 @@
 | **ETF 接口** | `backend/app/api/v1/endpoints/etf.py` | 搜索、行情、历史、指标计算 |
 | **自选管理** | `backend/app/api/v1/endpoints/watchlist.py` | 云端同步逻辑 |
 | **用户认证** | `backend/app/api/v1/endpoints/auth.py` | 注册、登录、JWT |
+| **管理员端点** | `backend/app/api/v1/endpoints/admin.py` | 用户管理、系统配置 |
+| **系统配置服务** | `backend/app/services/system_config_service.py` | 全局配置服务 |
 | **数据源** | `backend/app/services/akshare_service.py` | AkShare 接口封装、缓存降级 |
 | **指标计算** | `backend/app/services/metrics_service.py` | ATR, 回撤, CAGR 算法 |
 | **估值服务** | `backend/app/services/valuation_service.py` | PE 分位数（可选） |
@@ -179,6 +181,13 @@
 | `/watchlist/sync` | POST | 同步本地自选数据到云端（并集策略） |
 | `/auth/token` | POST | 用户登录，获取 JWT |
 | `/auth/register` | POST | 用户注册 |
+| `/admin/users` | GET | 获取用户列表（管理员） |
+| `/admin/users/{id}` | GET | 获取用户详情（管理员） |
+| `/admin/users/{id}/toggle-admin` | POST | 切换管理员权限 |
+| `/admin/users/{id}/toggle-active` | POST | 启用/禁用用户 |
+| `/admin/system/config` | GET | 获取系统配置 |
+| `/admin/system/config/registration` | POST | 开关用户注册 |
+| `/admin/system/config/max-watchlist` | POST | 设置自选列表最大数量 |
 
 ## 7. 关键配置文件 (Configuration Files)
 
