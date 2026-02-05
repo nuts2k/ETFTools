@@ -78,7 +78,7 @@ async def _run_daily_check(self) -> None:
         for etf_code, users_data in etf_users_map.items():
             try:
                 # 获取 ETF 数据并计算指标（每个 ETF 只计算一次）
-                df = ak_service.fetch_etf_history(etf_code)
+                df = await asyncio.to_thread(ak_service.fetch_history_raw, etf_code, "daily", "qfq")
                 if df is None or df.empty:
                     logger.warning(f"No data for ETF {etf_code}")
                     continue
