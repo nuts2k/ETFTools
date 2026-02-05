@@ -10,6 +10,9 @@ class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     hashed_password: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    is_admin: bool = Field(default=False, index=True)
+    is_active: bool = Field(default=True, index=True)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 class UserCreate(UserBase):
     password: str
@@ -21,6 +24,8 @@ class UserPasswordUpdate(SQLModel):
 class UserRead(UserBase):
     id: int
     created_at: datetime
+    is_admin: bool
+    is_active: bool
 
 class Watchlist(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
