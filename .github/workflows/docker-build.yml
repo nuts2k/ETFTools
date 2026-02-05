@@ -170,7 +170,7 @@ jobs:
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "拉取镜像:" >> $GITHUB_STEP_SUMMARY
               echo '```bash' >> $GITHUB_STEP_SUMMARY
-              echo "docker pull ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+              echo "docker pull ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
             else
               echo "### ℹ️ 镜像仅构建验证，未推送" >> $GITHUB_STEP_SUMMARY
@@ -187,12 +187,12 @@ jobs:
         if: steps.build.outcome == 'success' && (github.event_name != 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true'))
         run: |
           echo "验证多架构镜像清单..."
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🏗️ 多架构支持" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }} >> $GITHUB_STEP_SUMMARY
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }} >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       # ============================================
@@ -214,7 +214,7 @@ jobs:
             多平台支持（linux/amd64, linux/arm64）:
 
             ```bash
-            docker pull ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}
+            docker pull ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}
             ```
 
             ### 快速启动
@@ -224,7 +224,7 @@ jobs:
               -p 3000:3000 \
               -v etftool-data:/app/backend/data \
               --name etftool \
-              ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}
+              ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}
             ```
 
             访问: http://localhost:3000
