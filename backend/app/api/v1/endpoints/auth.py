@@ -64,10 +64,18 @@ async def get_current_admin_user(
 @router.post("/register", response_model=UserRead)
 @limiter.limit("3/hour")  # 限制注册频率
 def register(
-    request: Request, 
-    user_in: UserCreate, 
+    request: Request,
+    user_in: UserCreate,
     session: Session = Depends(get_session)
 ):
+    # 检查注册是否开放
+    from app.services.system_config_service import SystemConfigService
+    if not SystemConfigService.is_registration_enabled(session):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User registration is currently disabled"
+        )
+
     db_user = AuthService.get_user_by_username(session, user_in.username)
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
