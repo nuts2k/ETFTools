@@ -170,7 +170,12 @@ jobs:
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "拉取镜像:" >> $GITHUB_STEP_SUMMARY
               echo '```bash' >> $GITHUB_STEP_SUMMARY
-              echo "docker pull ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              # 根据事件类型使用不同的标签
+              if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+                echo "docker pull ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "docker pull ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+              fi
               echo '```' >> $GITHUB_STEP_SUMMARY
             else
               echo "### ℹ️ 镜像仅构建验证，未推送" >> $GITHUB_STEP_SUMMARY
@@ -186,13 +191,22 @@ jobs:
       - name: Verify multi-arch manifest
         if: steps.build.outcome == 'success' && (github.event_name != 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true'))
         run: |
-          echo "验证多架构镜像清单..."
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}
+          # 根据事件类型确定要验证的标签
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            # 版本标签：使用不带 v 前缀的版本号
+            VERIFY_TAG="${{ steps.version.outputs.version }}"
+          else
+            # 分支推送：使用分支名
+            VERIFY_TAG="${{ github.ref_name }}"
+          fi
+
+          echo "验证多架构镜像清单: $VERIFY_TAG"
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:$VERIFY_TAG
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🏗️ 多架构支持" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }} >> $GITHUB_STEP_SUMMARY
+          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:$VERIFY_TAG >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       # ============================================
