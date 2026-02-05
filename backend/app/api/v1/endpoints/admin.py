@@ -3,8 +3,10 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, select
 from app.models.user import User, UserRead
+from app.models.system_config import SystemConfigKeys
 from app.core.database import get_session
 from app.api.v1.endpoints.auth import get_current_admin_user
+from app.services.system_config_service import SystemConfigService
 
 router = APIRouter()
 
@@ -76,3 +78,41 @@ def toggle_user_active(
     session.add(user)
     session.commit()
     return {"user_id": user.id, "is_active": user.is_active}
+
+
+@router.get("/system/config")
+def get_system_config(
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin_user)
+):
+    """获取系统配置（仅管理员）"""
+    return {
+        "registration_enabled": SystemConfigService.is_registration_enabled(session),
+        "max_watchlist_items": SystemConfigService.get_max_watchlist_items(session),
+    }
+
+
+@router.post("/system/config/registration")
+def toggle_registration(
+    enabled: bool,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin_user)
+):
+    """开启/关闭用户注册"""
+    SystemConfigService.set_config(
+        session, SystemConfigKeys.REGISTRATION_ENABLED, enabled, admin.id
+    )
+    return {"registration_enabled": enabled}
+
+
+@router.post("/system/config/max-watchlist")
+def set_max_watchlist(
+    max_items: int = Query(..., ge=1, le=1000),
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin_user)
+):
+    """设置自选列表最大数量"""
+    SystemConfigService.set_config(
+        session, SystemConfigKeys.MAX_WATCHLIST_ITEMS, max_items, admin.id
+    )
+    return {"max_watchlist_items": max_items}
