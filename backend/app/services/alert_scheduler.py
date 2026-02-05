@@ -82,7 +82,7 @@ class AlertScheduler:
         Returns:
             包含 temperature, daily_trend, weekly_trend 的字典，如果获取失败则返回 None
         """
-        df = await asyncio.to_thread(ak_service.fetch_etf_history, etf_code)
+        df = await asyncio.to_thread(ak_service.fetch_history_raw, etf_code, "daily", "qfq")
         if df is None or df.empty:
             logger.warning(f"No data for ETF {etf_code}")
             return None
