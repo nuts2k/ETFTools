@@ -36,6 +36,31 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], sessio
         raise credentials_exception
     return user
 
+
+async def get_current_active_user(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """验证用户是否激活"""
+    if not current_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User account is disabled"
+        )
+    return current_user
+
+
+async def get_current_admin_user(
+    current_user: User = Depends(get_current_active_user)
+) -> User:
+    """验证用户是否为管理员"""
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required"
+        )
+    return current_user
+
+
 @router.post("/register", response_model=UserRead)
 @limiter.limit("3/hour")  # 限制注册频率
 def register(
