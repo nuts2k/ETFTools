@@ -38,3 +38,41 @@ def get_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+
+@router.post("/users/{user_id}/toggle-admin")
+def toggle_admin_status(
+    user_id: int,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin_user)
+):
+    """切换用户管理员权限"""
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.id == admin.id:
+        raise HTTPException(status_code=400, detail="Cannot modify your own admin status")
+    user.is_admin = not user.is_admin
+    user.updated_at = datetime.utcnow()
+    session.add(user)
+    session.commit()
+    return {"user_id": user.id, "is_admin": user.is_admin}
+
+
+@router.post("/users/{user_id}/toggle-active")
+def toggle_user_active(
+    user_id: int,
+    session: Session = Depends(get_session),
+    admin: User = Depends(get_current_admin_user)
+):
+    """启用/禁用用户账户"""
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.id == admin.id:
+        raise HTTPException(status_code=400, detail="Cannot disable your own account")
+    user.is_active = not user.is_active
+    user.updated_at = datetime.utcnow()
+    session.add(user)
+    session.commit()
+    return {"user_id": user.id, "is_active": user.is_active}
