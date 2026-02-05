@@ -9,6 +9,7 @@ import uvicorn
 from app.core.config import settings
 from app.core.cache import etf_cache
 from app.core.database import create_db_and_tables
+from app.core.init_admin import init_admin_from_env
 from app.services.akshare_service import ak_service
 from app.services.alert_scheduler import alert_scheduler
 from app.api.v1.api import api_router
@@ -35,6 +36,7 @@ async def lifespan(app: FastAPI):
     logger.info("Application starting up...")
     create_db_and_tables()
     logger.info("Database initialized.")
+    init_admin_from_env()
     thread = threading.Thread(target=load_initial_data)
     thread.daemon = True
     thread.start()
