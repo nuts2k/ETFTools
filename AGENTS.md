@@ -121,5 +121,96 @@
 | **自选逻辑** | `frontend/hooks/use-watchlist.ts` | 本地存储与云端同步的混合逻辑 |
 | **应用配置** | `backend/app/core/config.py` | CORS, SECRET_KEY 等环境配置 |
 
+## 9. 文档组织规范 (Documentation Structure)
+
+### 9.1 文档目录结构
+
+项目文档采用分类组织的方式，所有文档集中在 `docs/` 目录下，按功能和用途分为 6 个子目录：
+
+```
+ETFTool/
+├── README.md              # 项目主文档
+├── AGENTS.md              # AI 协作上下文（本文档）
+├── CHANGELOG.md           # 版本变更记录
+│
+└── docs/                  # 文档根目录
+    ├── README.md          # 文档导航索引
+    ├── planning/          # 规划类文档
+    ├── research/          # 研究类文档
+    ├── design/            # 设计文档
+    ├── implementation/    # 实现计划
+    ├── deployment/        # 部署文档
+    └── testing/           # 测试报告
+```
+
+### 9.2 文档分类说明
+
+| 目录 | 用途 | 典型文档 |
+|------|------|---------|
+| **planning/** | 项目规划、产品需求等战略性文档 | PRD.md, PLAN.md |
+| **research/** | 技术研究、算法分析、业务逻辑研究 | etf-valuation-research.md, pe-percentile-research.md |
+| **design/** | 功能设计、架构设计、技术方案设计 | *-design.md |
+| **implementation/** | 具体功能的实现步骤、技术细节 | *-impl.md, *-implementation.md |
+| **deployment/** | 部署指南、运维手册、环境配置 | docker-guide.md, docker-multiarch-guide.md |
+| **testing/** | 测试计划、测试报告、测试结果 | *-test-report.md |
+
+### 9.3 文档命名规范
+
+为保持文档的一致性和可维护性，请遵循以下命名规范：
+
+| 文档类型 | 命名格式 | 示例 |
+|---------|---------|------|
+| 设计文档 | `YYYY-MM-DD-feature-design.md` | `2026-02-04-admin-system-design.md` |
+| 实现计划 | `YYYY-MM-DD-feature-impl.md` | `2026-02-03-alert-notification-impl.md` |
+| 测试报告 | `feature-test-report.md` | `auth-flow-test-report.md` |
+| 研究文档 | `topic-research.md` | `etf-valuation-research.md` |
+| 部署指南 | `platform-guide.md` | `docker-guide.md` |
+
+**命名原则：**
+- 使用小写字母和连字符（kebab-case）
+- 设计和实现文档使用日期前缀（YYYY-MM-DD）便于追溯
+- 使用描述性的功能名称
+- 文件扩展名统一使用 `.md`
+
+### 9.4 文档查找指南
+
+**按需求查找：**
+- **了解项目整体** → 阅读 `README.md` 和 `docs/planning/PRD.md`
+- **部署项目** → 查看 `docs/deployment/` 目录
+- **了解功能设计** → 在 `docs/design/` 目录中搜索功能名称
+- **了解实现细节** → 在 `docs/implementation/` 目录中查找对应文档
+- **查看测试情况** → 查看 `docs/testing/` 目录
+- **了解技术原理** → 查看 `docs/research/` 目录
+
+**按时间查找：**
+设计和实现文档使用日期前缀，可按时间顺序查看项目演进：
+```bash
+ls -lt docs/design/        # 查看最近的设计文档
+ls -lt docs/implementation/ # 查看最近的实现文档
+```
+
+### 9.5 文档维护原则
+
+- **及时更新**：代码变更后及时更新相关文档
+- **保持同步**：确保文档与实际实现保持一致
+- **清晰简洁**：使用清晰的语言，避免冗余
+- **结构化**：使用标题、列表、表格等组织内容
+- **中文优先**：项目文档使用中文撰写，专业术语可保留英文
+
+### 9.6 常用文档快速链接
+
+**核心文档：**
+- [文档导航索引](docs/README.md) - 完整的文档目录和查找指南
+- [产品需求文档](docs/planning/PRD.md) - 产品功能需求和规格说明
+- [项目开发计划](docs/planning/PLAN.md) - 开发路线图和里程碑
+
+**部署相关：**
+- [Docker 部署指南](docs/deployment/docker-guide.md) - 容器化部署说明
+- [Docker 多架构支持](docs/deployment/docker-multiarch-guide.md) - 多平台镜像构建
+
+**技术研究：**
+- [ETF 估值研究](docs/research/etf-valuation-research.md) - 估值方法和指标研究
+- [PE 分位数研究](docs/research/pe-percentile-research.md) - PE 分位数计算和应用
+
 ---
 **注意**: 在修改代码时，请务必遵守上述原则，特别是保持数据口径的一致性（QFQ）。

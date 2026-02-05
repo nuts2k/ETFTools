@@ -36,7 +36,7 @@
 
 **目标**: 修复严重安全漏洞，确保基础安全  
 **工时**: 1-2 天  
-**详细设计**: 参见 [`docs/plans/2026-01-25-phase1-security-hardening-design.md`](docs/plans/2026-01-25-phase1-security-hardening-design.md)
+**详细设计**: 参见 [`docs/design/2026-01-25-phase1-security-hardening-design.md`](../design/2026-01-25-phase1-security-hardening-design.md)
 
 #### 设计原则
 - **环境分离优先**: 通过 `.env` 文件区分开发和生产配置

@@ -72,6 +72,9 @@ npm run dev
 
 ## 文档
 
-更多详细文档请参考 `docs/` 目录：
-- [阶段一：安全加固设计](docs/plans/2026-01-25-phase1-security-hardening-design.md)
-- [项目改进计划](PLAN.md)
+更多详细文档请参考：
+- [文档导航索引](docs/README.md) - 完整的文档目录和查找指南
+- [项目开发计划](docs/planning/PLAN.md) - 开发路线图和里程碑
+- [产品需求文档](docs/planning/PRD.md) - 产品功能需求和规格说明
+- [阶段一：安全加固设计](docs/design/2026-01-25-phase1-security-hardening-design.md)
+- [Docker 部署指南](docs/deployment/docker-guide.md) - 容器化部署说明
