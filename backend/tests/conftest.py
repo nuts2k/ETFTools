@@ -13,6 +13,14 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 from typing import Optional
+from sqlmodel import Session, SQLModel, create_engine
+from sqlalchemy.pool import StaticPool
+from fastapi.testclient import TestClient
+
+from app.main import app
+from app.core.database import get_session
+from app.models.user import User, UserCreate
+from app.services.auth_service import AuthService
 
 
 def _generate_ohlcv_data(
@@ -198,3 +206,107 @@ def single_day_data() -> pd.DataFrame:
         "close": [1.01],
         "volume": [1000000],
     })
+
+
+# ============================================================================
+# Admin System Test Fixtures
+# ============================================================================
+
+@pytest.fixture(name="test_engine")
+def test_engine_fixture():
+    """创建 in-memory SQLite 测试引擎"""
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    SQLModel.metadata.create_all(engine)
+    yield engine
+    engine.dispose()
+
+
+@pytest.fixture(name="test_session")
+def test_session_fixture(test_engine):
+    """创建测试数据库会话"""
+    with Session(test_engine) as session:
+        yield session
+
+
+@pytest.fixture(name="admin_user")
+def admin_user_fixture(test_session: Session) -> User:
+    """创建管理员用户"""
+    user = User(
+        username="admin",
+        hashed_password=AuthService.get_password_hash("admin123"),
+        is_admin=True,
+        is_active=True,
+    )
+    test_session.add(user)
+    test_session.commit()
+    test_session.refresh(user)
+    return user
+
+
+@pytest.fixture(name="regular_user")
+def regular_user_fixture(test_session: Session) -> User:
+    """创建普通用户"""
+    user = User(
+        username="user",
+        hashed_password=AuthService.get_password_hash("user123"),
+        is_admin=False,
+        is_active=True,
+    )
+    test_session.add(user)
+    test_session.commit()
+    test_session.refresh(user)
+    return user
+
+
+@pytest.fixture(name="admin_token")
+def admin_token_fixture(admin_user: User) -> str:
+    """生成管理员 JWT token"""
+    return AuthService.create_access_token(data={"sub": admin_user.username})
+
+
+@pytest.fixture(name="user_token")
+def user_token_fixture(regular_user: User) -> str:
+    """生成普通用户 JWT token"""
+    return AuthService.create_access_token(data={"sub": regular_user.username})
+
+
+@pytest.fixture(name="admin_client")
+def admin_client_fixture(test_session: Session, admin_token: str):
+    """创建带管理员认证的 TestClient"""
+    def override_get_session():
+        yield test_session
+
+    app.dependency_overrides[get_session] = override_get_session
+    client = TestClient(app)
+    client.headers = {"Authorization": f"Bearer {admin_token}"}
+    yield client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="user_client")
+def user_client_fixture(test_session: Session, user_token: str):
+    """创建带普通用户认证的 TestClient"""
+    def override_get_session():
+        yield test_session
+
+    app.dependency_overrides[get_session] = override_get_session
+    client = TestClient(app)
+    client.headers = {"Authorization": f"Bearer {user_token}"}
+    yield client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture(name="client")
+def client_fixture(test_session: Session):
+    """创建未认证的 TestClient"""
+    def override_get_session():
+        yield test_session
+
+    app.dependency_overrides[get_session] = override_get_session
+    client = TestClient(app)
+    yield client
+    app.dependency_overrides.clear()
