@@ -121,9 +121,9 @@ export default function SettingsPage() {
                     value={settings.refreshRate}
                     onChange={(e) => updateSettings({ refreshRate: Number(e.target.value) as RefreshRate })}
                 >
-                    <option value={5}>每 5 秒</option>
-                    <option value={10}>每 10 秒</option>
+                    <option value={15}>每 15 秒</option>
                     <option value={30}>每 30 秒</option>
+                    <option value={60}>每 60 秒</option>
                     <option value={0}>手动</option>
                 </select>
                 <span className="text-muted-foreground text-sm pointer-events-none">

@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { API_BASE_URL } from "@/lib/api";
 
 export type ColorMode = "red-up" | "green-up";
-export type RefreshRate = 5 | 10 | 30 | 0; // 0 = Manual
+export type RefreshRate = 15 | 30 | 60 | 0; // 0 = Manual
 
 const SETTINGS_KEY = "etftool-settings";
 
@@ -16,7 +16,7 @@ interface Settings {
 
 const DEFAULT_SETTINGS: Settings = {
   colorMode: "red-up",
-  refreshRate: 5,
+  refreshRate: 30,
 };
 
 interface SettingsContextType {
