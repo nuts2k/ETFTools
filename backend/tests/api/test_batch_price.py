@@ -91,8 +91,47 @@ class TestBatchPriceEndpoint:
         """超过 50 个代码返回 400。"""
         from app.main import app
 
-        codes = ",".join([str(i) for i in range(51)])
+        codes = ",".join([f"{i:06d}" for i in range(51)])
         client = TestClient(app)
         response = client.get(f"/api/v1/etf/batch-price?codes={codes}")
+
+        assert response.status_code == 400
+
+    @patch("app.api.v1.endpoints.etf.get_market_status", return_value="交易中")
+    @patch("app.api.v1.endpoints.etf.etf_cache")
+    def test_batch_price_codes_with_whitespace(self, mock_cache, mock_status):
+        """代码间有多余空格时仍能正常解析。"""
+        from app.main import app
+
+        mock_cache.etf_map = self._make_etf_map()
+
+        client = TestClient(app)
+        response = client.get("/api/v1/etf/batch-price?codes= 510300 , 510500 ")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["items"]) == 2
+
+    @patch("app.api.v1.endpoints.etf.get_market_status", return_value="交易中")
+    @patch("app.api.v1.endpoints.etf.etf_cache")
+    def test_batch_price_duplicate_codes(self, mock_cache, mock_status):
+        """重复代码返回重复条目（不去重）。"""
+        from app.main import app
+
+        mock_cache.etf_map = self._make_etf_map()
+
+        client = TestClient(app)
+        response = client.get("/api/v1/etf/batch-price?codes=510300,510300")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data["items"]) == 2
+
+    def test_batch_price_invalid_format_codes(self):
+        """非6位数字的代码被过滤，全部无效时返回 400。"""
+        from app.main import app
+
+        client = TestClient(app)
+        response = client.get("/api/v1/etf/batch-price?codes=abc,<script>,12345")
 
         assert response.status_code == 400

@@ -27,13 +27,15 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
   const { refreshRate } = settings;
 
+  // 前端交易时段预判断，用于避免非交易时段发起无意义请求
+  // 权威来源为后端 get_market_status()，此处仅做客户端预过滤优化
   function isTradingHours(): boolean {
     const now = new Date();
     const day = now.getDay();
     if (day === 0 || day === 6) return false; // 周末
 
     const minutes = now.getHours() * 60 + now.getMinutes();
-    // 9:15-11:30 或 13:00-15:00
+    // 9:15-11:30 (555-690) 或 13:00-15:00 (780-900)
     return (minutes >= 555 && minutes <= 690) || (minutes >= 780 && minutes <= 900);
   }
 
@@ -312,19 +314,27 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
           data.items.map((item: any) => [item.code, item])
         );
 
-        setWatchlist(prev =>
-          prev.map(item => {
+        setWatchlist(prev => {
+          const newList = prev.map(item => {
             const updated = priceMap.get(item.code);
             if (!updated) return item;
             return { ...item, price: updated.price, change_pct: updated.change_pct };
-          })
-        );
+          });
+          // 本地模式下持久化轮询更新的价格
+          if (!user) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+          }
+          return newList;
+        });
       } catch (e) {
         console.error("Price poll failed", e);
       }
     };
 
     const intervalId = setInterval(poll, refreshRate * 1000);
+
+    // 挂载后立即轮询一次，避免等待首个 interval
+    poll();
 
     // 页面可见性变化时也触发一次
     const handleVisibility = () => {
