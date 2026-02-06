@@ -102,6 +102,30 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
   }, [user, token, isLoaded]);
 
 
+  const fetchMetricsForItem = async (code: string): Promise<Partial<ETFItem> | null> => {
+    try {
+      const [infoResult, metricsResult] = await Promise.allSettled([
+        fetchClient<ETFDetail>(`/etf/${code}/info`),
+        fetchClient<ETFMetrics>(`/etf/${code}/metrics?period=5y`),
+      ]);
+      const info = infoResult.status === "fulfilled" ? infoResult.value : null;
+      const metrics = metricsResult.status === "fulfilled" ? metricsResult.value : null;
+      return {
+        ...(info && { price: info.price, change_pct: info.change_pct }),
+        ...(metrics && {
+          atr: metrics.atr,
+          current_drawdown: metrics.current_drawdown,
+          weekly_direction: metrics.weekly_trend?.direction,
+          consecutive_weeks: metrics.weekly_trend?.consecutive_weeks,
+          temperature_score: metrics.temperature?.score,
+          temperature_level: metrics.temperature?.level,
+        }),
+      };
+    } catch {
+      return null;
+    }
+  };
+
   const add = async (item: ETFItem) => {
     if (watchlist.some((i) => i.code === item.code)) return;
     
@@ -113,18 +137,35 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
       try {
         await fetch(`${API_BASE_URL}/watchlist/${item.code}`, {
           method: "POST",
-          headers: {  
+          headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}` 
+              Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(item)
         });
+        // POST 成功后，重新获取完整列表（含指标）
+        const res = await fetch(`${API_BASE_URL}/watchlist/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setWatchlist(data);
+        }
       } catch (e) {
-        // Revert on error? For MVP we just log
         console.error("Cloud add failed", e);
       }
     } else {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+      // 异步补全指标（不阻塞 add 操作）
+      fetchMetricsForItem(item.code).then((enriched) => {
+        if (enriched) {
+          setWatchlist(prev => {
+            const updated = prev.map(i => i.code === item.code ? { ...i, ...enriched } : i);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+            return updated;
+          });
+        }
+      });
     }
   };
 
