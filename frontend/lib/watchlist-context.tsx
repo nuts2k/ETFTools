@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { type ETFItem, type ETFDetail, type ETFMetrics, API_BASE_URL, fetchClient } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
+import { useSettings } from "@/hooks/use-settings";
 
 const STORAGE_KEY = "etftool-watchlist";
 
@@ -22,6 +23,18 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
   const [watchlist, setWatchlist] = useState<ETFItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const { user, token, isLoading: authLoading } = useAuth();
+  const { settings } = useSettings();
+  const { refreshRate } = settings;
+
+  function isTradingHours(): boolean {
+    const now = new Date();
+    const day = now.getDay();
+    if (day === 0 || day === 6) return false; // 周末
+
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    // 9:15-11:30 或 13:00-15:00
+    return (minutes >= 555 && minutes <= 690) || (minutes >= 780 && minutes <= 900);
+  }
 
   // Load watchlist (Local or Cloud)
   useEffect(() => {
@@ -272,6 +285,52 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
     setWatchlist(newList);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
   };
+
+  // 自动轮询价格
+  useEffect(() => {
+    if (refreshRate === 0 || watchlist.length === 0 || !isLoaded) return;
+
+    const poll = async () => {
+      if (document.hidden || !isTradingHours()) return;
+
+      const codes = watchlist.map(i => i.code).join(",");
+      try {
+        const res = await fetch(`${API_BASE_URL}/etf/batch-price?codes=${codes}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // 如果已收盘，不再更新
+        if (data.market_status !== "交易中") return;
+
+        const priceMap = new Map<string, { code: string; name: string; price: number; change_pct: number }>(
+          data.items.map((item: any) => [item.code, item])
+        );
+
+        setWatchlist(prev =>
+          prev.map(item => {
+            const updated = priceMap.get(item.code);
+            if (!updated) return item;
+            return { ...item, price: updated.price, change_pct: updated.change_pct };
+          })
+        );
+      } catch (e) {
+        console.error("Price poll failed", e);
+      }
+    };
+
+    const intervalId = setInterval(poll, refreshRate * 1000);
+
+    // 页面可见性变化时也触发一次
+    const handleVisibility = () => {
+      if (!document.hidden) poll();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [refreshRate, watchlist.length, isLoaded]);
 
   return (
     <WatchlistContext.Provider value={{ watchlist, add, remove, reorder, isWatched, isLoaded, refresh }}>
