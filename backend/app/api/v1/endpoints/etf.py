@@ -51,6 +51,34 @@ async def search_etf(
     """
     return etf_cache.search(q)
 
+@router.get("/batch-price")
+async def get_batch_price(
+    codes: str = Query(..., description="逗号分隔的 ETF 代码列表，如 510300,510500")
+):
+    """
+    批量获取 ETF 实时价格（轻量级，仅从内存缓存读取）
+    """
+    code_list = [c.strip() for c in codes.split(",") if c.strip()]
+    if not code_list or len(code_list) > 50:
+        raise HTTPException(status_code=400, detail="codes 参数无效或超过 50 个")
+
+    items = []
+    for code in code_list:
+        info = etf_cache.etf_map.get(code)
+        if info:
+            items.append({
+                "code": info.get("code", code),
+                "name": info.get("name", ""),
+                "price": info.get("price", 0),
+                "change_pct": info.get("change_pct", 0),
+            })
+
+    return {
+        "items": items,
+        "market_status": get_market_status(),
+    }
+
+
 @router.get("/{code}/info")
 async def get_etf_info(code: str):
     """
