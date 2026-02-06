@@ -21,7 +21,7 @@
 | **前端框架** | Next.js 16 (App Router) + TypeScript | React 框架 |
 | **UI 组件** | Shadcn/UI + Tailwind CSS | 组件库和样式 |
 | **图表** | Recharts | 响应式、触摸友好 |
-| **交互** | @dnd-kit, use-long-press | 拖拽排序、长按操作 |
+| **交互** | @dnd-kit, use-long-press, use-pull-to-refresh | 拖拽排序、长按操作、下拉刷新 |
 | **状态管理** | React Context | Auth, Watchlist, Settings |
 | **PWA 支持** | manifest.json + Apple meta tags | iOS/Android 主屏幕安装 |
 
@@ -163,13 +163,15 @@
 
 | 功能模块 | 文件路径 | 说明 |
 |---------|---------|------|
-| **首页** | `frontend/app/page.tsx` | 自选列表、拖拽排序 |
+| **首页** | `frontend/app/page.tsx` | 自选列表、拖拽排序、下拉刷新 |
 | **搜索页** | `frontend/app/search/page.tsx` | 模糊搜索、防抖 |
 | **详情页** | `frontend/app/etf/[code]/page.tsx` | 图表、指标卡片 |
 | **设置页** | `frontend/app/settings/page.tsx` | 主题、刷新频率 |
 | **登录/注册** | `frontend/app/login/`, `frontend/app/register/` | 认证页面 |
 | **图表组件** | `frontend/components/ETFChart.tsx` | Recharts 配置、交互 |
 | **自选逻辑** | `frontend/hooks/use-watchlist.ts` | 本地存储、云端同步 |
+| **下拉刷新 Hook** | `frontend/hooks/use-pull-to-refresh.ts` | 触摸手势状态机 |
+| **下拉刷新指示器** | `frontend/components/PullToRefreshIndicator.tsx` | 下拉视觉反馈 |
 | **认证上下文** | `frontend/contexts/AuthContext.tsx` | JWT 管理 |
 | **PWA 配置** | `frontend/public/manifest.json` | PWA 清单、图标、主屏幕安装 |
 

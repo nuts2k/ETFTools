@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Star, Edit3, Check, Search, X, RefreshCw, ArrowRight, MousePointer2 } from "lucide-react";
 import { useWatchlist } from "@/hooks/use-watchlist";
@@ -25,9 +25,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableWatchlistItem } from "@/components/SortableWatchlistItem";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
+import { PullToRefreshIndicator } from "@/components/PullToRefreshIndicator";
 
 export default function WatchlistPage() {
-  const { watchlist, isLoaded, add, remove, reorder, isWatched } = useWatchlist();
+  const { watchlist, isLoaded, add, remove, reorder, isWatched, refresh } = useWatchlist();
   const [isEditing, setIsEditing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
@@ -36,9 +38,20 @@ export default function WatchlistPage() {
       setLastUpdated(new Date());
     }
   }, [isLoaded, watchlist.length]);
-  
+
   // Search state
   const [isSearchMode, setIsSearchMode] = useState(false);
+
+  // Pull to refresh
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const { pullDistance, state: pullState } = usePullToRefresh({
+    scrollRef,
+    onRefresh: async () => {
+      await refresh();
+      setLastUpdated(new Date());
+    },
+    disabled: isSearchMode || isEditing,
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ETFItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -117,7 +130,7 @@ export default function WatchlistPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-[100dvh] bg-background pb-20">
+    <div ref={scrollRef} className="flex flex-col h-[100dvh] bg-background pb-20 overflow-y-auto overscroll-y-contain">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl pt-safe border-b border-border/40 transition-all">
         <div className="flex h-14 items-center justify-between px-4 gap-3">
@@ -219,6 +232,13 @@ export default function WatchlistPage() {
       {/* Main List Content - hidden when searching */}
       {!isSearchMode && (
         <>
+          {/* Pull to refresh indicator */}
+          <PullToRefreshIndicator
+            pullDistance={pullDistance}
+            state={pullState}
+            threshold={80}
+          />
+
           {/* Status Bar */}
           <div className="flex items-center justify-between px-6 py-2">
             <div className="flex items-center gap-1.5">

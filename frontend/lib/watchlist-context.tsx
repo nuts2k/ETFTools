@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { type ETFItem, API_BASE_URL } from "@/lib/api";
+import { type ETFItem, type ETFDetail, type ETFMetrics, API_BASE_URL, fetchClient } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 const STORAGE_KEY = "etftool-watchlist";
@@ -13,6 +13,7 @@ interface WatchlistContextType {
   reorder: (newOrderCodes: string[]) => Promise<void>;
   isWatched: (code: string) => boolean;
   isLoaded: boolean;
+  refresh: () => Promise<void>;
 }
 
 const WatchlistContext = createContext<WatchlistContextType | undefined>(undefined);
@@ -180,8 +181,59 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
     return watchlist.some((i) => i.code === code);
   };
 
+  const refresh = async () => {
+    if (user && token) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/watchlist/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setWatchlist(data);
+        }
+      } catch (e) {
+        console.error("Refresh failed", e);
+      }
+    } else {
+      await refreshLocal();
+    }
+  };
+
+  const refreshLocal = async () => {
+    const currentList = [...watchlist];
+    if (currentList.length === 0) return;
+
+    const results = await Promise.allSettled(
+      currentList.map(async (item) => {
+        const [infoResult, metricsResult] = await Promise.allSettled([
+          fetchClient<ETFDetail>(`/etf/${item.code}/info`),
+          fetchClient<ETFMetrics>(`/etf/${item.code}/metrics?period=5y`),
+        ]);
+        const info = infoResult.status === "fulfilled" ? infoResult.value : null;
+        const metrics = metricsResult.status === "fulfilled" ? metricsResult.value : null;
+        return {
+          ...item,
+          price: info?.price ?? item.price,
+          change_pct: info?.change_pct ?? item.change_pct,
+          atr: metrics?.atr ?? item.atr,
+          current_drawdown: metrics?.current_drawdown ?? item.current_drawdown,
+          weekly_direction: metrics?.weekly_trend?.direction ?? item.weekly_direction,
+          consecutive_weeks: metrics?.weekly_trend?.consecutive_weeks ?? item.consecutive_weeks,
+          temperature_score: metrics?.temperature?.score ?? item.temperature_score,
+          temperature_level: metrics?.temperature?.level ?? item.temperature_level,
+        };
+      })
+    );
+
+    const newList = results.map((result, i) =>
+      result.status === "fulfilled" ? result.value : currentList[i]
+    );
+    setWatchlist(newList);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
+  };
+
   return (
-    <WatchlistContext.Provider value={{ watchlist, add, remove, reorder, isWatched, isLoaded }}>
+    <WatchlistContext.Provider value={{ watchlist, add, remove, reorder, isWatched, isLoaded, refresh }}>
       {children}
     </WatchlistContext.Provider>
   );
