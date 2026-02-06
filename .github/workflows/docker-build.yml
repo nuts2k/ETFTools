@@ -2,13 +2,8 @@ name: Docker Multi-Platform Build
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*.*.*'
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       custom_tag:
@@ -49,16 +44,8 @@ jobs:
       - name: Extract version from git
         id: version
         run: |
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            # 标签发布: 使用标签版本（移除 'v' 前缀）
-            VERSION=${GITHUB_REF#refs/tags/v}
-          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
-            # Main 分支: 使用 main-{hash}
-            VERSION="main-$(git rev-parse --short HEAD)"
-          else
-            # 其他分支: 使用 {branch}-{hash}
-            VERSION="${GITHUB_REF_NAME}-$(git rev-parse --short HEAD)"
-          fi
+          # 标签发布: 使用标签版本（移除 'v' 前缀）
+          VERSION=${GITHUB_REF#refs/tags/v}
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
@@ -84,8 +71,8 @@ jobs:
       # 步骤 4: 登录 DockerHub
       # ============================================
       - name: Login to DockerHub
-        # 仅在非 PR 或手动触发且选择推送时登录
-        if: github.event_name != 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true')
+        # 仅在非手动触发或手动触发且选择推送时登录
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true')
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -100,18 +87,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
-            # 分支名称（例如：main）
-            type=ref,event=branch
-            # PR 编号（例如：pr-123）
-            type=ref,event=pr
             # 语义化版本（例如：v1.2.3）
             type=semver,pattern={{version}}
             # 主版本.次版本（例如：v1.2）
             type=semver,pattern={{major}}.{{minor}}
             # 主版本（例如：v1）
             type=semver,pattern={{major}}
-            # 为 main 分支添加 latest 标签
-            type=raw,value=latest,enable={{is_default_branch}}
             # 为版本标签添加 latest 标签
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             # 自定义标签（手动触发时）
@@ -131,8 +112,8 @@ jobs:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
-          # 仅在非 PR 或手动触发且选择推送时推送
-          push: ${{ github.event_name != 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true') }}
+          # 仅在标签推送或手动触发且选择推送时推送
+          push: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # 使用 GitHub Actions 缓存
@@ -165,17 +146,12 @@ jobs:
             echo '```' >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
 
-            if [ "${{ github.event_name }}" != "pull_request" ] || [ "${{ github.event.inputs.push_to_dockerhub }}" == "true" ]; then
+            if [ "${{ github.event_name }}" != "workflow_dispatch" ] || [ "${{ github.event.inputs.push_to_dockerhub }}" == "true" ]; then
               echo "### ✅ 镜像已推送到 DockerHub" >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
               echo "拉取镜像:" >> $GITHUB_STEP_SUMMARY
               echo '```bash' >> $GITHUB_STEP_SUMMARY
-              # 根据事件类型使用不同的标签
-              if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-                echo "docker pull ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-              else
-                echo "docker pull ${{ env.REGISTRY_IMAGE }}:${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-              fi
+              echo "docker pull ${{ env.REGISTRY_IMAGE }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
             else
               echo "### ℹ️ 镜像仅构建验证，未推送" >> $GITHUB_STEP_SUMMARY
@@ -189,16 +165,9 @@ jobs:
       # 步骤 8: 验证多架构清单
       # ============================================
       - name: Verify multi-arch manifest
-        if: steps.build.outcome == 'success' && (github.event_name != 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true'))
+        if: steps.build.outcome == 'success' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.push_to_dockerhub == 'true'))
         run: |
-          # 根据事件类型确定要验证的标签
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            # 版本标签：使用不带 v 前缀的版本号
-            VERIFY_TAG="${{ steps.version.outputs.version }}"
-          else
-            # 分支推送：使用分支名
-            VERIFY_TAG="${{ github.ref_name }}"
-          fi
+          VERIFY_TAG="${{ steps.version.outputs.version }}"
 
           echo "验证多架构镜像清单: $VERIFY_TAG"
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:$VERIFY_TAG
