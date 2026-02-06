@@ -187,6 +187,7 @@
 | `/etf/{code}/info` | GET | 获取实时基础信息（含交易状态） |
 | `/etf/{code}/history` | GET | 获取 QFQ 历史数据 |
 | `/etf/{code}/metrics` | GET | 获取核心指标 (CAGR, MDD, ATR, Volatility) |
+| `/etf/batch-price?codes={codes}` | GET | 批量获取实时价格（轻量级，含交易状态） |
 | `/watchlist` | GET | 获取云端自选列表 |
 | `/watchlist/sync` | POST | 同步本地自选数据到云端（并集策略） |
 | `/auth/token` | POST | 用户登录，获取 JWT |
