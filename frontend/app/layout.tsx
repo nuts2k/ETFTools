@@ -35,6 +35,7 @@ export const metadata: Metadata = {
 
 import { WatchlistProvider } from "@/lib/watchlist-context";
 import { SettingsProvider } from "@/lib/settings-context";
+import { ToastProvider } from "@/components/Toast";
 
 export default function RootLayout({
   children,
@@ -53,10 +54,12 @@ export default function RootLayout({
                 enableSystem
                 disableTransitionOnChange
               >
-                <main className="min-h-[100dvh] pb-20">
-                  {children}
-                </main>
-                <BottomNav />
+                <ToastProvider>
+                  <main className="min-h-[100dvh] pb-20">
+                    {children}
+                  </main>
+                  <BottomNav />
+                </ToastProvider>
               </ThemeProvider>
             </WatchlistProvider>
           </SettingsProvider>

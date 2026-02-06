@@ -53,6 +53,7 @@
 - `2026-01-29-watchlist-compact-indicators.md` - 自选列表紧凑指标设计
 - `2026-02-03-alert-notification-design.md` - 告警通知设计
 - `2026-02-04-admin-system-design.md` - 管理系统设计
+- `2026-02-06-admin-frontend-design.md` - 管理员前端界面设计
 - `2026-02-04-alert-optimization-design.md` - 告警优化设计
 - `alert-intraday-check-design.md` - 告警盘中检查设计
 - `grid-performance-optimization.md` - 网格性能优化设计
@@ -69,6 +70,7 @@
 - `2026-02-03-alert-intraday-check-impl.md` - 告警盘中检查实现
 - `2026-02-03-alert-notification-impl.md` - 告警通知实现
 - `2026-02-05-github-actions-docker-build.md` - GitHub Actions Docker 多平台构建实现
+- `2026-02-06-admin-frontend-impl.md` - 管理员前端界面实现
 
 ### deployment/ - 部署文档
 部署指南、运维手册、环境配置等。
@@ -172,4 +174,4 @@ ls -lt docs/implementation/
 
 ---
 
-**最后更新：** 2026-02-05
+**最后更新：** 2026-02-06

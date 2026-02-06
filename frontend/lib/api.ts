@@ -268,3 +268,108 @@ export async function triggerAlertCheck(
   }
   return response.json();
 }
+
+// ===== 管理员 API =====
+
+export interface AdminUser {
+  id: number
+  username: string
+  is_admin: boolean
+  is_active: boolean
+  created_at: string
+  settings: Record<string, any>
+}
+
+export interface SystemConfig {
+  registration_enabled: boolean
+  max_watchlist_items: number
+}
+
+export async function fetchAdminUsers(
+  token: string,
+  params?: { is_admin?: boolean; is_active?: boolean }
+): Promise<AdminUser[]> {
+  const searchParams = new URLSearchParams()
+  if (params?.is_admin !== undefined) searchParams.set("is_admin", String(params.is_admin))
+  if (params?.is_active !== undefined) searchParams.set("is_active", String(params.is_active))
+  const qs = searchParams.toString()
+  const response = await fetch(`${API_BASE_URL}/admin/users${qs ? `?${qs}` : ""}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "获取用户列表失败" }))
+    throw new Error(error.detail || "获取用户列表失败")
+  }
+  return response.json()
+}
+
+export async function toggleUserAdmin(
+  token: string,
+  userId: number
+): Promise<{ user_id: number; is_admin: boolean }> {
+  const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/toggle-admin`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "操作失败" }))
+    throw new Error(error.detail || "操作失败")
+  }
+  return response.json()
+}
+
+export async function toggleUserActive(
+  token: string,
+  userId: number
+): Promise<{ user_id: number; is_active: boolean }> {
+  const response = await fetch(`${API_BASE_URL}/admin/users/${userId}/toggle-active`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "操作失败" }))
+    throw new Error(error.detail || "操作失败")
+  }
+  return response.json()
+}
+
+export async function fetchSystemConfig(token: string): Promise<SystemConfig> {
+  const response = await fetch(`${API_BASE_URL}/admin/system/config`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "获取系统配置失败" }))
+    throw new Error(error.detail || "获取系统配置失败")
+  }
+  return response.json()
+}
+
+export async function setRegistrationEnabled(
+  token: string,
+  enabled: boolean
+): Promise<{ registration_enabled: boolean }> {
+  const response = await fetch(`${API_BASE_URL}/admin/system/config/registration?enabled=${enabled}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "操作失败" }))
+    throw new Error(error.detail || "操作失败")
+  }
+  return response.json()
+}
+
+export async function setMaxWatchlistItems(
+  token: string,
+  maxItems: number
+): Promise<{ max_watchlist_items: number }> {
+  const response = await fetch(`${API_BASE_URL}/admin/system/config/max-watchlist?max_items=${maxItems}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "操作失败" }))
+    throw new Error(error.detail || "操作失败")
+  }
+  return response.json()
+}
