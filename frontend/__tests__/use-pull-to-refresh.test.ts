@@ -35,7 +35,7 @@ describe('usePullToRefresh', () => {
     expect(result.current.pullDistance).toBe(0)
   })
 
-  it('should not activate when scrollTop > 0', () => {
+  it('should not activate when scrollTop > 1', () => {
     const scrollRef = createMockScrollRef(100)
     const { result } = renderHook(() =>
       usePullToRefresh({ onRefresh: vi.fn(), scrollRef })
@@ -48,6 +48,51 @@ describe('usePullToRefresh', () => {
 
     expect(result.current.state).toBe('idle')
     expect(result.current.pullDistance).toBe(0)
+  })
+
+  it('should activate when scrollTop is sub-pixel (e.g. 0.5)', () => {
+    const scrollRef = createMockScrollRef(0.5)
+    const { result } = renderHook(() =>
+      usePullToRefresh({ onRefresh: vi.fn(), scrollRef })
+    )
+
+    act(() => {
+      fireTouchEvent(scrollRef.current!, 'touchstart', 100, 100)
+      fireTouchEvent(scrollRef.current!, 'touchmove', 100, 130)
+    })
+
+    expect(result.current.state).toBe('pulling')
+  })
+
+  it('should late-activate when scrollTop settles to 0 during touchmove', () => {
+    let scrollTop = 5
+    const el = document.createElement('div')
+    Object.defineProperty(el, 'scrollTop', { get: () => scrollTop, configurable: true })
+    const scrollRef = { current: el } as React.RefObject<HTMLElement>
+
+    const { result } = renderHook(() =>
+      usePullToRefresh({ onRefresh: vi.fn(), scrollRef })
+    )
+
+    // touchstart skipped because scrollTop=5
+    act(() => {
+      fireTouchEvent(el, 'touchstart', 100, 100)
+    })
+    expect(result.current.state).toBe('idle')
+
+    // scrollTop settles to 0, touchmove captures start position
+    scrollTop = 0
+    act(() => {
+      fireTouchEvent(el, 'touchmove', 100, 110)
+    })
+    // First touchmove only records start, doesn't pull yet
+    expect(result.current.state).toBe('idle')
+
+    // Next touchmove triggers pulling
+    act(() => {
+      fireTouchEvent(el, 'touchmove', 100, 140)
+    })
+    expect(result.current.state).toBe('pulling')
   })
 
   it('should not activate when disabled', () => {
@@ -193,5 +238,47 @@ describe('usePullToRefresh', () => {
     })
 
     expect(result.current.pullDistance).toBeLessThanOrEqual(120)
+  })
+
+  it('should stay in threshold state when pulled very far (no reversal)', () => {
+    const scrollRef = createMockScrollRef(0)
+    const { result } = renderHook(() =>
+      usePullToRefresh({ onRefresh: vi.fn(), scrollRef, threshold: 80, maxPull: 120 })
+    )
+
+    act(() => {
+      fireTouchEvent(scrollRef.current!, 'touchstart', 100, 0)
+      // Pull past threshold
+      fireTouchEvent(scrollRef.current!, 'touchmove', 100, 120)
+    })
+    expect(result.current.state).toBe('threshold')
+
+    // Pull much further — state must NOT revert to 'pulling'
+    act(() => {
+      fireTouchEvent(scrollRef.current!, 'touchmove', 100, 400)
+    })
+    expect(result.current.state).toBe('threshold')
+    expect(result.current.pullDistance).toBeGreaterThanOrEqual(80)
+  })
+
+  it('should reach threshold on a single fast large swipe', async () => {
+    const scrollRef = createMockScrollRef(0)
+    const onRefresh = vi.fn().mockResolvedValue(undefined)
+    const { result } = renderHook(() =>
+      usePullToRefresh({ onRefresh, scrollRef, threshold: 80, maxPull: 120 })
+    )
+
+    // Simulate a fast swipe: one touchstart then one large touchmove
+    act(() => {
+      fireTouchEvent(scrollRef.current!, 'touchstart', 100, 0)
+      fireTouchEvent(scrollRef.current!, 'touchmove', 100, 500)
+    })
+    expect(result.current.state).toBe('threshold')
+
+    await act(async () => {
+      fireTouchEvent(scrollRef.current!, 'touchend', 100, 500)
+      await vi.runAllTimersAsync()
+    })
+    expect(onRefresh).toHaveBeenCalledOnce()
   })
 })

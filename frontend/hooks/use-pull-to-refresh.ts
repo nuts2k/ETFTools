@@ -97,8 +97,9 @@ export function usePullToRefresh({
       // Cooldown check
       if (Date.now() - lastRefreshTime.current < cooldown) return;
 
-      // Only activate when scrolled to top
-      if (el.scrollTop > 0) return;
+      // iOS Safari reports fractional scrollTop (e.g. 0.33, 0.5) even when
+      // visually at top. 1px tolerance covers these; imperceptible to users.
+      if (el.scrollTop > 1) return;
 
       const touch = e.touches[0];
       startY.current = touch.clientY;
@@ -108,7 +109,18 @@ export function usePullToRefresh({
 
     const handleTouchMove = (e: TouchEvent) => {
       if (currentState.current === 'refreshing' || currentState.current === 'complete') return;
-      if (startY.current === 0 && startX.current === 0) return;
+
+      // Late activation: if touchstart was skipped (scrollTop wasn't 0 yet),
+      // capture the start position now once we've scrolled to top
+      if (startY.current === 0 && startX.current === 0) {
+        if (el.scrollTop <= 1) {
+          const touch = e.touches[0];
+          startY.current = touch.clientY;
+          startX.current = touch.clientX;
+          directionLocked.current = null;
+        }
+        return;
+      }
 
       const touch = e.touches[0];
       const deltaY = touch.clientY - startY.current;
@@ -140,9 +152,14 @@ export function usePullToRefresh({
       // Block native pull-to-refresh
       e.preventDefault();
 
-      // Apply resistance curve: delta * (1 - delta / (maxPull * 3)), capped at maxPull
-      const resistedDelta = deltaY * (1 - deltaY / (maxPull * 3));
-      const clampedDistance = Math.min(Math.max(0, resistedDelta), maxPull);
+      // Monotonic resistance curve: resisted = maxPull * (1 - e^(-deltaY/k))
+      // k is chosen so that resisted == threshold when deltaY == threshold
+      const ratio = threshold / maxPull;
+      const k = ratio >= 1
+        ? maxPull
+        : -threshold / Math.log(1 - ratio);
+      const resistedDelta = maxPull * (1 - Math.exp(-deltaY / k));
+      const clampedDistance = Math.min(resistedDelta, maxPull);
 
       updatePullDistance(clampedDistance);
 
