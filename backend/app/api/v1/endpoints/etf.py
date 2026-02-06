@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, time
 import logging
+import re
 
 from app.core.cache import etf_cache
 from app.services.akshare_service import ak_service
@@ -52,15 +53,21 @@ async def search_etf(
     return etf_cache.search(q)
 
 @router.get("/batch-price")
+@limiter.limit("120/minute")
 async def get_batch_price(
+    request: Request,
     codes: str = Query(..., description="逗号分隔的 ETF 代码列表，如 510300,510500")
 ):
     """
     批量获取 ETF 实时价格（轻量级，仅从内存缓存读取）
     """
+    ETF_CODE_RE = re.compile(r"^\d{6}$")
     code_list = [c.strip() for c in codes.split(",") if c.strip()]
     if not code_list or len(code_list) > 50:
         raise HTTPException(status_code=400, detail="codes 参数无效或超过 50 个")
+    code_list = [c for c in code_list if ETF_CODE_RE.match(c)]
+    if not code_list:
+        raise HTTPException(status_code=400, detail="无有效的 ETF 代码（需为6位数字）")
 
     items = []
     for code in code_list:

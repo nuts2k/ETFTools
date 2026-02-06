@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import { type ETFItem, type ETFDetail, type ETFMetrics, API_BASE_URL, fetchClient } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { useSettings } from "@/hooks/use-settings";
@@ -21,6 +21,7 @@ const WatchlistContext = createContext<WatchlistContextType | undefined>(undefin
 
 export function WatchlistProvider({ children }: { children: ReactNode }) {
   const [watchlist, setWatchlist] = useState<ETFItem[]>([]);
+  const watchlistRef = useRef<ETFItem[]>(watchlist);
   const [isLoaded, setIsLoaded] = useState(false);
   const { user, token, isLoading: authLoading } = useAuth();
   const { settings } = useSettings();
@@ -286,6 +287,11 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newList));
   };
 
+  // 保持 ref 与 state 同步
+  useEffect(() => {
+    watchlistRef.current = watchlist;
+  }, [watchlist]);
+
   // 自动轮询价格
   useEffect(() => {
     if (refreshRate === 0 || watchlist.length === 0 || !isLoaded) return;
@@ -293,7 +299,7 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
     const poll = async () => {
       if (document.hidden || !isTradingHours()) return;
 
-      const codes = watchlist.map(i => i.code).join(",");
+      const codes = watchlistRef.current.map(i => i.code).join(",");
       try {
         const res = await fetch(`${API_BASE_URL}/etf/batch-price?codes=${codes}`);
         if (!res.ok) return;

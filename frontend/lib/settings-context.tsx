@@ -7,6 +7,7 @@ import { API_BASE_URL } from "@/lib/api";
 export type ColorMode = "red-up" | "green-up";
 export type RefreshRate = 15 | 30 | 60 | 0; // 0 = Manual
 
+const VALID_REFRESH_RATES: number[] = [15, 30, 60, 0];
 const SETTINGS_KEY = "etftool-settings";
 
 interface Settings {
@@ -34,16 +35,24 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   // Load logic (Local vs Cloud)
   useEffect(() => {
+    const sanitize = (raw: Settings): Settings => {
+      const s = { ...raw };
+      if (!VALID_REFRESH_RATES.includes(s.refreshRate)) {
+        s.refreshRate = DEFAULT_SETTINGS.refreshRate;
+      }
+      return s;
+    };
+
     if (user && user.settings) {
       // Merge cloud settings with defaults (to handle missing keys)
-      setSettings({ ...DEFAULT_SETTINGS, ...user.settings });
+      setSettings(sanitize({ ...DEFAULT_SETTINGS, ...user.settings }));
       setIsLoaded(true);
     } else {
       // Local storage fallback
       try {
         const stored = localStorage.getItem(SETTINGS_KEY);
         if (stored) {
-          setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) });
+          setSettings(sanitize({ ...DEFAULT_SETTINGS, ...JSON.parse(stored) }));
         }
       } catch (e) {
         console.error("Failed to load settings", e);
