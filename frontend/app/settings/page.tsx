@@ -9,7 +9,6 @@ import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { useAuth } from "@/lib/auth-context";
 import { isAdmin } from "@/lib/admin-guard";
 import Link from "next/link";
-import { getVersion } from "@/lib/api";
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -18,7 +17,6 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [cacheSize, setCacheSize] = useState("0 KB");
   const [showClearCacheDialog, setShowClearCacheDialog] = useState(false);
-  const [appVersion, setAppVersion] = useState<string>("loading...");
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -33,11 +31,6 @@ export default function SettingsPage() {
         }
     }
     setCacheSize((total / 1024).toFixed(2) + " KB");
-  }, []);
-
-  // 获取应用版本
-  useEffect(() => {
-    getVersion().then(setAppVersion);
   }, []);
 
   const handleClearCacheConfirm = () => {
@@ -248,7 +241,7 @@ export default function SettingsPage() {
         </section>
 
         <div className="py-8 text-center">
-            <p className="text-xs text-muted-foreground/50">ETFTool v{appVersion} • Designed for Simplicity</p>
+            <p className="text-xs text-muted-foreground/50">ETFTool v{process.env.NEXT_PUBLIC_APP_VERSION || "dev"} • Designed for Simplicity</p>
         </div>
       </main>
 

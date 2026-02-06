@@ -268,33 +268,3 @@ export async function triggerAlertCheck(
   }
   return response.json();
 }
-
-// Health 响应类型
-export interface HealthResponse {
-  status: string;
-  version: string;
-  data_ready: boolean;
-  environment: string;
-}
-
-// 获取应用版本
-export async function getVersion(): Promise<string> {
-  try {
-    // 构建 health 端点 URL（更健壮的方式）
-    const baseUrl = API_BASE_URL.endsWith('/api/v1')
-      ? API_BASE_URL.slice(0, -7)  // 移除 '/api/v1'
-      : API_BASE_URL;
-    const healthUrl = `${baseUrl}/api/v1/health`;
-
-    const response = await fetch(healthUrl);
-    if (!response.ok) {
-      throw new Error('Failed to fetch health status');
-    }
-    const data: HealthResponse = await response.json();
-    return data.version || 'unknown';
-  } catch (error) {
-    console.error('Failed to fetch version:', error);
-    // 回退到构建时注入的版本
-    return process.env.NEXT_PUBLIC_APP_VERSION || 'unknown';
-  }
-}

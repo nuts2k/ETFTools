@@ -245,55 +245,12 @@ async def root():
 
 ### 4.2 前端集成
 
-#### 4.2.1 API 客户端
-
-**文件**: `frontend/lib/api.ts` (新建)
-
-```typescript
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-export interface HealthResponse {
-  status: string;
-  version: string;
-  data_ready: boolean;
-  environment: string;
-}
-
-export async function getVersion(): Promise<string> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/health`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch health status');
-    }
-    const data: HealthResponse = await response.json();
-    return data.version || 'unknown';
-  } catch (error) {
-    console.error('Failed to fetch version:', error);
-    // 回退到构建时注入的版本
-    return process.env.NEXT_PUBLIC_APP_VERSION || 'unknown';
-  }
-}
-```
-
-**说明**:
-- 优先从后端 API 获取版本（动态）
-- 失败时回退到构建时环境变量（静态）
-- 双重保障，确保版本信息可用
-
-#### 4.2.2 Settings 页面更新
+#### 4.2.1 Settings 页面版本显示
 
 **文件**: `frontend/app/settings/page.tsx`
 
 ```typescript
-import { getVersion } from "@/lib/api";
-
 export default function SettingsPage() {
-  const [appVersion, setAppVersion] = useState<string>("loading...");
-
-  useEffect(() => {
-    getVersion().then(setAppVersion);
-  }, []);
-
   // ... 其他代码
 
   return (
@@ -301,7 +258,7 @@ export default function SettingsPage() {
       {/* ... 其他内容 */}
       <div className="py-8 text-center">
         <p className="text-xs text-muted-foreground/50">
-          ETFTool v{appVersion} • Designed for Simplicity
+          ETFTool v{process.env.NEXT_PUBLIC_APP_VERSION || "dev"} • Designed for Simplicity
         </p>
       </div>
     </div>
@@ -309,10 +266,10 @@ export default function SettingsPage() {
 }
 ```
 
-**变更说明**:
-- 移除硬编码的 `v0.1.0`
-- 使用 `useState` 和 `useEffect` 动态获取版本
-- 初始显示 "loading..."，加载完成后显示实际版本
+**说明**:
+- 直接读取构建时注入的环境变量 `NEXT_PUBLIC_APP_VERSION`，无需异步请求
+- Next.js 在构建时将 `NEXT_PUBLIC_*` 变量内联为字符串字面量，版本号同步可用，无闪烁
+- 未设置环境变量时回退显示 `"dev"`
 
 ### 4.3 Docker 集成
 
