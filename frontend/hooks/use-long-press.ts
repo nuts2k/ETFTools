@@ -15,6 +15,7 @@ export function useLongPress(
   const isLongPressTriggered = useRef(false);
   // To handle move tolerance
   const startPos = useRef<{ x: number, y: number } | null>(null);
+  const hasMoved = useRef(false);
 
   const start = useCallback(
     (event: React.TouchEvent | React.MouseEvent) => {
@@ -31,7 +32,8 @@ export function useLongPress(
       }
 
       isLongPressTriggered.current = false;
-      
+      hasMoved.current = false;
+
       // Record start position
       if ('touches' in event) {
           startPos.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
@@ -57,13 +59,15 @@ export function useLongPress(
         clearTimeout(timeout.current);
         timeout.current = null;
       }
-      
+
       // If long press hasn't triggered yet, and we should trigger click (i.e. not moved too much)
-      if (shouldTriggerClick && !isLongPressTriggered.current) {
+      // Also check startPos exists to ensure start was actually called (handles non-left button case)
+      if (shouldTriggerClick && !isLongPressTriggered.current && !hasMoved.current && startPos.current) {
         onClick(event);
       }
-      
+
       isLongPressTriggered.current = false;
+      startPos.current = null;
 
       if (isPreventDefault && target.current) {
         target.current.removeEventListener('touchend', preventDefault);
@@ -74,7 +78,7 @@ export function useLongPress(
 
   const move = useCallback(
       (event: React.TouchEvent | React.MouseEvent) => {
-          if (!timeout.current || !startPos.current) return;
+          if (!startPos.current) return;
           
           let clientX, clientY;
           if ('touches' in event) {
@@ -87,9 +91,11 @@ export function useLongPress(
           
           const diffX = Math.abs(clientX - startPos.current.x);
           const diffY = Math.abs(clientY - startPos.current.y);
-          
-          // If moved more than 10px, cancel long press
+
+          // If moved more than 10px, cancel long press and mark as scroll gesture
+          // 10px threshold balances tap accuracy with scroll sensitivity
           if (diffX > 10 || diffY > 10) {
+              hasMoved.current = true;
               if (timeout.current) {
                   clearTimeout(timeout.current);
                   timeout.current = null;
