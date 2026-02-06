@@ -23,6 +23,7 @@
 | **图表** | Recharts | 响应式、触摸友好 |
 | **交互** | @dnd-kit, use-long-press | 拖拽排序、长按操作 |
 | **状态管理** | React Context | Auth, Watchlist, Settings |
+| **PWA 支持** | manifest.json + Apple meta tags | iOS/Android 主屏幕安装 |
 
 ## 3. 快速启动 (Quick Start)
 
@@ -57,6 +58,10 @@
 - 布局必须适应窄屏（320px+）
 - Tooltip 需防止手指遮挡
 - 按钮可点击区域 ≥ 44x44px
+
+⚠️ **【强制】PWA 全屏模式**
+- iOS 必须配置 `viewport-fit=cover` 和 `apple-mobile-web-app-capable`
+- 所有固定定位元素必须使用 safe-area-inset 避免被系统 UI 遮挡
 
 ### 4.3 性能强制规范
 
@@ -166,6 +171,7 @@
 | **图表组件** | `frontend/components/ETFChart.tsx` | Recharts 配置、交互 |
 | **自选逻辑** | `frontend/hooks/use-watchlist.ts` | 本地存储、云端同步 |
 | **认证上下文** | `frontend/contexts/AuthContext.tsx` | JWT 管理 |
+| **PWA 配置** | `frontend/public/manifest.json` | PWA 清单、图标、主屏幕安装 |
 
 ## 6. API 接口速查 (API Reference)
 
@@ -203,6 +209,7 @@
 | **降级数据** | `backend/app/data/etf_fallback.json` | 接口失败时的备用数据 |
 | **版本提取** | `scripts/get_version.sh` | 从 Git 标签提取版本号 |
 | **版本升级** | `scripts/bump_version.sh` | 语义化版本升级脚本 |
+| **PWA 清单** | `frontend/public/manifest.json` | PWA 名称、图标、显示模式、主题色 |
 
 **版本管理环境变量**：
 - `APP_VERSION`: 后端应用版本（自动从 Git 标签提取，默认 `dev`）

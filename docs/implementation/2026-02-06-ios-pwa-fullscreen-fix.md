@@ -94,10 +94,25 @@ export const metadata: Metadata = {
 };
 ```
 
+**修改 3 - html lang 属性**：
+
+当前代码（`layout.tsx` 第 31 行）：
+```tsx
+<html lang="en" suppressHydrationWarning>
+```
+
+修改为：
+```tsx
+<html lang="zh-CN" suppressHydrationWarning>
+```
+
+> 应用为中文界面，manifest 中也声明了 `"lang": "zh-CN"`，需保持一致。
+
 **关键说明**：
 - `viewportFit: "cover"` 是最关键的修改，允许应用扩展到整个屏幕
 - `appleWebApp.capable: true` 启用独立模式（无浏览器 UI）
 - `statusBarStyle: "black-translucent"` 使状态栏透明
+- `lang="zh-CN"` 与 manifest 保持一致，有助于搜索引擎和辅助功能正确识别语言
 
 ---
 
@@ -121,13 +136,25 @@ export const metadata: Metadata = {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/apple-touch-icon.png",
@@ -146,6 +173,8 @@ export const metadata: Metadata = {
 - `start_url: "/"` 确保应用从 watchlist 页面启动（解决设置页面问题）
 - `orientation: "portrait-primary"` 匹配移动端优先设计
 
+> ⚠️ **已知限制**：manifest 的 `background_color` 不支持 media query，只能设置一个值。暗色模式用户安装 PWA 时，启动画面（splash screen）会显示浅色背景 `#f6f7f8`，这是 Web App Manifest 规范的限制，暂无法解决。
+
 ---
 
 ### 步骤 3：创建 PWA 图标
@@ -153,19 +182,25 @@ export const metadata: Metadata = {
 **需要创建的图标文件**（位于 `frontend/public/`）：
 
 1. **icon-192.png** (192x192px) - 标准 PWA 图标
-2. **icon-512.png** (512x512px) - 高分辨率 PWA 图标
-3. **apple-touch-icon.png** (180x180px) - iOS 主屏幕图标
+2. **icon-192-maskable.png** (192x192px) - Maskable PWA 图标（内容集中在 80% 安全区域内）
+3. **icon-512.png** (512x512px) - 高分辨率 PWA 图标
+4. **icon-512-maskable.png** (512x512px) - 高分辨率 Maskable PWA 图标
+5. **apple-touch-icon.png** (180x180px) - iOS 主屏幕图标
+
+> ⚠️ **注意**：当前 `frontend/public/` 下没有 favicon.ico，只有 Next.js 默认的 SVG 文件，需要**从零设计**所有图标。
 
 **设计要求**：
 - 使用 ETF/股票市场主题图标（图表、趋势线或 "ETF" 文字）
 - 遵循 iOS 图标设计规范（无透明度，圆角由 iOS 处理）
 - 匹配应用配色方案：主蓝色 (#1269e2) 在浅色背景上
 - 确保在浅色和深色模式下都有良好对比度
+- **Maskable 图标**：内容必须集中在中心 80% 区域内，四周留出安全边距
+- **Any 图标**：内容可以填满整个画布
 
 **图标生成方法**：
-- 可以使用现有的 favicon.ico 作为基础
-- 使用 PWA Asset Generator 或手动设计工具生成
-- 确保 maskable 图标有安全区域（80% 内容区域）
+- 使用 Figma、Sketch 等设计工具从零创建
+- 使用 PWA Asset Generator 批量生成多尺寸
+- 使用 [maskable.app](https://maskable.app/) 验证 maskable 图标的安全区域
 
 **临时方案**：如果暂时没有专业图标，可以先使用简单的文字图标或占位图标，后续再优化。
 
@@ -209,24 +244,10 @@ export const metadata: Metadata = {
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
-  .pl-safe {
-    padding-left: env(safe-area-inset-left, 0px);
-  }
-  .pr-safe {
-    padding-right: env(safe-area-inset-right, 0px);
-  }
-
-  /* 组合安全区域内边距 */
-  .p-safe {
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-  }
-
-  /* iOS 26.1 回归问题的最小安全区域 */
+  /* iOS 26.1 回归问题的最小安全区域（备用方案，默认不启用） */
+  /* 仅在 iOS 26.1 测试确认 safe-area-inset-bottom 返回 0px 时才使用 */
   .pb-safe-min {
-    padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -245,13 +266,20 @@ export const metadata: Metadata = {
 
 **关键说明**：
 - 添加回退值 `0px` 防止 iOS 26.1 返回空值时的布局问题
-- 新增 `pl-safe`, `pr-safe`, `p-safe` 工具类提供更多灵活性
-- `pb-safe-min` 确保即使 iOS 报告 0px 也有最小内边距
+- `pb-safe-min` 为备用方案，仅在 iOS 26.1 测试确认问题后才应用到 BottomNav
+- 不预先添加 `pl-safe`/`pr-safe`/`p-safe` 等暂无使用场景的工具类，避免过度添加
 
 **BottomNav 组件验证**：
 - 文件：`frontend/components/BottomNav.tsx`
 - 第 35 行已正确使用 `pb-safe` 类
 - 如果 iOS 26.1 测试发现问题，可考虑改用 `pb-safe-min`
+
+**详情页安全区域验证**：
+- 文件：`frontend/app/etf/[code]/page.tsx`
+- BottomNav 在详情页隐藏（`isDetailPage` 时 `return null`）
+- 添加 `viewport-fit=cover` 后，详情页底部内容可能被 home indicator 遮挡
+- **必须检查**：详情页底部是否有固定定位元素或内容需要添加 `pb-safe` 处理
+- 如有浮动操作按钮或底部栏，确保其也使用 safe-area-inset
 
 ---
 
@@ -275,6 +303,20 @@ export const metadata: Metadata = {
 ⚠️ **【强制】PWA 全屏模式**
 - iOS 必须配置 `viewport-fit=cover` 和 `apple-mobile-web-app-capable`
 - 所有固定定位元素必须使用 safe-area-inset 避免被系统 UI 遮挡
+```
+
+**修改 3 - 第 5 节前端关键文件表**：
+
+在前端关键文件表中添加：
+```markdown
+| **PWA 配置** | `frontend/public/manifest.json` | PWA 清单、图标、主屏幕安装 |
+```
+
+**修改 4 - 第 7 节关键配置文件表**：
+
+在配置文件表中添加：
+```markdown
+| **PWA 清单** | `frontend/public/manifest.json` | PWA 名称、图标、显示模式、主题色 |
 ```
 
 #### 5.2 更新 README.md
@@ -306,8 +348,11 @@ export const metadata: Metadata = {
 
 3. **图标文件检查**：
    - 验证 `public/icon-192.png` 存在
+   - 验证 `public/icon-192-maskable.png` 存在
    - 验证 `public/icon-512.png` 存在
+   - 验证 `public/icon-512-maskable.png` 存在
    - 验证 `public/apple-touch-icon.png` 存在
+   - 使用 [maskable.app](https://maskable.app/) 验证 maskable 图标安全区域
 
 ### iOS 设备测试（关键）
 
@@ -335,7 +380,13 @@ export const metadata: Metadata = {
    - ✅ 验证底部导航栏位置正确
    - ✅ 验证底部导航不与 home indicator 重叠
 
-4. **安全区域测试**：
+4. **详情页测试**（BottomNav 隐藏的页面）：
+   - 进入 ETF 详情页 (`/etf/[code]`)
+   - ✅ 验证底部内容不被 home indicator 遮挡
+   - ✅ 验证浮动操作按钮/底部栏正确处理安全区域
+   - ✅ 验证页面滚动到底部时内容完整可见
+
+5. **安全区域测试**：
    - ✅ 验证内容不被刘海/Dynamic Island 遮挡
    - ✅ 验证底部导航不与 home indicator 重叠
    - 测试横屏模式（如果支持）
@@ -397,14 +448,17 @@ export const metadata: Metadata = {
 1. **`frontend/app/layout.tsx`**
    - 添加 `viewportFit: "cover"`
    - 添加 Apple PWA meta 标签
+   - 修改 `html lang="en"` → `lang="zh-CN"`
 
 2. **`frontend/app/globals.css`**
    - 增强安全区域工具类
    - 添加 iOS 26.1 兼容性回退
 
 3. **`AGENTS.md`**
-   - 更新技术栈表格
-   - 添加 PWA 强制规范
+   - 更新第 2 节技术栈表格（新增 PWA 支持）
+   - 更新第 4.2 节添加 PWA 强制规范
+   - 更新第 5 节前端关键文件表（新增 manifest.json）
+   - 更新第 7 节关键配置文件表（新增 manifest.json）
 
 4. **`README.md`**
    - 添加 PWA 功能特性
@@ -415,12 +469,18 @@ export const metadata: Metadata = {
    - PWA 配置文件
 
 2. **`frontend/public/icon-192.png`**
-   - 192x192px PWA 图标
+   - 192x192px PWA 图标（purpose: any）
 
-3. **`frontend/public/icon-512.png`**
-   - 512x512px PWA 图标
+3. **`frontend/public/icon-192-maskable.png`**
+   - 192x192px Maskable PWA 图标（内容集中在 80% 安全区域）
 
-4. **`frontend/public/apple-touch-icon.png`**
+4. **`frontend/public/icon-512.png`**
+   - 512x512px PWA 图标（purpose: any）
+
+5. **`frontend/public/icon-512-maskable.png`**
+   - 512x512px Maskable PWA 图标（内容集中在 80% 安全区域）
+
+6. **`frontend/public/apple-touch-icon.png`**
    - 180x180px iOS 主屏幕图标
 
 ---

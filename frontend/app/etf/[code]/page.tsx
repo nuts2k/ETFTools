@@ -162,7 +162,7 @@ export default function ETFDetailPage() {
   const iconColor = isUp ? "text-up" : isDown ? "text-down" : "text-muted-foreground";
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-12 relative">
+    <div className="min-h-[100dvh] bg-background relative" style={{ paddingBottom: "calc(3rem + env(safe-area-inset-bottom, 0px))" }}>
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md pt-safe border-b border-border/50 transition-all transform-gpu backface-hidden">
         <div className="flex h-14 items-center justify-center relative px-5">
