@@ -59,6 +59,7 @@
 - `2026-02-04-alert-optimization-design.md` - 告警优化设计
 - `alert-intraday-check-design.md` - 告警盘中检查设计
 - `grid-performance-optimization.md` - 网格性能优化设计
+- `2026-02-07-daily-summary-design.md` - 每日市场摘要推送设计
 
 ### implementation/ - 实现计划
 具体功能的实现步骤、技术细节、代码结构等。
