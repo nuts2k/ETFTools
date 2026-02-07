@@ -91,6 +91,12 @@ export function usePullToRefresh({
     const el = scrollRef.current;
     if (!el || disabled) return;
 
+    // Determine scroll position: use el.scrollTop if el is a scroll container,
+    // otherwise fall back to window.scrollY (document-level scrolling).
+    const style = window.getComputedStyle(el);
+    const isScrollContainer = style.overflowY === 'auto' || style.overflowY === 'scroll';
+    const getScrollTop = () => isScrollContainer ? el.scrollTop : window.scrollY;
+
     const handleTouchStart = (e: TouchEvent) => {
       if (currentState.current === 'refreshing' || currentState.current === 'complete') return;
 
@@ -99,7 +105,7 @@ export function usePullToRefresh({
 
       // iOS Safari reports fractional scrollTop (e.g. 0.33, 0.5) even when
       // visually at top. 1px tolerance covers these; imperceptible to users.
-      if (el.scrollTop > 1) return;
+      if (getScrollTop() > 1) return;
 
       const touch = e.touches[0];
       startY.current = touch.clientY;
@@ -110,10 +116,12 @@ export function usePullToRefresh({
     const handleTouchMove = (e: TouchEvent) => {
       if (currentState.current === 'refreshing' || currentState.current === 'complete') return;
 
+      const scrollTop = getScrollTop();
+
       // Late activation: if touchstart was skipped (scrollTop wasn't 0 yet),
       // capture the start position now once we've scrolled to top
       if (startY.current === 0 && startX.current === 0) {
-        if (el.scrollTop <= 1) {
+        if (scrollTop <= 1) {
           const touch = e.touches[0];
           startY.current = touch.clientY;
           startX.current = touch.clientX;
@@ -125,15 +133,6 @@ export function usePullToRefresh({
       const touch = e.touches[0];
       const deltaY = touch.clientY - startY.current;
       const deltaX = touch.clientX - startX.current;
-
-      // Prevent the browser from claiming the gesture for native scrolling
-      // before direction lock is determined. Without this, on long scrollable
-      // lists the browser takes over the gesture during the first ~10px of
-      // movement (before we call preventDefault in the main logic below),
-      // making pull-to-refresh unresponsive.
-      if (el.scrollTop <= 1 && deltaY > 0 && Math.abs(deltaY) >= Math.abs(deltaX)) {
-        e.preventDefault();
-      }
 
       // Direction lock: determine after 10px of movement
       if (directionLocked.current === null) {
@@ -158,8 +157,10 @@ export function usePullToRefresh({
         return;
       }
 
-      // Block native pull-to-refresh
-      e.preventDefault();
+      // Only activate pull-to-refresh when actually at top and pulling down.
+      // Skip this check once pull gesture is active to avoid mid-gesture interruptions
+      // from touch jitter causing momentary scrollTop > 1.
+      if (scrollTop > 1 && currentState.current !== 'pulling' && currentState.current !== 'threshold') return;
 
       // Monotonic resistance curve: resisted = maxPull * (1 - e^(-deltaY/k))
       // k is chosen so that resisted == threshold when deltaY == threshold
@@ -177,10 +178,6 @@ export function usePullToRefresh({
       if (clampedDistance >= threshold) {
         if (prevState !== 'threshold') {
           updateState('threshold');
-          // Haptic feedback when crossing threshold
-          if (typeof navigator !== 'undefined' && navigator.vibrate) {
-            navigator.vibrate(10);
-          }
         }
       } else if (clampedDistance > 0) {
         if (prevState !== 'pulling') {
@@ -193,6 +190,10 @@ export function usePullToRefresh({
       if (currentState.current === 'refreshing' || currentState.current === 'complete') return;
 
       if (currentState.current === 'threshold') {
+        // Haptic feedback on refresh trigger (touchend is a user activation event)
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate(10);
+        }
         executeRefresh();
       } else {
         resetPull();
@@ -205,7 +206,7 @@ export function usePullToRefresh({
     };
 
     el.addEventListener('touchstart', handleTouchStart, { passive: true });
-    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    el.addEventListener('touchmove', handleTouchMove, { passive: true });
     el.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {

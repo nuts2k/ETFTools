@@ -4,6 +4,7 @@ import { usePullToRefresh } from '@/hooks/use-pull-to-refresh'
 
 function createMockScrollRef(scrollTop = 0) {
   const el = document.createElement('div')
+  el.style.overflowY = 'auto'
   Object.defineProperty(el, 'scrollTop', { get: () => scrollTop, configurable: true })
   return { current: el } as React.RefObject<HTMLElement>
 }
@@ -67,6 +68,7 @@ describe('usePullToRefresh', () => {
   it('should late-activate when scrollTop settles to 0 during touchmove', () => {
     let scrollTop = 5
     const el = document.createElement('div')
+    el.style.overflowY = 'auto'
     Object.defineProperty(el, 'scrollTop', { get: () => scrollTop, configurable: true })
     const scrollRef = { current: el } as React.RefObject<HTMLElement>
 
@@ -261,34 +263,7 @@ describe('usePullToRefresh', () => {
     expect(result.current.pullDistance).toBeGreaterThanOrEqual(80)
   })
 
-  it('should preventDefault on small downward move at scrollTop=0 (before direction lock)', () => {
-    const scrollRef = createMockScrollRef(0)
-    renderHook(() =>
-      usePullToRefresh({ onRefresh: vi.fn(), scrollRef })
-    )
-
-    const el = scrollRef.current!
-    // Fire touchstart
-    act(() => {
-      fireTouchEvent(el, 'touchstart', 100, 100)
-    })
-
-    // Fire a small downward touchmove (< 10px direction lock threshold)
-    const touch = { clientX: 100, clientY: 105 } as Touch
-    const moveEvent = new TouchEvent('touchmove', {
-      touches: [touch],
-      cancelable: true,
-    })
-    const spy = vi.spyOn(moveEvent, 'preventDefault')
-
-    act(() => {
-      el.dispatchEvent(moveEvent)
-    })
-
-    expect(spy).toHaveBeenCalled()
-  })
-
-  it('should not preventDefault on small horizontal move at scrollTop=0', () => {
+  it('should use passive touchmove listener (no preventDefault)', () => {
     const scrollRef = createMockScrollRef(0)
     renderHook(() =>
       usePullToRefresh({ onRefresh: vi.fn(), scrollRef })
@@ -299,8 +274,8 @@ describe('usePullToRefresh', () => {
       fireTouchEvent(el, 'touchstart', 100, 100)
     })
 
-    // Fire a small horizontal touchmove
-    const touch = { clientX: 108, clientY: 102 } as Touch
+    // Fire a downward touchmove past direction lock threshold
+    const touch = { clientX: 100, clientY: 115 } as Touch
     const moveEvent = new TouchEvent('touchmove', {
       touches: [touch],
       cancelable: true,
@@ -311,6 +286,7 @@ describe('usePullToRefresh', () => {
       el.dispatchEvent(moveEvent)
     })
 
+    // passive listener cannot call preventDefault
     expect(spy).not.toHaveBeenCalled()
   })
 
