@@ -130,9 +130,15 @@ export default function WatchlistPage() {
   };
 
   return (
-    <div ref={scrollRef} className="min-h-[100dvh] bg-background pb-20">
+    <div ref={scrollRef} className={cn(
+      "bg-background",
+      isSearchMode ? "fixed inset-0 z-10 h-[100dvh] flex flex-col overflow-hidden" : "min-h-[100dvh] pb-20"
+    )}>
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl pt-safe border-b border-border/40 transition-all">
+      <header className={cn(
+        "z-10 bg-background/80 backdrop-blur-xl pt-safe border-b border-border/40",
+        isSearchMode ? "shrink-0" : "sticky top-0"
+      )}>
         <div className="flex h-14 items-center justify-between px-4 gap-3">
           {isSearchMode ? (
             <div className="flex flex-1 items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-200">
@@ -198,7 +204,7 @@ export default function WatchlistPage() {
 
       {/* Search Results Layer */}
       {isSearchMode && (
-        <div className="bg-background px-5 py-4 animate-in fade-in duration-200">
+        <div className="flex-1 min-h-0 overflow-y-auto bg-background px-5 py-4 pb-20 animate-in fade-in duration-200">
           <div className="flex flex-col gap-3 pb-safe">
             {isSearching ? (
               <div className="space-y-3">
