@@ -80,12 +80,43 @@ function CustomAreaLabel(props: any) {
 export function ETFChart({ code, period, onPeriodChange, drawdownInfo, gridSuggestion, showGrid = false }: ETFChartProps) {
   const [data, setData] = useState<ETFHistoryItem[]>([]);
   const [loading, setLoading] = useState(false);
-  
+  const [containerSize, setContainerSize] = useState<{ width: number; height: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // 记录上次渲染回撤区域时对应的 period，用于防止切换周期时闪烁
   const [lastPeriodForDrawdown, setLastPeriodForDrawdown] = useState<Period>(period);
-  
+
   // 追踪 drawdownInfo 的上一次引用，只有真正变化时才更新 lastPeriodForDrawdown
   const prevDrawdownInfoRef = useRef(drawdownInfo);
+
+  // 监听容器尺寸
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateSize = () => {
+      if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        if (width > 0 && height > 0) {
+          setContainerSize({ width, height });
+        }
+      }
+    };
+
+    // 初始化尺寸
+    updateSize();
+
+    // 监听窗口大小变化
+    window.addEventListener('resize', updateSize);
+
+    // 使用 ResizeObserver 监听容器尺寸变化
+    const resizeObserver = new ResizeObserver(updateSize);
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -217,13 +248,13 @@ export function ETFChart({ code, period, onPeriodChange, drawdownInfo, gridSugge
       </div>
 
       {/* Chart */}
-      <div className="h-[280px] w-full relative">
-        {loading && data.length === 0 ? (
+      <div ref={containerRef} className="h-[280px] w-full relative">
+        {!containerSize || (loading && data.length === 0) ? (
           <div className="h-full w-full bg-secondary/10 animate-pulse rounded-lg flex items-center justify-center text-muted-foreground text-sm">
             加载中...
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width={containerSize.width} height={containerSize.height}>
             <AreaChart data={filteredData} margin={{ top: 10, right: 5, left: 5, bottom: 20 }}>
               <defs>
                 <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
