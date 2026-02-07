@@ -27,6 +27,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write  # 用于创建 Release
       packages: write  # 用于推送镜像
