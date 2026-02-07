@@ -126,6 +126,15 @@ export function usePullToRefresh({
       const deltaY = touch.clientY - startY.current;
       const deltaX = touch.clientX - startX.current;
 
+      // Prevent the browser from claiming the gesture for native scrolling
+      // before direction lock is determined. Without this, on long scrollable
+      // lists the browser takes over the gesture during the first ~10px of
+      // movement (before we call preventDefault in the main logic below),
+      // making pull-to-refresh unresponsive.
+      if (el.scrollTop <= 1 && deltaY > 0 && Math.abs(deltaY) >= Math.abs(deltaX)) {
+        e.preventDefault();
+      }
+
       // Direction lock: determine after 10px of movement
       if (directionLocked.current === null) {
         const absDeltaY = Math.abs(deltaY);

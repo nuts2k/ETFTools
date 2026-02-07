@@ -261,6 +261,59 @@ describe('usePullToRefresh', () => {
     expect(result.current.pullDistance).toBeGreaterThanOrEqual(80)
   })
 
+  it('should preventDefault on small downward move at scrollTop=0 (before direction lock)', () => {
+    const scrollRef = createMockScrollRef(0)
+    renderHook(() =>
+      usePullToRefresh({ onRefresh: vi.fn(), scrollRef })
+    )
+
+    const el = scrollRef.current!
+    // Fire touchstart
+    act(() => {
+      fireTouchEvent(el, 'touchstart', 100, 100)
+    })
+
+    // Fire a small downward touchmove (< 10px direction lock threshold)
+    const touch = { clientX: 100, clientY: 105 } as Touch
+    const moveEvent = new TouchEvent('touchmove', {
+      touches: [touch],
+      cancelable: true,
+    })
+    const spy = vi.spyOn(moveEvent, 'preventDefault')
+
+    act(() => {
+      el.dispatchEvent(moveEvent)
+    })
+
+    expect(spy).toHaveBeenCalled()
+  })
+
+  it('should not preventDefault on small horizontal move at scrollTop=0', () => {
+    const scrollRef = createMockScrollRef(0)
+    renderHook(() =>
+      usePullToRefresh({ onRefresh: vi.fn(), scrollRef })
+    )
+
+    const el = scrollRef.current!
+    act(() => {
+      fireTouchEvent(el, 'touchstart', 100, 100)
+    })
+
+    // Fire a small horizontal touchmove
+    const touch = { clientX: 108, clientY: 102 } as Touch
+    const moveEvent = new TouchEvent('touchmove', {
+      touches: [touch],
+      cancelable: true,
+    })
+    const spy = vi.spyOn(moveEvent, 'preventDefault')
+
+    act(() => {
+      el.dispatchEvent(moveEvent)
+    })
+
+    expect(spy).not.toHaveBeenCalled()
+  })
+
   it('should reach threshold on a single fast large swipe', async () => {
     const scrollRef = createMockScrollRef(0)
     const onRefresh = vi.fn().mockResolvedValue(undefined)
