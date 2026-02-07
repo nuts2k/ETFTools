@@ -166,6 +166,7 @@ export interface AlertConfig {
   ma_crossover: boolean;
   ma_alignment: boolean;
   weekly_signal: boolean;
+  daily_summary: boolean;
   max_alerts_per_day: number;
 }
 
@@ -256,9 +257,13 @@ export async function saveAlertConfig(
 }
 
 export async function triggerAlertCheck(
-  token: string
+  token: string,
+  summary: boolean = false
 ): Promise<{ success: boolean; message: string }> {
-  const response = await fetch(`${API_BASE_URL}/alerts/trigger`, {
+  const url = summary
+    ? `${API_BASE_URL}/alerts/trigger?summary=true`
+    : `${API_BASE_URL}/alerts/trigger`;
+  const response = await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}` }
   });

@@ -95,31 +95,64 @@ AlertScheduler (已有)
 ### 3.3 时序设计
 
 ```
-15:30  告警检查 → 计算温度/趋势 → 写入缓存 → 发送告警信号
-15:35  每日摘要 → 读取实时价格 + 读取缓存温度 → 格式化 → 发送摘要
+15:30  告警检查 → fetch_history_raw(写入4h DiskCache) → 计算温度/趋势 → 发送告警信号
+15:35  每日摘要 → fetch_history_raw(命中缓存) + get_etf_info() → 现场计算温度 → 格式化 → 发送摘要
 ```
 
 摘要时间选择 15:35 的原因：
 - 在告警检查（15:30）之后 5 分钟
-- 可复用告警检查已计算好的缓存数据，避免重复请求 API
+- `fetch_history_raw` 有 4 小时 DiskCache，15:35 调用时命中 15:30 的缓存，不会重复请求 API
+- 温度计算是纯 CPU 操作（毫秒级），不需要独立缓存层，现场计算即可
 - 收盘后数据已稳定，不会再变动
 
-### 3.4 数据依赖
+### 3.4 数据获取策略
 
-| 数据 | 来源 | 是否需要新接口 |
-|------|------|--------------|
-| ETF 实时价格/涨跌幅 | `ak_service.get_etf_info()` | 否 |
-| 温度分数/等级 | `temperature_cache_service` 或现场计算 | 否 |
-| 当日告警信号 | `alert_state_service` 的当日记录 | 否 |
-| 用户自选列表 | `_collect_etf_users()` | 否 |
+| 数据 | 来源 | 说明 |
+|------|------|------|
+| ETF 涨跌幅/价格 | `ak_service.get_etf_info()` | 收盘后实时行情即收盘价，数据最准确 |
+| 温度分数/等级 | `fetch_history_raw()` → `temperature_service.calculate_temperature()` | 复用历史数据缓存，现场计算温度 |
+| 当日告警信号 | `alert_state_service.get_today_signals()` | **新增方法**，从缓存读取当日信号详情 |
+| 用户自选列表 | `_collect_etf_users(for_summary=True)` | 复用现有方法，通过参数切换筛选条件 |
 
-**结论：不需要任何新的数据接口，全部复用现有服务。**
+**关键决策：不新增温度缓存层。** `fetch_history_raw` 的 DiskCache 已解决重复 API 请求问题，温度计算开销可忽略。
 
-### 3.5 独立性设计
+### 3.5 容错：告警检查未执行时的摘要行为
+
+如果 15:30 告警检查因服务器宕机/重启等原因未执行，15:35 摘要仍能正常工作：
+
+| 数据 | 行为 | 影响 |
+|------|------|------|
+| `fetch_history_raw` | 缓存未命中 → 直接调 AkShare API 拉取 → 写入缓存 | 多几秒请求时间，无功能影响 |
+| `get_etf_info()` | 直接调 API | 无影响 |
+| 当日信号 | 缓存为空 → "今日信号"区块省略 | 符合预期：告警没跑就没有信号记录 |
+
+**结论：摘要不依赖告警检查必须先执行，具备独立运行能力。**
+
+### 3.6 信号复用机制
+
+现有 `alert_state_service` 的 `mark_signal_sent()` 只记录"是否已发送"，不保存信号内容。需要扩展：
+
+- 在 `mark_signal_sent()` 时同时存储 `SignalItem` 的序列化数据
+- 新增 `get_today_signals(user_id) -> List[SignalItem]`，一次读取当日所有信号
+- 缓存键：`alert_signal_detail:{user_id}:{date}` → `List[SignalItem]`
+
+**告警关闭时的行为：** 用户关闭告警但开启摘要时，不会产生信号记录，"今日信号"区块自动省略。这符合用户意图——关闭告警即表示不关注信号。
+
+### 3.7 独立性设计
 
 - 摘要和告警是**两个独立开关**，用户可以只开摘要不开告警，或反过来
 - 每日摘要**不计入** `max_alerts_per_day` 的告警配额
 - Telegram 配置共用（bot_token / chat_id），无需额外配置
+
+### 3.8 可靠性设计
+
+**发送失败重试：** 告警信号是事件驱动，错过了下次还会触发；但摘要每天一次，错过就没了。因此摘要发送失败时重试 1 次，间隔 30 秒。不需要复杂的重试队列。
+
+**去重保护：** 防止定时任务因服务重启等原因重复执行导致用户收到多条摘要。在 `alert_state_service` 中新增缓存键 `summary_sent:{user_id}:{date}`，发送前检查、发送后标记。
+
+### 3.9 消息格式
+
+统一使用 **HTML 格式**（`parse_mode="HTML"`），与现有告警消息保持一致。模板中的 emoji 在 HTML 模式下正常显示，同时可用 `<b>` 加粗关键数字提升可读性。
 
 ---
 
@@ -144,12 +177,12 @@ def format_daily_summary(
     signals: List[SignalItem],
     date_str: str
 ) -> str:
-    """格式化每日摘要消息"""
+    """格式化每日摘要消息（HTML 格式，与现有告警一致）"""
 ```
 
 参数说明：
 - `items`: 自选 ETF 列表，每项包含 `code`, `name`, `price`, `change_pct`, `temperature_score`, `temperature_level`
-- `signals`: 当日已触发的告警信号（从 `alert_state_service` 读取）
+- `signals`: 当日已触发的告警信号（从 `alert_state_service.get_today_signals()` 读取）
 - `date_str`: 日期字符串，如 "2026-02-07 (周五)"
 
 格式化逻辑：
@@ -187,12 +220,12 @@ self._scheduler.add_job(
 4. 调用 `format_daily_summary()` 格式化消息
 5. 通过 `TelegramNotificationService.send_message()` 发送
 
-#### 新增 `_collect_summary_users()` 方法
+#### 扩展 `_collect_etf_users()` 方法
 
-与 `_collect_etf_users()` 类似，但筛选条件不同：
-- 不要求 `alerts.enabled` 为 True（摘要独立于告警）
-- 要求 `daily_summary` 为 True
-- 要求 Telegram 已配置且已验证
+不新增独立方法，而是给现有方法加 `for_summary=False` 参数，内部切换筛选条件：
+- `for_summary=False`（默认）：要求 `alerts.enabled == True`（现有行为不变）
+- `for_summary=True`：要求 `daily_summary == True`，不要求 `alerts.enabled`
+- 两者共同要求：Telegram 已配置且已验证、自选列表不为空
 
 #### `trigger_check()` 扩展
 
@@ -206,7 +239,41 @@ async def trigger_check(self, user_id=None, summary=False):
         # 现有逻辑
 ```
 
-### 4.4 `alerts.py` — API 字段扩展
+**手动触发的时间处理：** 手动触发不限制时间（可在盘中使用），但消息模板中标注实际生成时间而非固定写"收盘"，让用户知道这是盘中快照还是收盘数据。
+
+### 4.4 `alert_state_service.py` — 信号详情存储
+
+扩展现有服务以支持摘要读取当日信号：
+
+**修改 `mark_signal_sent()`：** 在标记信号已发送的同时，将 `SignalItem` 追加到当日信号列表缓存中。
+
+```python
+# 新增缓存键：alert_signal_detail:{user_id}:{date} → List[SignalItem]
+def mark_signal_sent(self, user_id, etf_code, signal_type, signal_item=None):
+    # ... 现有逻辑 ...
+    if signal_item:
+        # 追加到当日信号详情列表
+```
+
+**新增 `get_today_signals()`：**
+
+```python
+def get_today_signals(self, user_id: int) -> List[SignalItem]:
+    """获取用户当日所有已触发的信号详情"""
+```
+
+**新增 `is_summary_sent_today()`** 和 **`mark_summary_sent()`：**
+
+```python
+def is_summary_sent_today(self, user_id: int) -> bool:
+    """检查今天是否已发送摘要（去重保护）"""
+
+def mark_summary_sent(self, user_id: int) -> None:
+    """标记今天已发送摘要"""
+    # 缓存键：summary_sent:{user_id}:{date}，当天有效
+```
+
+### 4.5 `alerts.py` — API 字段扩展
 
 `AlertConfigRequest` 和 `AlertConfigResponse` 新增：
 
@@ -241,6 +308,8 @@ async def trigger_alert_check(
 
 UI 结构：与现有主开关样式一致，使用日历图标 (`Calendar`)。
 
+**禁用态：** Telegram 未配置/未验证时，摘要开关置灰并提示"请先配置 Telegram"，复用现有告警开关的禁用逻辑。
+
 ### 5.2 `lib/api.ts` — AlertConfig 类型扩展
 
 ```typescript
@@ -265,11 +334,15 @@ export interface AlertConfig {
 | 部分 ETF 失败 | 只展示成功的，底部注明"N 只获取失败" |
 | 非交易日（周末） | 不发送（`day_of_week="mon-fri"` 已处理） |
 | 节假日（周一到周五但休市） | 第一版不处理，后续可接入交易日历 |
-| 用户关闭了告警但开了摘要 | 正常发送摘要（两者独立） |
+| 用户关闭了告警但开了摘要 | 正常发送摘要，但"今日信号"区块为空（自动省略） |
 | 用户开了告警但关了摘要 | 只发告警不发摘要 |
-| Telegram 未配置/未验证 | 跳过该用户 |
+| Telegram 未配置/未验证 | 跳过该用户，前端开关置灰 |
 | 自选只有 1-2 只 | 不分"涨幅前三/跌幅前三"，直接展示完整列表 |
 | 全部上涨或全部下跌 | 只显示对应方向的排行 |
+| 发送失败 | 重试 1 次（间隔 30 秒），仍失败则记录日志 |
+| 定时任务重复执行 | `summary_sent:{user_id}:{date}` 缓存键去重，同一天不会重复发送 |
+| 15:30 告警检查未执行 | 摘要独立运行：`fetch_history_raw` 直接调 API，信号区块省略 |
+| 手动触发（盘中） | 正常发送，消息标注实际生成时间 |
 
 ---
 
@@ -279,11 +352,12 @@ export interface AlertConfig {
 
 ```
 Step 1: alert_config.py 新增 daily_summary 字段
-Step 2: notification_service.py 新增 format_daily_summary()
-Step 3: alert_scheduler.py 新增 _run_daily_summary() + 注册定时任务
-Step 4: alerts.py API 新增 daily_summary 字段 + trigger summary 参数
-Step 5: 前端告警设置页新增 Toggle
-Step 6: 手动触发测试验证
+Step 2: alert_state_service.py 扩展信号详情存储 + 摘要去重
+Step 3: notification_service.py 新增 format_daily_summary()（HTML 格式）
+Step 4: alert_scheduler.py 扩展 _collect_etf_users() + 新增 _run_daily_summary() + 注册定时任务
+Step 5: alerts.py API 新增 daily_summary 字段 + trigger summary 参数
+Step 6: 前端告警设置页新增 Toggle（含禁用态）
+Step 7: 手动触发测试验证
 ```
 
-预估总改动量：后端 ~150 行新增，前端 ~20 行新增。
+预估总改动量：后端 ~180 行新增，前端 ~20 行新增。

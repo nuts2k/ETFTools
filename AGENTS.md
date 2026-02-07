@@ -199,6 +199,10 @@
 | `/admin/system/config` | GET | 获取系统配置 |
 | `/admin/system/config/registration` | POST | 开关用户注册 |
 | `/admin/system/config/max-watchlist` | POST | 设置自选列表最大数量 |
+| `/alerts/config` | GET | 获取告警配置 |
+| `/alerts/config` | PUT | 更新告警配置（含每日摘要开关） |
+| `/alerts/trigger` | POST | 手动触发告警检查 |
+| `/alerts/trigger?summary=true` | POST | 手动触发每日摘要 |
 
 **版本信息**: `/` 和 `/api/v1/health` 端点返回 `version` 字段，格式遵循语义化版本规范（Semantic Versioning 2.0.0）。
 

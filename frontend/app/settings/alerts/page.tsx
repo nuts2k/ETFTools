@@ -18,6 +18,7 @@ import {
   getAlertConfig,
   saveAlertConfig,
   triggerAlertCheck,
+  getTelegramConfig,
   type AlertConfig,
 } from "@/lib/api";
 
@@ -28,6 +29,7 @@ export default function AlertsSettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  const [telegramVerified, setTelegramVerified] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
@@ -41,6 +43,7 @@ export default function AlertsSettingsPage() {
     ma_crossover: true,
     ma_alignment: true,
     weekly_signal: true,
+    daily_summary: true,
     max_alerts_per_day: 20,
   });
 
@@ -56,8 +59,14 @@ export default function AlertsSettingsPage() {
 
   const loadConfig = async () => {
     try {
-      const data = await getAlertConfig(token!);
-      setConfig(data);
+      const [alertData, telegramData] = await Promise.all([
+        getAlertConfig(token!),
+        getTelegramConfig(token!).catch(() => null),
+      ]);
+      setConfig(alertData);
+      setTelegramVerified(
+        !!telegramData?.enabled && !!telegramData?.verified
+      );
     } catch (error) {
       console.error("Failed to load config:", error);
     } finally {
@@ -110,14 +119,17 @@ export default function AlertsSettingsPage() {
   const Toggle = ({
     checked,
     onChange,
+    disabled,
   }: {
     checked: boolean;
     onChange: (v: boolean) => void;
+    disabled?: boolean;
   }) => (
     <button
-      onClick={() => onChange(!checked)}
+      onClick={() => !disabled && onChange(!checked)}
+      disabled={disabled}
       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-        checked ? "bg-primary" : "bg-muted"
+        disabled ? "bg-muted opacity-50 cursor-not-allowed" : checked ? "bg-primary" : "bg-muted"
       }`}
     >
       <span
@@ -155,6 +167,32 @@ export default function AlertsSettingsPage() {
               <Toggle
                 checked={config.enabled}
                 onChange={(v) => setConfig({ ...config, enabled: v })}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* 每日摘要 */}
+        <section>
+          <div className="bg-card rounded-xl overflow-hidden shadow-sm ring-1 ring-border/50">
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Calendar className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <span className="text-base font-medium">每日市场摘要</span>
+                  <p className="text-xs text-muted-foreground">
+                    {telegramVerified
+                      ? "收盘后推送自选日报"
+                      : "请先配置并验证 Telegram Bot"}
+                  </p>
+                </div>
+              </div>
+              <Toggle
+                checked={config.daily_summary}
+                disabled={!telegramVerified}
+                onChange={(v) =>
+                  setConfig({ ...config, daily_summary: v })
+                }
               />
             </div>
           </div>

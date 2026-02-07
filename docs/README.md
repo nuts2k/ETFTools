@@ -74,6 +74,7 @@
 - `2026-02-03-alert-notification-impl.md` - 告警通知实现
 - `2026-02-05-github-actions-docker-build.md` - GitHub Actions Docker 多平台构建实现
 - `2026-02-06-admin-frontend-impl.md` - 管理员前端界面实现
+- `2026-02-07-daily-summary-impl.md` - 每日市场摘要推送实现
 
 ### deployment/ - 部署文档
 部署指南、运维手册、环境配置等。

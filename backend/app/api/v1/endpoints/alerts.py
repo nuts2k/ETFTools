@@ -26,6 +26,7 @@ class AlertConfigRequest(BaseModel):
     ma_crossover: bool = True
     ma_alignment: bool = True
     weekly_signal: bool = True
+    daily_summary: bool = True
     max_alerts_per_day: int = 100
 
 
@@ -38,6 +39,7 @@ class AlertConfigResponse(BaseModel):
     ma_crossover: bool
     ma_alignment: bool
     weekly_signal: bool
+    daily_summary: bool
     max_alerts_per_day: int
 
 
@@ -68,9 +70,14 @@ def update_alert_config(
 
 
 @router.post("/trigger")
-async def trigger_alert_check(current_user: User = Depends(get_current_user)):
-    """手动触发告警检查"""
-    result = await alert_scheduler.trigger_check(current_user.id)
+async def trigger_alert_check(
+    summary: bool = False,
+    current_user: User = Depends(get_current_user),
+):
+    """手动触发告警检查或每日摘要"""
+    result = await alert_scheduler.trigger_check(
+        current_user.id, summary=summary
+    )
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
     return result

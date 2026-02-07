@@ -77,6 +77,9 @@ class UserAlertPreferences(BaseModel):
     ma_alignment: bool = True            # 均线排列变化
     weekly_signal: bool = True           # 周线信号
 
+    # 每日摘要
+    daily_summary: bool = True           # 每日市场摘要开关，默认开启
+
     # 通知频率控制
     max_alerts_per_day: int = Field(default=100, ge=1, le=100)
 

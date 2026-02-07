@@ -11,7 +11,7 @@ from typing import Optional, Dict, Any
 
 from diskcache import Cache
 
-from app.models.alert_config import ETFAlertState
+from app.models.alert_config import ETFAlertState, SignalItem
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +37,16 @@ class AlertStateService:
         """生成每日计数器 key"""
         today = date.today().isoformat()
         return f"alert_count:{user_id}:{today}"
+
+    def _signal_detail_key(self, user_id: int) -> str:
+        """生成当日信号详情缓存 key"""
+        today = date.today().isoformat()
+        return f"alert_signal_detail:{user_id}:{today}"
+
+    def _summary_sent_key(self, user_id: int) -> str:
+        """生成摘要已发送缓存 key"""
+        today = date.today().isoformat()
+        return f"summary_sent:{user_id}:{today}"
 
     def get_state(self, user_id: int, etf_code: str) -> Optional[ETFAlertState]:
         """获取 ETF 的上次状态快照"""
@@ -71,9 +81,10 @@ class AlertStateService:
             return False
 
     def mark_signal_sent(
-        self, user_id: int, etf_code: str, signal_type: str
+        self, user_id: int, etf_code: str, signal_type: str,
+        signal_item: Optional["SignalItem"] = None
     ) -> None:
-        """标记信号已发送（当天有效）"""
+        """标记信号已发送（当天有效），同时存储信号详情供摘要使用"""
         try:
             key = self._sent_key(user_id, etf_code, signal_type)
             # 计算到今天 23:59:59 的秒数
@@ -88,6 +99,15 @@ class AlertStateService:
                 count_key = self._count_key(user_id)
                 current = self._cache.get(count_key, default=0)
                 self._cache.set(count_key, current + 1, expire=max(ttl, 1))
+
+            # 存储信号详情供每日摘要使用
+            # 注意：read-modify-write 非原子操作，并发写入可能丢失信号。
+            # 当前场景下调度器串行处理用户，不会并发写同一 user_id，可接受。
+            if signal_item:
+                detail_key = self._signal_detail_key(user_id)
+                existing = self._cache.get(detail_key, default=[])
+                existing.append(signal_item.model_dump())
+                self._cache.set(detail_key, existing, expire=max(ttl, 1))
         except Exception as e:
             logger.error(f"Failed to mark signal sent: {e}")
 
@@ -99,6 +119,36 @@ class AlertStateService:
         except Exception as e:
             logger.error(f"Failed to get daily sent count: {e}")
             return 0
+
+    def get_today_signals(self, user_id: int) -> list:
+        """获取用户当日所有已触发的信号详情"""
+        try:
+            detail_key = self._signal_detail_key(user_id)
+            data = self._cache.get(detail_key, default=[])
+            return [SignalItem(**item) for item in data]
+        except Exception as e:
+            logger.error(f"Failed to get today signals: {e}")
+            return []
+
+    def is_summary_sent_today(self, user_id: int) -> bool:
+        """检查今天是否已发送摘要"""
+        try:
+            key = self._summary_sent_key(user_id)
+            return self._cache.get(key) is not None
+        except Exception as e:
+            logger.error(f"Failed to check summary sent: {e}")
+            return False
+
+    def mark_summary_sent(self, user_id: int) -> None:
+        """标记今天已发送摘要"""
+        try:
+            key = self._summary_sent_key(user_id)
+            now = datetime.now()
+            end_of_day = datetime(now.year, now.month, now.day, 23, 59, 59)
+            ttl = int((end_of_day - now).total_seconds())
+            self._cache.set(key, True, expire=max(ttl, 1))
+        except Exception as e:
+            logger.error(f"Failed to mark summary sent: {e}")
 
     def clear_user_state(self, user_id: int) -> None:
         """清除用户的所有状态缓存"""
