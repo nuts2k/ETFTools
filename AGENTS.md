@@ -182,6 +182,12 @@
 | **数据源** | `backend/app/services/akshare_service.py` | AkShare 接口封装、缓存降级 |
 | **指标计算** | `backend/app/services/metrics_service.py` | ATR, 回撤, CAGR 算法 |
 | **估值服务** | `backend/app/services/valuation_service.py` | PE 分位数（可选） |
+| **份额历史模型** | `backend/app/models/etf_share_history.py` | ETF 份额历史数据模型 |
+| **份额历史数据库** | `backend/app/core/share_history_database.py` | 独立 SQLite 数据库配置 |
+| **资金流向采集** | `backend/app/services/fund_flow_collector.py` | 份额数据采集 + APScheduler 调度 |
+| **资金流向服务** | `backend/app/services/fund_flow_service.py` | 份额规模、排名业务逻辑 |
+| **资金流向缓存** | `backend/app/services/fund_flow_cache_service.py` | 资金流向数据缓存（4h TTL） |
+| **份额备份服务** | `backend/app/services/share_history_backup_service.py` | CSV 导出和月度备份 |
 | **静态配置** | `backend/app/data/metrics_config.json` | 动态指标参数 |
 
 ### 前端关键文件
@@ -198,6 +204,7 @@
 | **下拉刷新 Hook** | `frontend/hooks/use-pull-to-refresh.ts` | 触摸手势状态机 |
 | **下拉刷新指示器** | `frontend/components/PullToRefreshIndicator.tsx` | 下拉视觉反馈 |
 | **认证上下文** | `frontend/contexts/AuthContext.tsx` | JWT 管理 |
+| **资金流向卡片** | `frontend/components/FundFlowCard.tsx` | 份额规模、排名展示 |
 | **PWA 配置** | `frontend/public/manifest.json` | PWA 清单、图标、主屏幕安装 |
 
 ## 6. API 接口速查 (API Reference)
@@ -228,6 +235,9 @@
 | `/alerts/config` | PUT | 更新告警配置（含每日摘要开关） |
 | `/alerts/trigger` | POST | 手动触发告警检查 |
 | `/alerts/trigger?summary=true` | POST | 手动触发每日摘要 |
+| `/etf/{code}/fund-flow` | GET | 获取 ETF 资金流向数据（份额规模、排名） |
+| `/admin/fund-flow/collect` | POST | 手动触发份额采集（管理员） |
+| `/admin/fund-flow/export` | POST | 导出份额历史 CSV（管理员） |
 
 **版本信息**: `/` 和 `/api/v1/health` 端点返回 `version` 字段，格式遵循语义化版本规范（Semantic Versioning 2.0.0）。
 
@@ -242,6 +252,8 @@
 | **版本提取** | `scripts/get_version.sh` | 从 Git 标签提取版本号 |
 | **版本升级** | `scripts/bump_version.sh` | 语义化版本升级脚本 |
 | **PWA 清单** | `frontend/public/manifest.json` | PWA 名称、图标、显示模式、主题色 |
+| **份额历史数据库** | `backend/etf_share_history.db` | 独立 SQLite 数据库（份额历史） |
+| **份额备份目录** | `backend/backups/share_history/` | 月度 CSV 备份文件 |
 
 **版本管理环境变量**：
 - `APP_VERSION`: 后端应用版本（自动从 Git 标签提取，默认 `dev`）

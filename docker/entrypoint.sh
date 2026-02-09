@@ -60,9 +60,32 @@ else
     echo -e "${YELLOW}[ETFTool]${NC} 数据库文件不存在，将在首次访问时自动创建"
 fi
 
+# 份额历史数据库文件
+SHARE_DB_FILE="/app/backend/etf_share_history.db"
+
+# 初始化份额历史数据库（如果表不存在）
+if [ ! -f "$SHARE_DB_FILE" ] || [ ! -s "$SHARE_DB_FILE" ]; then
+    echo -e "${BLUE}[ETFTool]${NC} 初始化份额历史数据库..."
+    cd /app/backend && python scripts/init_share_history_table.py
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}[ETFTool]${NC} 份额历史数据库初始化成功"
+    else
+        echo -e "${RED}[ETFTool]${NC} 份额历史数据库初始化失败"
+        exit 1
+    fi
+fi
+
+# 修复权限
+if [ -f "$SHARE_DB_FILE" ]; then
+    if [ ! -w "$SHARE_DB_FILE" ]; then
+        chown www-data:www-data "$SHARE_DB_FILE" 2>/dev/null
+        chmod 660 "$SHARE_DB_FILE" 2>/dev/null
+    fi
+fi
+
 # 确保缓存和日志目录存在且权限正确
-mkdir -p /app/backend/cache /app/backend/logs /var/log/supervisor
-chown -R www-data:www-data /app/backend/cache /app/backend/logs /var/log/supervisor
+mkdir -p /app/backend/cache /app/backend/logs /app/backend/backups /var/log/supervisor
+chown -R www-data:www-data /app/backend/cache /app/backend/logs /app/backend/backups /var/log/supervisor
 
 echo -e "${GREEN}[ETFTool]${NC} 启动 Supervisor..."
 

@@ -27,8 +27,8 @@
 
 ```bash
 # 1. 创建数据目录和数据库文件
-mkdir -p data/cache data/logs
-touch data/etftool.db
+mkdir -p data/cache data/logs data/backups
+touch data/etftool.db data/etf_share_history.db
 
 # 2. 生成 SECRET_KEY（必需）
 python -c "import secrets; print(secrets.token_urlsafe(32))"
@@ -64,8 +64,8 @@ docker-compose logs -f
 
 ```bash
 # 1. 创建数据目录和数据库文件
-mkdir -p data/cache data/logs
-touch data/etftool.db
+mkdir -p data/cache data/logs data/backups
+touch data/etftool.db data/etf_share_history.db
 
 # 2. 构建镜像
 docker build -t etftool:latest .
@@ -534,6 +534,8 @@ services:
       - ENABLE_RATE_LIMIT=true
     volumes:
       - ./data/etftool.db:/app/backend/etftool.db
+      - ./data/etf_share_history.db:/app/backend/etf_share_history.db
+      - ./data/backups:/app/backend/backups
       - ./data/cache:/app/backend/cache
       - ./data/logs:/var/log/supervisor
     restart: unless-stopped
@@ -549,8 +551,8 @@ services:
 
 ```bash
 # 1. 创建数据目录和数据库文件
-mkdir -p data/cache data/logs
-touch data/etftool.db
+mkdir -p data/cache data/logs data/backups
+touch data/etftool.db data/etf_share_history.db
 
 # 2. 创建 .env.docker 文件
 cat > .env.docker <<EOF
@@ -587,19 +589,21 @@ docker-compose up -d --build
 
 ```
 data/
-├── etftool.db      # SQLite 数据库文件
-├── cache/          # 缓存目录
-└── logs/           # 日志目录
+├── etftool.db              # SQLite 主数据库文件
+├── etf_share_history.db    # ETF 份额历史数据库（资金流向功能）
+├── backups/                # 份额历史数据备份目录
+├── cache/                  # 缓存目录
+└── logs/                   # 日志目录
 ```
 
 ### 创建数据目录
 
 ```bash
-mkdir -p data/cache data/logs
-touch data/etftool.db
+mkdir -p data/cache data/logs data/backups
+touch data/etftool.db data/etf_share_history.db
 ```
 
-> ⚠️ **重要**：必须预先创建 `data/etftool.db` 文件，否则 Docker 会将其创建为目录导致挂载失败。
+> ⚠️ **重要**：必须预先创建 `data/etftool.db` 和 `data/etf_share_history.db` 文件，否则 Docker 会将其创建为目录导致挂载失败。
 
 ### 数据备份
 

@@ -123,6 +123,26 @@ export interface GridSuggestion {
   reason?: string;         // 不适合网格交易的原因（可选）
 }
 
+// 资金流向数据
+export interface FundFlowData {
+  code: string;
+  name: string;
+  current_scale: {
+    shares: number;      // 亿份
+    scale: number | null; // 亿元
+    update_date: string;
+    exchange: string;
+  };
+  rank: {
+    rank: number;
+    total_count: number;
+    percentile: number;
+    category: string;
+  } | null;
+  historical_available: boolean;
+  data_points: number;
+}
+
 export interface ETFMetrics {
   period: string;
   total_return: number;

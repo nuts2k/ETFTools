@@ -60,6 +60,7 @@
 - `alert-intraday-check-design.md` - 告警盘中检查设计
 - `grid-performance-optimization.md` - 网格性能优化设计
 - `2026-02-07-daily-summary-design.md` - 每日市场摘要推送设计
+- `2026-02-08-fund-flow-analysis-design.md` - ETF 资金流向分析设计
 
 ### implementation/ - 实现计划
 具体功能的实现步骤、技术细节、代码结构等。
@@ -75,6 +76,7 @@
 - `2026-02-05-github-actions-docker-build.md` - GitHub Actions Docker 多平台构建实现
 - `2026-02-06-admin-frontend-impl.md` - 管理员前端界面实现
 - `2026-02-07-daily-summary-impl.md` - 每日市场摘要推送实现
+- `2026-02-09-fund-flow-analysis-impl.md` - ETF 资金流向分析实现
 
 ### deployment/ - 部署文档
 部署指南、运维手册、环境配置等。
@@ -178,4 +180,4 @@ ls -lt docs/implementation/
 
 ---
 
-**最后更新：** 2026-02-06
+**最后更新：** 2026-02-09

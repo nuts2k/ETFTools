@@ -13,6 +13,7 @@ from app.services.valuation_service import valuation_service
 from app.services.trend_cache_service import trend_cache_service
 from app.services.temperature_cache_service import temperature_cache_service
 from app.services.grid_service import calculate_grid_params_cached
+from app.services.fund_flow_cache_service import fund_flow_cache_service
 from app.core.config_loader import metric_config
 from app.middleware.rate_limit import limiter
 
@@ -420,5 +421,17 @@ async def get_grid_suggestion(code: str, force_refresh: bool = False):
     
     if not result:
         raise HTTPException(status_code=400, detail="Insufficient data for grid calculation")
-    
+
+    return result
+
+
+@router.get("/{code}/fund-flow")
+async def get_fund_flow(code: str, force_refresh: bool = False):
+    """获取 ETF 资金流向数据（份额规模、排名）"""
+    result = fund_flow_cache_service.get_fund_flow(code, force_refresh=force_refresh)
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail="No fund flow data available for this ETF"
+        )
     return result

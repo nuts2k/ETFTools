@@ -93,7 +93,7 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # 创建必要的目录
-RUN mkdir -p /app/backend/cache /app/backend/logs /var/log/supervisor
+RUN mkdir -p /app/backend/cache /app/backend/logs /app/backend/backups /var/log/supervisor
 
 # 设置权限
 RUN chown -R www-data:www-data /app /var/log/nginx /var/lib/nginx /var/log/supervisor

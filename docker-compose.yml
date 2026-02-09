@@ -46,6 +46,8 @@ services:
     # 数据持久化
     volumes:
       - ./data/etftool.db:/app/backend/etftool.db
+      - ./data/etf_share_history.db:/app/backend/etf_share_history.db
+      - ./data/backups:/app/backend/backups
       - ./data/cache:/app/backend/cache
       - ./data/logs:/var/log/supervisor
 

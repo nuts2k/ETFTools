@@ -1,12 +1,17 @@
 from typing import List, Optional
 from datetime import datetime
+import asyncio
+import io
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select
 from app.models.user import User, UserRead
 from app.models.system_config import SystemConfigKeys
 from app.core.database import get_session
 from app.api.v1.endpoints.auth import get_current_admin_user
 from app.services.system_config_service import SystemConfigService
+from app.services.fund_flow_collector import fund_flow_collector
+from app.services.share_history_backup_service import share_history_backup_service
 
 router = APIRouter()
 
@@ -116,3 +121,32 @@ def set_max_watchlist(
         session, SystemConfigKeys.MAX_WATCHLIST_ITEMS, max_items, admin.id
     )
     return {"max_watchlist_items": max_items}
+
+
+@router.post("/fund-flow/collect")
+async def trigger_fund_flow_collection(
+    admin: User = Depends(get_current_admin_user)
+):
+    """手动触发 ETF 份额数据采集（管理员）"""
+    result = await asyncio.to_thread(fund_flow_collector.collect_daily_snapshot)
+    return result
+
+
+@router.post("/fund-flow/export")
+async def export_share_history(
+    start_date: str = Query(..., description="开始日期 YYYY-MM-DD"),
+    end_date: str = Query(..., description="结束日期 YYYY-MM-DD"),
+    admin: User = Depends(get_current_admin_user)
+):
+    """导出份额历史数据为 CSV（管理员）"""
+    csv_bytes = share_history_backup_service.export_to_csv_bytes(
+        start_date, end_date
+    )
+    return StreamingResponse(
+        io.BytesIO(csv_bytes),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition":
+                f"attachment; filename=etf_share_history_{start_date}_{end_date}.csv"
+        }
+    )

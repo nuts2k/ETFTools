@@ -14,11 +14,12 @@ import {
   ArrowDownCircle,
   PieChart
 } from "lucide-react";
-import { fetchClient, type ETFDetail, type ETFMetrics, type GridSuggestion } from "@/lib/api";
+import { fetchClient, type ETFDetail, type ETFMetrics, type GridSuggestion, type FundFlowData } from "@/lib/api";
 import { ETFChart, type Period } from "@/components/ETFChart";
 import ValuationCard from "@/components/ValuationCard";
 import TrendAnalysisCard from "@/components/TrendAnalysisCard";
 import GridSuggestionCard from "@/components/GridSuggestionCard";
+import FundFlowCard from "@/components/FundFlowCard";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
@@ -33,9 +34,11 @@ export default function ETFDetailPage() {
   const [info, setInfo] = useState<ETFDetail | null>(null);
   const [metrics, setMetrics] = useState<ETFMetrics | null>(null);
   const [gridSuggestion, setGridSuggestion] = useState<GridSuggestion | null>(null);
+  const [fundFlow, setFundFlow] = useState<FundFlowData | null>(null);
   const [loading, setLoading] = useState(true);
   const [metricsLoading, setMetricsLoading] = useState(false);
   const [gridLoading, setGridLoading] = useState(false);
+  const [fundFlowLoading, setFundFlowLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [error, setError] = useState("");
   const [period, setPeriod] = useState<Period>("5y");
@@ -102,6 +105,23 @@ export default function ETFDetailPage() {
       }
     }
     loadGridSuggestion();
+  }, [code]);
+
+  // Load Fund Flow
+  useEffect(() => {
+    async function loadFundFlow() {
+      if (!code) return;
+      try {
+        setFundFlowLoading(true);
+        const data = await fetchClient<FundFlowData>(`/etf/${code}/fund-flow`);
+        setFundFlow(data);
+      } catch {
+        // 404 = no data yet, silently ignore
+      } finally {
+        setFundFlowLoading(false);
+      }
+    }
+    loadFundFlow();
   }, [code]);
 
   // Auto Refresh Logic
@@ -264,6 +284,14 @@ export default function ETFDetailPage() {
             dailyTrend={metrics?.daily_trend}
             temperature={metrics?.temperature}
             isLoading={loading || (isInitialLoad && metricsLoading)}
+          />
+        </div>
+
+        {/* Fund Flow Card */}
+        <div className="mb-6">
+          <FundFlowCard
+            data={fundFlow}
+            isLoading={fundFlowLoading}
           />
         </div>
 

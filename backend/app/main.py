@@ -9,9 +9,11 @@ import uvicorn
 from app.core.config import settings
 from app.core.cache import etf_cache
 from app.core.database import create_db_and_tables
+from app.core.share_history_database import create_share_history_tables
 from app.core.init_admin import init_admin_from_env
 from app.services.akshare_service import ak_service
 from app.services.alert_scheduler import alert_scheduler
+from app.services.fund_flow_collector import fund_flow_collector
 from app.api.v1.api import api_router
 from app.middleware.rate_limit import limiter, rate_limit_handler
 from slowapi.errors import RateLimitExceeded
@@ -35,6 +37,7 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Application starting up...")
     create_db_and_tables()
+    create_share_history_tables()
     logger.info("Database initialized.")
     init_admin_from_env()
     thread = threading.Thread(target=load_initial_data)
@@ -45,11 +48,17 @@ async def lifespan(app: FastAPI):
     alert_scheduler.start()
     logger.info("Alert scheduler started.")
 
+    # 启动资金流向采集调度器
+    fund_flow_collector.start()
+    logger.info("Fund flow collector scheduler started.")
+
     yield
 
     # Shutdown
     alert_scheduler.stop()
     logger.info("Alert scheduler stopped.")
+    fund_flow_collector.stop()
+    logger.info("Fund flow collector scheduler stopped.")
     logger.info("Application shutting down...")
 
 app = FastAPI(
