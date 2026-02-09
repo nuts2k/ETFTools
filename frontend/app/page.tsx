@@ -41,7 +41,6 @@ export default function WatchlistPage() {
     scrollRef,
     onRefresh: async () => {
       await refresh();
-      setLastUpdated(new Date());
     },
     disabled: isSearchMode || isEditing,
   });
