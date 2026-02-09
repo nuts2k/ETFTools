@@ -3,6 +3,7 @@ from typing import List, Dict, Optional
 import numpy as np
 import pandas as pd
 from datetime import datetime, time
+from zoneinfo import ZoneInfo
 import logging
 import re
 
@@ -22,23 +23,26 @@ def get_market_status() -> str:
     """
     判断当前是否为交易时间 (A股)
     交易时间: 周一至周五 9:15-11:30, 13:00-15:00
+
+    注意: 使用中国时区 (Asia/Shanghai) 判断，无论服务器部署在哪个时区
     """
-    now = datetime.now()
-    
+    # 使用中国时区获取当前时间
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
+
     # 周末
     if now.weekday() >= 5:
         return "已收盘"
-        
+
     current_time = now.time()
-    
+
     # 9:15 - 11:30
     if time(9, 15) <= current_time <= time(11, 30):
         return "交易中"
-        
+
     # 13:00 - 15:00
     if time(13, 0) <= current_time <= time(15, 0):
         return "交易中"
-        
+
     return "已收盘"
 
 @router.get("/search", response_model=List[Dict])
@@ -80,9 +84,16 @@ async def get_batch_price(
                 "change_pct": info.get("change_pct", 0),
             })
 
+    # 添加更新时间（中国时区），确保前端显示一致
+    update_time = datetime.fromtimestamp(
+        etf_cache.last_updated,
+        tz=ZoneInfo("Asia/Shanghai")
+    ).strftime("%Y-%m-%d %H:%M:%S")
+
     return {
         "items": items,
         "market_status": get_market_status(),
+        "update_time": update_time,
     }
 
 
@@ -97,9 +108,13 @@ async def get_etf_info(code: str):
     
     # Create a copy to avoid modifying the cache directly
     info = info.copy()
-    
+
     # 补充 update_time (近似值，即缓存最后更新时间)
-    info["update_time"] = datetime.fromtimestamp(etf_cache.last_updated).strftime("%Y-%m-%d %H:%M:%S")
+    # 使用中国时区，确保无论服务器部署在哪里，都显示北京时间
+    info["update_time"] = datetime.fromtimestamp(
+        etf_cache.last_updated,
+        tz=ZoneInfo("Asia/Shanghai")
+    ).strftime("%Y-%m-%d %H:%M:%S")
     
     # 补充 market (交易状态)
     info["market"] = get_market_status()

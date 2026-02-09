@@ -15,6 +15,7 @@ interface WatchlistContextType {
   isWatched: (code: string) => boolean;
   isLoaded: boolean;
   refresh: () => Promise<void>;
+  updateTime: string | null;  // 后端返回的更新时间（中国时区）
 }
 
 const WatchlistContext = createContext<WatchlistContextType | undefined>(undefined);
@@ -23,6 +24,7 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
   const [watchlist, setWatchlist] = useState<ETFItem[]>([]);
   const watchlistRef = useRef<ETFItem[]>(watchlist);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [updateTime, setUpdateTime] = useState<string | null>(null);  // 后端返回的更新时间
   const { user, token, isLoading: authLoading } = useAuth();
   const { settings } = useSettings();
   const { refreshRate } = settings;
@@ -247,6 +249,22 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
         if (res.ok) {
           const data = await res.json();
           setWatchlist(data);
+
+          // 云端模式下，也需要获取 update_time
+          if (data.length > 0) {
+            const codes = data.map((item: ETFItem) => item.code).join(",");
+            try {
+              const priceRes = await fetch(`${API_BASE_URL}/etf/batch-price?codes=${codes}`);
+              if (priceRes.ok) {
+                const priceData = await priceRes.json();
+                if (priceData.update_time) {
+                  setUpdateTime(priceData.update_time);
+                }
+              }
+            } catch (e) {
+              console.error("Failed to fetch update time", e);
+            }
+          }
         }
       } catch (e) {
         console.error("Refresh failed", e);
@@ -268,6 +286,12 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
         ]);
         const info = infoResult.status === "fulfilled" ? infoResult.value : null;
         const metrics = metricsResult.status === "fulfilled" ? metricsResult.value : null;
+
+        // 从第一个成功的 info 响应中获取 update_time（中国时区）
+        if (info?.update_time) {
+          setUpdateTime(info.update_time);
+        }
+
         return {
           ...item,
           price: info?.price ?? item.price,
@@ -306,6 +330,11 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
         const res = await fetch(`${API_BASE_URL}/etf/batch-price?codes=${codes}`);
         if (!res.ok) return;
         const data = await res.json();
+
+        // 更新时间（后端返回的中国时区时间）
+        if (data.update_time) {
+          setUpdateTime(data.update_time);
+        }
 
         // 如果已收盘，不再更新
         if (data.market_status !== "交易中") return;
@@ -349,7 +378,7 @@ export function WatchlistProvider({ children }: { children: ReactNode }) {
   }, [refreshRate, watchlist.length, isLoaded]);
 
   return (
-    <WatchlistContext.Provider value={{ watchlist, add, remove, reorder, isWatched, isLoaded, refresh }}>
+    <WatchlistContext.Provider value={{ watchlist, add, remove, reorder, isWatched, isLoaded, refresh, updateTime }}>
       {children}
     </WatchlistContext.Provider>
   );

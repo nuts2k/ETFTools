@@ -29,15 +29,8 @@ import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { PullToRefreshIndicator } from "@/components/PullToRefreshIndicator";
 
 export default function WatchlistPage() {
-  const { watchlist, isLoaded, add, remove, reorder, isWatched, refresh } = useWatchlist();
+  const { watchlist, isLoaded, add, remove, reorder, isWatched, refresh, updateTime } = useWatchlist();
   const [isEditing, setIsEditing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
-  useEffect(() => {
-    if (isLoaded && watchlist.length > 0) {
-      setLastUpdated(new Date());
-    }
-  }, [isLoaded, watchlist.length]);
 
   // Search state
   const [isSearchMode, setIsSearchMode] = useState(false);
@@ -250,7 +243,7 @@ export default function WatchlistPage() {
             <div className="flex items-center gap-1.5">
               <div className="h-1.5 w-1.5 rounded-full bg-up animate-pulse" />
               <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                实时行情 {lastUpdated && `· ${lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                实时行情 {updateTime ? `· ${updateTime.split(' ')[1]}` : ''}
               </span>
             </div>
             {isEditing && (

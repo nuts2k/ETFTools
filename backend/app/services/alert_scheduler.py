@@ -8,6 +8,7 @@ import asyncio
 import logging
 from datetime import datetime
 from typing import List, Optional, Dict, Any
+from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -42,35 +43,49 @@ class AlertScheduler:
         self._scheduler = AsyncIOScheduler()
 
         # 盘中检查 (每 30 分钟，09:00-14:30，周一到周五)
+        # 使用中国时区，确保无论服务器部署在哪里，都在北京时间触发
         self._scheduler.add_job(
             self._run_daily_check,
             CronTrigger(
                 minute="0,30",      # 每小时的 0 分和 30 分
                 hour="9-14",        # 9:00-14:59 之间
-                day_of_week="mon-fri"
+                day_of_week="mon-fri",
+                timezone=ZoneInfo("Asia/Shanghai")
             ),
             id="intraday_alert_check",
             replace_existing=True,
         )
-        logger.info("Intraday alert check scheduled: every 30 minutes (09:00-14:30)")
+        logger.info("Intraday alert check scheduled: every 30 minutes (09:00-14:30) Beijing Time")
 
         # 收盘后检查 (每天 15:30)
+        # 使用中国时区，确保无论服务器部署在哪里，都在北京时间触发
         self._scheduler.add_job(
             self._run_daily_check,
-            CronTrigger(hour=15, minute=30, day_of_week="mon-fri"),
+            CronTrigger(
+                hour=15,
+                minute=30,
+                day_of_week="mon-fri",
+                timezone=ZoneInfo("Asia/Shanghai")
+            ),
             id="daily_alert_check",
             replace_existing=True,
         )
-        logger.info("Daily alert check scheduled: 15:30")
+        logger.info("Daily alert check scheduled: 15:30 Beijing Time")
 
         # 每日摘要 (15:35，在告警检查之后)
+        # 使用中国时区，确保无论服务器部署在哪里，都在北京时间触发
         self._scheduler.add_job(
             self._run_daily_summary,
-            CronTrigger(hour=15, minute=35, day_of_week="mon-fri"),
+            CronTrigger(
+                hour=15,
+                minute=35,
+                day_of_week="mon-fri",
+                timezone=ZoneInfo("Asia/Shanghai")
+            ),
             id="daily_summary",
             replace_existing=True,
         )
-        logger.info("Daily summary scheduled: 15:35")
+        logger.info("Daily summary scheduled: 15:35 Beijing Time")
 
         self._scheduler.start()
         logger.info("Alert scheduler started with intraday and daily checks")
@@ -447,7 +462,8 @@ class AlertScheduler:
         bot_token = decrypt_token(telegram_config["botToken"], settings.SECRET_KEY)
         chat_id = telegram_config["chatId"]
 
-        now = datetime.now().strftime("%H:%M")
+        # 使用中国时区显示时间
+        now = datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%H:%M")
         message = TelegramNotificationService.format_alert_message(signals, now)
 
         try:
@@ -498,8 +514,8 @@ class AlertScheduler:
         # 获取当日信号
         signals = alert_state_service.get_today_signals(user_id)
 
-        # 格式化日期
-        now = datetime.now()
+        # 格式化日期（使用中国时区）
+        now = datetime.now(ZoneInfo("Asia/Shanghai"))
         weekdays = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
         date_str = f"{now.strftime('%Y-%m-%d')} ({weekdays[now.weekday()]})"
 

@@ -256,7 +256,7 @@ class AlertService:
 
         return ETFAlertState(
             etf_code=etf_code,
-            last_check_time=datetime.now(),
+            last_check_time=datetime.utcnow(),  # 使用 UTC 时间存储到数据库
             temperature_level=temp.get("level"),
             temperature_score=temp.get("score"),
             rsi_value=temp.get("rsi_value"),

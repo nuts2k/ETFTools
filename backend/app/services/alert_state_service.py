@@ -8,6 +8,7 @@ import os
 import logging
 from datetime import datetime, date
 from typing import Optional, Dict, Any
+from zoneinfo import ZoneInfo
 
 from diskcache import Cache
 
@@ -87,9 +88,9 @@ class AlertStateService:
         """标记信号已发送（当天有效），同时存储信号详情供摘要使用"""
         try:
             key = self._sent_key(user_id, etf_code, signal_type)
-            # 计算到今天 23:59:59 的秒数
-            now = datetime.now()
-            end_of_day = datetime(now.year, now.month, now.day, 23, 59, 59)
+            # 计算到今天 23:59:59 的秒数（使用中国时区）
+            now = datetime.now(ZoneInfo("Asia/Shanghai"))
+            end_of_day = datetime(now.year, now.month, now.day, 23, 59, 59, tzinfo=ZoneInfo("Asia/Shanghai"))
             ttl = int((end_of_day - now).total_seconds())
 
             # 检查是否已存在，避免重复计数
@@ -143,8 +144,9 @@ class AlertStateService:
         """标记今天已发送摘要"""
         try:
             key = self._summary_sent_key(user_id)
-            now = datetime.now()
-            end_of_day = datetime(now.year, now.month, now.day, 23, 59, 59)
+            # 使用中国时区计算到今天 23:59:59 的秒数
+            now = datetime.now(ZoneInfo("Asia/Shanghai"))
+            end_of_day = datetime(now.year, now.month, now.day, 23, 59, 59, tzinfo=ZoneInfo("Asia/Shanghai"))
             ttl = int((end_of_day - now).total_seconds())
             self._cache.set(key, True, expire=max(ttl, 1))
         except Exception as e:

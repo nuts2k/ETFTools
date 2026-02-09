@@ -4,6 +4,7 @@ from typing import List, Dict, Optional, Any, cast
 import logging
 from diskcache import Cache
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import os
 import time
 import threading
@@ -231,7 +232,8 @@ class AkShareService:
         realtime_info = AkShareService.get_etf_info(code)
         records = df_hist.to_dict(orient="records")
         if realtime_info and realtime_info.get("price"):
-            today_str = datetime.now().strftime("%Y-%m-%d")
+            # 使用中国时区判断"今天"的日期
+            today_str = datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d")
             if records:
                 last_record = records[-1]
                 if last_record["date"] == today_str:
