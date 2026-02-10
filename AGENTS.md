@@ -182,6 +182,7 @@
 | **数据源** | `backend/app/services/akshare_service.py` | AkShare 接口封装、缓存降级 |
 | **指标计算** | `backend/app/services/metrics_service.py` | ATR, 回撤, CAGR 算法 |
 | **估值服务** | `backend/app/services/valuation_service.py` | PE 分位数（可选） |
+| **分类器服务** | `backend/app/services/etf_classifier.py` | ETF 自动分类标签生成 |
 | **份额历史模型** | `backend/app/models/etf_share_history.py` | ETF 份额历史数据模型 |
 | **份额历史数据库** | `backend/app/core/share_history_database.py` | 独立 SQLite 数据库配置 |
 | **资金流向采集** | `backend/app/services/fund_flow_collector.py` | 份额数据采集 + APScheduler 调度 |

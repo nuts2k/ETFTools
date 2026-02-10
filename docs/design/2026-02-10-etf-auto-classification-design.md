@@ -519,13 +519,11 @@ class ETFTag:
     group: str   # 分组: "type" | "industry" | "strategy" | "special"
 
 class ETFClassifier:
-    @classmethod
-    def classify(cls, etf_name: str, etf_code: str = "") -> List[ETFTag]:
+    def classify(self, etf_name: str, etf_code: str = "") -> List[ETFTag]:
         """对 ETF 进行分类，返回有序标签列表"""
         pass
 
-    @classmethod
-    def get_display_tags(cls, tags: List[ETFTag], limit: int = 2) -> List[str]:
+    def get_display_tags(self, tags: List[ETFTag], limit: int = 2) -> List[str]:
         """获取用于前端展示的标签文本列表（默认最多2个）"""
         pass
 ```
@@ -1063,6 +1061,7 @@ GET /api/v1/etf/{code}/info
 | 2026-02-10 | v1.1 | 分类模型改为统一标签列表；新增冲突解决策略和验证矩阵；扩展关键词库覆盖英文/数字名称；更新 API 响应格式；集成点改为缓存写入时计算 |
 | 2026-02-10 | v1.2 | 深度评审优化：集成点从 cache.py 改为 akshare_service.py；DiskCache 不存储 tags 始终实时计算；搜索逻辑改为默认 OR；/search 融合标签搜索；相似度算法改为加权匹配分数；补充商品细分标签、金融、保险关键词；新增排除规则机制和宽基数字模式匹配规则；验证矩阵扩展至 27 个用例；新增阶段0独立验证；自选分组降级为长期探索 |
 | 2026-02-10 | v1.3 | 设计修正：明确相似度算法 weighted_total 为标签并集加权总和并补充计算示例；修正"互联网"关键词从 ["互联"] 改为 ["互联网", "中概互联"] 避免误匹配；验证矩阵新增 4 个边界用例（LOF、增强、联接）扩展至 31 个；同步更新 PRD 第 3.7 节（OR 逻辑、2 个标签、统一 ?tags= 参数） |
+| 2026-02-10 | v1.4 | 阶段0完成：分类器独立验证通过，验证矩阵 31 个用例全部通过，全量 93 只 ETF 分类覆盖率 100%，性能 3ms 达标 |
 
 ---
 
