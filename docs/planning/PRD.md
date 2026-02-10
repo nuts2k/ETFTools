@@ -91,12 +91,12 @@
 
 ### 3.7 ETF 分类与筛选 (ETF Classification & Filtering)
 *   **自动分类标签**:
-    *   系统基于 ETF 名称自动识别分类标签（指数类型、行业分类、投资风格、特殊属性）。
-    *   **标签展示**: 在搜索结果、详情页、自选列表中展示 ETF 标签（最多 3-4 个）。
-    *   **标签示例**: [宽基指数]、[行业主题]、[半导体]、[医药]、[红利]、[QDII] 等。
+    *   系统基于 ETF 名称自动识别分类标签，采用**统一标签列表模型**（每个标签携带 `group` 元数据：type/industry/strategy/special）。
+    *   **标签展示**: 在搜索结果、详情页、自选列表的卡片中展示 ETF 标签（最多 **2 个**），详情页可展示完整标签列表。
+    *   **标签示例**: [宽基]、[半导体]、[医药]、[红利]、[跨境]、[LOF] 等。
 *   **分类筛选**:
-    *   **搜索页筛选**: 提供标签筛选器，支持按指数类型、行业分类等维度筛选 ETF。
-    *   **多选逻辑**: 支持多标签组合筛选（AND 逻辑）。
+    *   **搜索页筛选**: 提供标签筛选器，支持按统一标签（`?tags=半导体,医药`）筛选 ETF。
+    *   **多选逻辑**: 默认 **OR 逻辑**（更符合用户直觉，如"我想看半导体或医药"）。
     *   **快速清空**: 提供清空按钮，快速重置筛选条件。
 *   **分类浏览**:
     *   **首页入口**: 在首页提供"热门分类"横向滚动标签，点击跳转到对应分类的 ETF 列表。
@@ -118,9 +118,9 @@
 *   `GET /api/v1/etf/{code}/metrics?period=5y` -> `{cagr, mdd, volatility, total_return, risk_level, mdd_date}` (核心指标)
 
 ### 分类标签 (Classification Tags)
-*   `GET /api/v1/etf/tags` -> `{index_types: [...], categories: [...], styles: [...], special: [...]}` (获取所有可用标签)
-*   `GET /api/v1/etf/search-by-tags?index_type={type}&category={cat}` -> `{items: [{code, name, price, tags}, ...], total: N}` (按标签筛选)
-*   `GET /api/v1/etf/{code}/similar?limit=5` -> `{items: [{code, name, price, similarity_score, common_tags}, ...]}` (同类推荐)
+*   `GET /api/v1/etf/tags` -> `{groups: {type: [...], industry: [...], strategy: [...], special: [...]}}` (获取所有可用标签，按 group 分组)
+*   `GET /api/v1/etf/search-by-tags?tags=半导体,医药` -> `{items: [{code, name, price, tags}, ...], total: N}` (按统一标签筛选，默认 OR 逻辑)
+*   `GET /api/v1/etf/{code}/similar?limit=5` -> `{items: [{code, name, price, similarity_score, common_tags, tags}, ...]}` (同类推荐)
 
 ### 认证与用户 (Auth & User)
 *   `POST /api/v1/auth/register` -> `{"msg": "User created"}`
