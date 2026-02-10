@@ -87,15 +87,40 @@
     *   **设置同步**: 用户偏好（如红涨绿跌、刷新频率、主题色）登录后自动同步到云端。
 *   **个人中心**:
     *   展示用户名。
-    *   提供“退出登录”按钮（退出后清除本地 Token，但不清除本地缓存的数据，保持可用性）。
+    *   提供"退出登录"按钮（退出后清除本地 Token，但不清除本地缓存的数据，保持可用性）。
+
+### 3.7 ETF 分类与筛选 (ETF Classification & Filtering)
+*   **自动分类标签**:
+    *   系统基于 ETF 名称自动识别分类标签（指数类型、行业分类、投资风格、特殊属性）。
+    *   **标签展示**: 在搜索结果、详情页、自选列表中展示 ETF 标签（最多 3-4 个）。
+    *   **标签示例**: [宽基指数]、[行业主题]、[半导体]、[医药]、[红利]、[QDII] 等。
+*   **分类筛选**:
+    *   **搜索页筛选**: 提供标签筛选器，支持按指数类型、行业分类等维度筛选 ETF。
+    *   **多选逻辑**: 支持多标签组合筛选（AND 逻辑）。
+    *   **快速清空**: 提供清空按钮，快速重置筛选条件。
+*   **分类浏览**:
+    *   **首页入口**: 在首页提供"热门分类"横向滚动标签，点击跳转到对应分类的 ETF 列表。
+    *   **热门分类**: 半导体、医药、新能源、红利、券商、消费等（6-8 个）。
+*   **同类推荐**:
+    *   **详情页推荐**: 在 ETF 详情页展示"同类 ETF 对比"模块，推荐 3-5 个同类 ETF。
+    *   **推荐算法**: 基于标签相似度计算，优先推荐同行业、不同基金公司的 ETF。
+*   **自选分组**:
+    *   **自动分组**: 自选列表支持按系统标签自动分组查看（如"宽基"、"科技"、"医药"等）。
+    *   **分组切换**: 提供分组标签切换视图，显示各分组的 ETF 数量。
+    *   **用户分组**: 未来支持用户自定义分组（如"核心持仓"、"观察中"等）。
 
 ## 4. API 设计草案 (API Design Draft)
 
 ### 基础数据 (ETF Data)
-*   `GET /api/v1/etf/search?q={keyword}` -> `[{code, name, price, change_pct}, ...]` (搜索)
-*   `GET /api/v1/etf/{code}/info` -> `{name, price, change_pct, update_time, market}` (详情头信息)
+*   `GET /api/v1/etf/search?q={keyword}` -> `[{code, name, price, change_pct, tags: {...}}, ...]` (搜索，包含标签)
+*   `GET /api/v1/etf/{code}/info` -> `{name, price, change_pct, update_time, market, tags: {...}}` (详情头信息，包含标签)
 *   `GET /api/v1/etf/{code}/history?period=5y` -> `[{date, close}, ...]` (图表数据)
 *   `GET /api/v1/etf/{code}/metrics?period=5y` -> `{cagr, mdd, volatility, total_return, risk_level, mdd_date}` (核心指标)
+
+### 分类标签 (Classification Tags)
+*   `GET /api/v1/etf/tags` -> `{index_types: [...], categories: [...], styles: [...], special: [...]}` (获取所有可用标签)
+*   `GET /api/v1/etf/search-by-tags?index_type={type}&category={cat}` -> `{items: [{code, name, price, tags}, ...], total: N}` (按标签筛选)
+*   `GET /api/v1/etf/{code}/similar?limit=5` -> `{items: [{code, name, price, similarity_score, common_tags}, ...]}` (同类推荐)
 
 ### 认证与用户 (Auth & User)
 *   `POST /api/v1/auth/register` -> `{"msg": "User created"}`

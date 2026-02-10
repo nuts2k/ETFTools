@@ -61,6 +61,7 @@
 - `grid-performance-optimization.md` - 网格性能优化设计
 - `2026-02-07-daily-summary-design.md` - 每日市场摘要推送设计
 - `2026-02-08-fund-flow-analysis-design.md` - ETF 资金流向分析设计
+- `2026-02-10-etf-auto-classification-design.md` - ETF 自动分类标签设计
 
 ### implementation/ - 实现计划
 具体功能的实现步骤、技术细节、代码结构等。
