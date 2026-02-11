@@ -27,6 +27,21 @@ def _patched_session_init(self, *args, **kwargs):
 requests.Session.__init__ = _patched_session_init
 
 from app.core.cache import etf_cache
+from app.services.etf_classifier import ETFClassifier
+
+_classifier = ETFClassifier()
+
+
+def _enrich_with_tags(etf_list: List[Dict]) -> List[Dict]:
+    """为 ETF 列表中的每个 ETF 添加分类标签（原地修改）"""
+    for etf in etf_list:
+        try:
+            tags = _classifier.classify(etf.get("name", ""), etf.get("code", ""))
+            etf["tags"] = [t.to_dict() for t in tags]
+        except Exception:
+            logger.warning(f"Classification failed for {etf.get('code')}, skipping tags")
+            etf["tags"] = []
+    return etf_list
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -168,6 +183,7 @@ class AkShareService:
             logger.info("Starting background refresh of ETF list...")
             data = AkShareService.fetch_all_etfs()
             if data:
+                _enrich_with_tags(data)
                 etf_cache.set_etf_list(data)
                 logger.info("Background refresh complete.")
         except Exception as e:
@@ -186,6 +202,7 @@ class AkShareService:
             cached_list = disk_cache.get(ETF_LIST_CACHE_KEY)
             if cached_list:
                 logger.info("Cold start: Restoring cache from disk.")
+                _enrich_with_tags(cast(List[Dict[str, Any]], cached_list))
                 etf_cache.set_etf_list(cast(List[Dict[str, Any]], cached_list))
                 info = etf_cache.get_etf_info(code)
 

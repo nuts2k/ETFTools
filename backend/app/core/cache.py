@@ -20,6 +20,8 @@ class ETFCacheManager:
         """更新 ETF 列表缓存"""
         self.etf_list = data
         # 建立 code -> info 映射，方便 O(1) 查找
+        # 注意：etf_map 的 value 与 etf_list 的 item 是同一对象引用，
+        # update_etf_info 的 merge 语义依赖此 identity 保证 list/map 同步更新。
         self.etf_map = {item["code"]: item for item in data}
         self.last_updated = time.time()
         logger.info(f"Cache updated with {len(data)} ETFs at {self.last_updated}")
@@ -37,14 +39,18 @@ class ETFCacheManager:
         if not code:
             return
         
-        # Update map
-        self.etf_map[code] = info
-        
-        # Update list (Check if exists in list)
+        # Update map (merge 语义，保留已有字段如 tags)
+        existing = self.etf_map.get(code)
+        if existing:
+            existing.update(info)
+        else:
+            self.etf_map[code] = info
+
+        # Update list (同样 merge 语义)
         found = False
         for i, item in enumerate(self.etf_list):
             if item["code"] == code:
-                self.etf_list[i] = info
+                item.update(info)
                 found = True
                 break
         if not found:

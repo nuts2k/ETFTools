@@ -206,9 +206,10 @@ export default function WatchlistPage() {
               </div>
             ) : searchResults.length > 0 ? (
               searchResults.map((etf) => (
-                <StockCard 
+                <StockCard
                   key={etf.code}
                   etf={etf}
+                  showTags={true}
                   isWatched={isWatched(etf.code)}
                   onToggleWatchlist={(e) => handleToggleWatchlist(e, etf)}
                   searchQuery={searchQuery}

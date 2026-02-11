@@ -135,3 +135,41 @@ class TestBatchPriceEndpoint:
         response = client.get("/api/v1/etf/batch-price?codes=abc,<script>,12345")
 
         assert response.status_code == 400
+
+    @patch("app.api.v1.endpoints.etf.get_market_status", return_value="交易中")
+    @patch("app.api.v1.endpoints.etf.etf_cache")
+    def test_batch_price_includes_tags(self, mock_cache, mock_status):
+        """batch-price 响应应包含 tags 字段"""
+        from app.main import app
+
+        mock_cache.etf_map = {
+            "510300": {
+                "code": "510300", "name": "沪深300ETF",
+                "price": 3.85, "change_pct": 1.2,
+                "tags": [{"label": "宽基", "group": "type"}, {"label": "沪深300", "group": "type"}],
+            },
+        }
+        mock_cache.last_updated = 1700000000.0
+
+        client = TestClient(app)
+        resp = client.get("/api/v1/etf/batch-price?codes=510300")
+        assert resp.status_code == 200
+        item = resp.json()["items"][0]
+        assert "tags" in item
+        assert item["tags"][0]["label"] == "宽基"
+
+    @patch("app.api.v1.endpoints.etf.get_market_status", return_value="交易中")
+    @patch("app.api.v1.endpoints.etf.etf_cache")
+    def test_batch_price_missing_tags(self, mock_cache, mock_status):
+        """ETF 无 tags 字段时应返回空列表"""
+        from app.main import app
+
+        mock_cache.etf_map = {
+            "510300": {"code": "510300", "name": "沪深300ETF", "price": 3.85, "change_pct": 1.2},
+        }
+        mock_cache.last_updated = 1700000000.0
+
+        client = TestClient(app)
+        resp = client.get("/api/v1/etf/batch-price?codes=510300")
+        item = resp.json()["items"][0]
+        assert item["tags"] == []

@@ -83,6 +83,7 @@ async def get_batch_price(
                 "name": info.get("name", ""),
                 "price": info.get("price", 0),
                 "change_pct": info.get("change_pct", 0),
+                "tags": info.get("tags", []),
             })
 
     # 添加更新时间（中国时区），确保前端显示一致

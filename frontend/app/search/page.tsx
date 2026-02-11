@@ -111,9 +111,11 @@ export default function SearchPage() {
             )}
 
             {results.map((etf) => (
-                <StockCard 
+                <StockCard
                     key={etf.code}
                     etf={etf}
+                    showTags={true}
+                    searchQuery={debouncedQuery}
                     isWatched={isWatched(etf.code)}
                     onToggleWatchlist={(e) => toggleWatchlist(e, etf)}
                 />

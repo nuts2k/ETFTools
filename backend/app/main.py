@@ -11,7 +11,7 @@ from app.core.cache import etf_cache
 from app.core.database import create_db_and_tables
 from app.core.share_history_database import create_share_history_tables
 from app.core.init_admin import init_admin_from_env
-from app.services.akshare_service import ak_service
+from app.services.akshare_service import ak_service, _enrich_with_tags
 from app.services.alert_scheduler import alert_scheduler
 from app.services.fund_flow_collector import fund_flow_collector
 from app.api.v1.api import api_router
@@ -27,6 +27,7 @@ def load_initial_data():
     logger.info("Starting background data loading...")
     data = ak_service.fetch_all_etfs()
     if data:
+        _enrich_with_tags(data)
         etf_cache.set_etf_list(data)
         logger.info("Initial data loaded into cache.")
     else:

@@ -10,7 +10,15 @@ interface StockCardProps {
   isWatched?: boolean;
   onToggleWatchlist?: (e: React.MouseEvent) => void;
   searchQuery?: string;
+  showTags?: boolean;
 }
+
+const TAG_COLORS: Record<string, string> = {
+  type: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  industry: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+  strategy: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  special: "bg-secondary text-muted-foreground",
+};
 
 function HighlightText({ text, highlight }: { text: string; highlight?: string }) {
     if (!highlight || !text) return <>{text}</>;
@@ -32,7 +40,7 @@ function HighlightText({ text, highlight }: { text: string; highlight?: string }
     );
 }
 
-export function StockCard({ etf, isWatched, onToggleWatchlist, searchQuery }: StockCardProps) {
+export function StockCard({ etf, isWatched, onToggleWatchlist, searchQuery, showTags = false }: StockCardProps) {
   const isUp = etf.change_pct > 0;
   const isDown = etf.change_pct < 0;
   const badgeColor = isUp ? "bg-up/10 text-up" : isDown ? "bg-down/10 text-down" : "bg-muted text-muted-foreground";
@@ -48,11 +56,22 @@ export function StockCard({ etf, isWatched, onToggleWatchlist, searchQuery }: St
           <p className="text-base font-bold leading-none truncate text-foreground">
             <HighlightText text={etf.name} highlight={searchQuery} />
           </p>
-          <div className="flex items-center gap-2">
-            <span className="bg-secondary/80 text-muted-foreground text-[10px] font-bold px-1.5 py-0.5 rounded border border-border/30 font-mono">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="bg-secondary/80 text-muted-foreground text-[10px] font-bold px-1.5 py-0.5 rounded border border-border/30 font-mono shrink-0">
               <HighlightText text={etf.code} highlight={searchQuery} />
             </span>
-            <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">{market} ETF</span>
+            <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider shrink-0">{market} ETF</span>
+            {showTags && etf.tags && etf.tags.length > 0 && etf.tags.slice(0, 2).map((tag) => (
+              <span
+                key={`${tag.group}-${tag.label}`}
+                className={cn(
+                  "text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0",
+                  TAG_COLORS[tag.group] || TAG_COLORS.special
+                )}
+              >
+                {tag.label}
+              </span>
+            ))}
           </div>
         </div>
       </Link>

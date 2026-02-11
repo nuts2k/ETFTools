@@ -46,6 +46,8 @@ export interface ETFItem {
   temperature_level?: "freezing" | "cool" | "warm" | "hot" | null;
   weekly_direction?: "up" | "down" | "flat" | null;
   consecutive_weeks?: number | null;
+  // 分类标签
+  tags?: Array<{ label: string; group: string }>;
 }
 
 export interface ETFDetail extends ETFItem {
