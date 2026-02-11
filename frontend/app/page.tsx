@@ -196,7 +196,7 @@ export default function WatchlistPage() {
 
       {/* Search Results Layer */}
       {isSearchMode && (
-        <div className="flex-1 min-h-0 overflow-y-auto bg-background px-5 py-4 pb-20 animate-in fade-in duration-200">
+        <div className="flex-1 min-h-0 overflow-y-auto bg-background px-4 py-4 pb-20 animate-in fade-in duration-200">
           <div className="flex flex-col gap-3 pb-safe">
             {isSearching ? (
               <div className="space-y-3">
