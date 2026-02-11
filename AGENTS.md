@@ -120,6 +120,8 @@
 
 ⚠️ **【强制】单元测试**
 - 新增业务逻辑函数必须编写单元测试
+- 后端：pytest（`cd backend && pytest`）
+- 前端：vitest + @testing-library/react（`cd frontend && npx vitest run`）
 - 测试文件位置：`backend/tests/` 和 `frontend/__tests__/`
 
 ⚠️ **【强制】API 测试**
