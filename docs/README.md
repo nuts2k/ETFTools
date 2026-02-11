@@ -178,7 +178,9 @@ ls -lt docs/implementation/
 - [项目主仓库](https://github.com/yourusername/ETFTool)
 - [CHANGELOG](../CHANGELOG.md) - 版本变更记录
 - [AGENTS.md](../AGENTS.md) - AI 协作上下文和开发规范
+- [CODE_NAVIGATION.md](../CODE_NAVIGATION.md) - 代码导航参考（前后端关键文件、配置文件、常见任务）
+- [API_REFERENCE.md](../API_REFERENCE.md) - API 接口参考（完整端点列表）
 
 ---
 
-**最后更新：** 2026-02-09
+**最后更新：** 2026-02-11

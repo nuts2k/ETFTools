@@ -150,10 +150,11 @@
 
 | 变更类型 | 必须检查的文档 | 更新内容 |
 |---------|---------------|---------|
-| **新增/修改 API 接口** | `AGENTS.md` 第 6 节 | 更新 API 接口速查表 |
+| **新增/修改 API 接口** | `API_REFERENCE.md` | 更新 API 接口速查表 |
 | **修改技术栈** | `AGENTS.md` 第 2 节, `README.md` | 更新技术栈列表 |
-| **新增/修改配置文件** | `AGENTS.md` 第 7 节 | 更新关键配置文件说明 |
-| **修改核心代码路径** | `AGENTS.md` 第 5 节 | 更新核心代码导航表 |
+| **新增/修改配置文件** | `CODE_NAVIGATION.md` | 更新关键配置文件说明 |
+| **修改核心代码路径** | `CODE_NAVIGATION.md` | 更新核心代码导航表 |
+| **修改常见任务指引** | `CODE_NAVIGATION.md` | 更新任务到文件的映射关系 |
 | **新增强制性规范** | `AGENTS.md` 第 4 节 | 添加新的强制规范 |
 | **修改 Docker 配置** | `docs/deployment/docker-*.md` | 更新部署文档 |
 | **新增功能特性** | `README.md`, `docs/planning/PRD.md` | 更新功能列表和产品需求 |
@@ -172,112 +173,16 @@
 - 检查文档中的链接是否有效
 - 确认代码示例与实际代码一致
 
-## 5. 核心代码导航 (Key Paths)
+## 5. 代码和 API 参考 (Code & API Reference)
 
-### 后端关键文件
+详细的代码路径、API 端点、配置文件等参考信息已分离到独立文档：
 
-| 功能模块 | 文件路径 | 说明 |
-|---------|---------|------|
-| **应用入口** | `backend/app/main.py` | CORS 配置、生命周期管理 |
-| **核心配置** | `backend/app/core/config.py` | 环境变量、SECRET_KEY |
-| **数据库** | `backend/app/core/database.py` | SQLite 连接和会话管理 |
-| **缓存管理** | `backend/app/core/cache.py` | DiskCache 配置 |
-| **ETF 接口** | `backend/app/api/v1/endpoints/etf.py` | 搜索、行情、历史、指标计算 |
-| **自选管理** | `backend/app/api/v1/endpoints/watchlist.py` | 云端同步逻辑 |
-| **用户认证** | `backend/app/api/v1/endpoints/auth.py` | 注册、登录、JWT |
-| **管理员端点** | `backend/app/api/v1/endpoints/admin.py` | 用户管理、系统配置 |
-| **系统配置服务** | `backend/app/services/system_config_service.py` | 全局配置服务 |
-| **数据源** | `backend/app/services/akshare_service.py` | AkShare 接口封装、缓存降级 |
-| **指标计算** | `backend/app/services/metrics_service.py` | ATR, 回撤, CAGR 算法 |
-| **估值服务** | `backend/app/services/valuation_service.py` | PE 分位数（可选） |
-| **分类器服务** | `backend/app/services/etf_classifier.py` | ETF 自动分类标签生成 |
-| **份额历史模型** | `backend/app/models/etf_share_history.py` | ETF 份额历史数据模型 |
-| **份额历史数据库** | `backend/app/core/share_history_database.py` | 独立 SQLite 数据库配置 |
-| **资金流向采集** | `backend/app/services/fund_flow_collector.py` | 份额数据采集 + APScheduler 调度 |
-| **资金流向服务** | `backend/app/services/fund_flow_service.py` | 份额规模、排名业务逻辑 |
-| **资金流向缓存** | `backend/app/services/fund_flow_cache_service.py` | 资金流向数据缓存（4h TTL） |
-| **份额备份服务** | `backend/app/services/share_history_backup_service.py` | CSV 导出和月度备份 |
-| **对比服务** | `backend/app/services/compare_service.py` | 归一化、相关性、降采样计算 |
-| **对比端点** | `backend/app/api/v1/endpoints/compare.py` | ETF 对比 API |
-| **静态配置** | `backend/app/data/metrics_config.json` | 动态指标参数 |
+- **代码导航**: [CODE_NAVIGATION.md](CODE_NAVIGATION.md) - 前后端关键文件、配置文件、常见任务指引
+- **API 参考**: [API_REFERENCE.md](API_REFERENCE.md) - 完整的 API 端点列表和说明
 
-### 前端关键文件
+需要查找具体文件路径或 API 端点时，请查阅上述文档。
 
-| 功能模块 | 文件路径 | 说明 |
-|---------|---------|------|
-| **首页** | `frontend/app/page.tsx` | 自选列表、拖拽排序、下拉刷新 |
-| **搜索页** | `frontend/app/search/page.tsx` | 模糊搜索、防抖 |
-| **详情页** | `frontend/app/etf/[code]/page.tsx` | 图表、指标卡片 |
-| **设置页** | `frontend/app/settings/page.tsx` | 主题、刷新频率 |
-| **登录/注册** | `frontend/app/login/`, `frontend/app/register/` | 认证页面 |
-| **图表组件** | `frontend/components/ETFChart.tsx` | Recharts 配置、交互 |
-| **自选逻辑** | `frontend/hooks/use-watchlist.ts` | 本地存储、云端同步 |
-| **下拉刷新 Hook** | `frontend/hooks/use-pull-to-refresh.ts` | 触摸手势状态机 |
-| **下拉刷新指示器** | `frontend/components/PullToRefreshIndicator.tsx` | 下拉视觉反馈 |
-| **认证上下文** | `frontend/contexts/AuthContext.tsx` | JWT 管理 |
-| **资金流向卡片** | `frontend/components/FundFlowCard.tsx` | 份额规模、排名展示 |
-| **对比页** | `frontend/app/compare/page.tsx` | ETF 对比（选择器+图表+指标） |
-| **PWA 配置** | `frontend/public/manifest.json` | PWA 清单、图标、主屏幕安装 |
-
-## 6. API 接口速查 (API Reference)
-
-所有 API 前缀均为 `/api/v1`
-
-| 端点 | 方法 | 说明 |
-|------|------|------|
-| `/` | GET | API 根端点（含版本信息） |
-| `/health` | GET | 健康检查（含版本信息、数据就绪状态） |
-| `/etf/tags/popular` | GET | 获取搜索页热门标签列表 |
-| `/etf/search?q={keyword}&tag={label}` | GET | 搜索 ETF（支持文本搜索或标签筛选，二选一） |
-| `/etf/{code}/info` | GET | 获取实时基础信息（含交易状态） |
-| `/etf/{code}/history` | GET | 获取 QFQ 历史数据 |
-| `/etf/{code}/metrics` | GET | 获取核心指标 (CAGR, MDD, ATR, Volatility) |
-| `/etf/batch-price?codes={codes}` | GET | 批量获取实时价格（轻量级，含交易状态） |
-| `/watchlist` | GET | 获取云端自选列表 |
-| `/watchlist/sync` | POST | 同步本地自选数据到云端（并集策略） |
-| `/auth/token` | POST | 用户登录，获取 JWT |
-| `/auth/register` | POST | 用户注册 |
-| `/admin/users` | GET | 获取用户列表（管理员） |
-| `/admin/users/{id}` | GET | 获取用户详情（管理员） |
-| `/admin/users/{id}/toggle-admin` | POST | 切换管理员权限 |
-| `/admin/users/{id}/toggle-active` | POST | 启用/禁用用户 |
-| `/admin/system/config` | GET | 获取系统配置 |
-| `/admin/system/config/registration` | POST | 开关用户注册 |
-| `/admin/system/config/max-watchlist` | POST | 设置自选列表最大数量 |
-| `/alerts/config` | GET | 获取告警配置 |
-| `/alerts/config` | PUT | 更新告警配置（含每日摘要开关） |
-| `/alerts/trigger` | POST | 手动触发告警检查 |
-| `/alerts/trigger?summary=true` | POST | 手动触发每日摘要 |
-| `/etf/compare?codes={codes}&period={period}` | GET | ETF 对比（归一化走势+相关性+对齐指标+温度） |
-| `/etf/{code}/fund-flow` | GET | 获取 ETF 资金流向数据（份额规模、排名） |
-| `/admin/fund-flow/collect` | POST | 手动触发份额采集（管理员） |
-| `/admin/fund-flow/export` | POST | 导出份额历史 CSV（管理员） |
-
-**版本信息**: `/` 和 `/api/v1/health` 端点返回 `version` 字段，格式遵循语义化版本规范（Semantic Versioning 2.0.0）。
-
-## 7. 关键配置文件 (Configuration Files)
-
-| 配置文件 | 位置 | 说明 |
-|---------|------|------|
-| **环境配置** | `backend/.env` | SECRET_KEY, CORS, 速率限制 |
-| **动态指标** | `backend/app/data/metrics_config.json` | `drawdown_days`, `atr_period` (无需重启) |
-| **ETF 映射** | `backend/app/data/etf_index_map.json` | ETF 到指数的映射表（估值功能） |
-| **降级数据** | `backend/app/data/etf_fallback.json` | 接口失败时的备用数据 |
-| **版本提取** | `scripts/get_version.sh` | 从 Git 标签提取版本号 |
-| **版本升级** | `scripts/bump_version.sh` | 语义化版本升级脚本 |
-| **PWA 清单** | `frontend/public/manifest.json` | PWA 名称、图标、显示模式、主题色 |
-| **份额历史数据库** | `backend/etf_share_history.db` | 独立 SQLite 数据库（份额历史） |
-| **份额备份目录** | `backend/backups/share_history/` | 月度 CSV 备份文件 |
-
-**版本管理环境变量**：
-- `APP_VERSION`: 后端应用版本（自动从 Git 标签提取，默认 `dev`）
-- `NEXT_PUBLIC_APP_VERSION`: 前端应用版本（构建时注入）
-
-**估值分位功能开关**：
-- 默认关闭，节省 API 资源
-- 开启方法：在 `backend/app/api/v1/endpoints/etf.py:get_etf_metrics` 中取消 `valuation_service.get_valuation(code)` 的注释
-
-## 8. 文档导航 (Documentation)
+## 6. 文档导航 (Documentation)
 
 **完整文档索引**: [docs/README.md](docs/README.md) - 包含所有文档的分类导航和查找指南
 
@@ -297,19 +202,6 @@ docs/
 ├── deployment/        # 部署指南、运维手册
 └── testing/           # 测试计划、测试报告
 ```
-
-## 9. 常见任务快速指引 (Quick Task Guide)
-
-| 任务 | 关键文件 |
-|------|---------|
-| **添加新 ETF 指标** | `backend/app/services/metrics_service.py`, `backend/app/api/v1/endpoints/etf.py` |
-| **修改图表样式** | `frontend/components/ETFChart.tsx` |
-| **调整缓存策略** | `backend/app/core/cache.py`, `backend/app/services/akshare_service.py` |
-| **修改配色方案** | `frontend/app/globals.css` (Tailwind 变量) |
-| **添加新 API 端点** | `backend/app/api/v1/endpoints/` (新建或修改文件) |
-| **修改自选同步逻辑** | `frontend/hooks/use-watchlist.ts`, `backend/app/api/v1/endpoints/watchlist.py` |
-| **调整指标参数** | `backend/app/data/metrics_config.json` (无需重启) |
-| **添加单元测试** | `backend/tests/` (后端), `frontend/__tests__/` (前端) |
 
 ---
 **重要提醒**: 修改代码时务必遵守第 4 节的强制性开发规范，特别是数据一致性（QFQ）和安全规范。
