@@ -17,6 +17,7 @@ services:
       - PROJECT_NAME=ETFTool
       - API_V1_STR=/api/v1
       - ENVIRONMENT=production
+      - TZ=Asia/Shanghai
 
       # 安全配置（生产环境必须修改）
       - SECRET_KEY=${SECRET_KEY:-please-change-this-secret-key-in-production-min-32-chars}

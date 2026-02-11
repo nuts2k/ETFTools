@@ -6,17 +6,18 @@
 
 import os
 import logging
-from datetime import datetime, date
+from datetime import datetime
 from typing import Optional, Dict, Any
 from zoneinfo import ZoneInfo
 
 from diskcache import Cache
 
+from app.core.config import settings
 from app.models.alert_config import ETFAlertState, SignalItem
 
 logger = logging.getLogger(__name__)
 
-CACHE_DIR = os.path.join(os.getcwd(), ".cache", "alerts")
+CACHE_DIR = os.path.join(settings.CACHE_DIR, "alerts")
 
 
 class AlertStateService:
@@ -25,28 +26,33 @@ class AlertStateService:
     def __init__(self):
         self._cache = Cache(CACHE_DIR)
 
+    @staticmethod
+    def _today() -> str:
+        """获取中国时区的当天日期字符串"""
+        return datetime.now(ZoneInfo("Asia/Shanghai")).date().isoformat()
+
     def _state_key(self, user_id: int, etf_code: str) -> str:
         """生成状态缓存 key"""
         return f"alert_state:{user_id}:{etf_code}"
 
     def _sent_key(self, user_id: int, etf_code: str, signal_type: str) -> str:
         """生成已发送信号缓存 key（当天去重）"""
-        today = date.today().isoformat()
+        today = self._today()
         return f"alert_sent:{user_id}:{etf_code}:{signal_type}:{today}"
 
     def _count_key(self, user_id: int) -> str:
         """生成每日计数器 key"""
-        today = date.today().isoformat()
+        today = self._today()
         return f"alert_count:{user_id}:{today}"
 
     def _signal_detail_key(self, user_id: int) -> str:
         """生成当日信号详情缓存 key"""
-        today = date.today().isoformat()
+        today = self._today()
         return f"alert_signal_detail:{user_id}:{today}"
 
     def _summary_sent_key(self, user_id: int) -> str:
         """生成摘要已发送缓存 key"""
-        today = date.today().isoformat()
+        today = self._today()
         return f"summary_sent:{user_id}:{today}"
 
     def get_state(self, user_id: int, etf_code: str) -> Optional[ETFAlertState]:

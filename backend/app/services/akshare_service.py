@@ -27,6 +27,7 @@ def _patched_session_init(self, *args, **kwargs):
 requests.Session.__init__ = _patched_session_init
 
 from app.core.cache import etf_cache
+from app.core.config import settings
 from app.services.etf_classifier import ETFClassifier
 
 _classifier = ETFClassifier()
@@ -48,7 +49,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # DiskCache setup
-CACHE_DIR = os.path.join(os.getcwd(), ".cache")
+CACHE_DIR = settings.CACHE_DIR
 disk_cache = Cache(CACHE_DIR)
 ETF_LIST_CACHE_KEY = "etf_list_all"
 
@@ -223,24 +224,36 @@ class AkShareService:
 
     @staticmethod
     def fetch_history_raw(code: str, period: str, adjust: str) -> pd.DataFrame:
-        """历史数据获取 (带 DiskCache)"""
+        """历史数据获取 (带 DiskCache)，东方财富 + 重试 + 过期缓存兜底"""
         cache_key = f"hist_{code}_{period}_{adjust}"
+        fallback_key = f"hist_fallback_{code}_{period}_{adjust}"
         cached_data = disk_cache.get(cache_key)
         if cached_data is not None:
              return cast(pd.DataFrame, cached_data)
 
-        try:
-            logger.info(f"Fetching history for {code} adjust={adjust} from AkShare")
-            df = ak.fund_etf_hist_em(symbol=code, period=period, adjust=adjust, start_date="20000101", end_date="20500101")
-            if df.empty: return pd.DataFrame()
+        # --- EastMoney with retry ---
+        retries = 3
+        for attempt in range(retries):
+            try:
+                logger.info(f"Fetching history for {code} adjust={adjust} from EastMoney (attempt {attempt + 1}/{retries})")
+                df = ak.fund_etf_hist_em(symbol=code, period=period, adjust=adjust, start_date="20000101", end_date="20500101")
+                if not df.empty:
+                    df = df.rename(columns={"日期": "date", "开盘": "open", "收盘": "close", "最高": "high", "最低": "low", "成交量": "volume"})
+                    disk_cache.set(cache_key, df, expire=604800)  # 7 天缓存
+                    disk_cache.set(fallback_key, df)  # 永不过期的兜底缓存
+                    return df
+            except Exception as e:
+                logger.warning(f"EastMoney history attempt {attempt + 1} failed for {code}: {e}")
+                if attempt < retries - 1:
+                    time.sleep(2)
 
-            df = df.rename(columns={"日期": "date", "开盘": "open", "收盘": "close", "最高": "high", "最低": "low", "成交量": "volume"})
-            # 缓存 4 小时（历史数据不会变化，只需在收盘后更新）
-            disk_cache.set(cache_key, df, expire=14400)
-            return df
-        except Exception as e:
-            logger.error(f"Error fetching history raw for {code}: {e}")
-            return pd.DataFrame()
+        # --- Fallback: 过期磁盘缓存 ---
+        fallback_data = disk_cache.get(fallback_key)
+        if fallback_data is not None:
+            logger.warning(f"Using stale fallback cache for {code}")
+            return cast(pd.DataFrame, fallback_data)
+
+        return pd.DataFrame()
 
     @staticmethod
     def get_etf_history(code: str, period: str = "daily", adjust: str = "qfq") -> List[Dict]:

@@ -6,6 +6,7 @@
 
 import asyncio
 import logging
+import time
 from datetime import datetime
 from typing import Dict, Any, Optional
 from zoneinfo import ZoneInfo
@@ -44,41 +45,56 @@ class FundFlowCollector:
 
     def _fetch_sse_shares(self) -> Optional[pd.DataFrame]:
         """
-        获取上交所 ETF 份额数据
+        获取上交所 ETF 份额数据（最多重试 3 次，间隔 3 秒）
 
         Returns:
             DataFrame 或 None（失败时）
         """
-        try:
-            import akshare as ak
-            df = ak.fund_etf_scale_sse()
-            if df is None or df.empty:
-                logger.warning("SSE data is empty")
-                return None
-            logger.info(f"Fetched {len(df)} records from SSE")
-            return df
-        except Exception as e:
-            logger.error(f"Failed to fetch SSE shares: {e}", exc_info=True)
-            return None
+        import akshare as ak
+        for attempt in range(3):
+            try:
+                today = datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y%m%d")
+                logger.info(f"Fetching SSE shares for {today} (attempt {attempt + 1}/3)...")
+                df = ak.fund_etf_scale_sse(date=today)
+                if df is None or df.empty:
+                    # 非交易日/盘前可能无当天数据，不传 date 获取最新可用快照
+                    logger.warning(f"SSE data empty for {today}, falling back to latest snapshot")
+                    df = ak.fund_etf_scale_sse()
+                if df is None or df.empty:
+                    logger.warning("SSE data is empty")
+                    return None
+                logger.info(f"Fetched {len(df)} records from SSE")
+                return df
+            except Exception as e:
+                logger.warning(f"SSE fetch attempt {attempt + 1} failed: {e}")
+                if attempt < 2:
+                    time.sleep(3)
+        logger.error("Failed to fetch SSE shares after 3 attempts")
+        return None
 
     def _fetch_szse_shares(self) -> Optional[pd.DataFrame]:
         """
-        获取深交所 ETF 份额数据
+        获取深交所 ETF 份额数据（最多重试 3 次，间隔 3 秒）
 
         Returns:
             DataFrame 或 None（失败时）
         """
-        try:
-            import akshare as ak
-            df = ak.fund_etf_scale_szse()
-            if df is None or df.empty:
-                logger.warning("SZSE data is empty")
-                return None
-            logger.info(f"Fetched {len(df)} records from SZSE")
-            return df
-        except Exception as e:
-            logger.error(f"Failed to fetch SZSE shares: {e}", exc_info=True)
-            return None
+        import akshare as ak
+        for attempt in range(3):
+            try:
+                logger.info(f"Fetching SZSE shares (attempt {attempt + 1}/3)...")
+                df = ak.fund_etf_scale_szse()
+                if df is None or df.empty:
+                    logger.warning("SZSE data is empty")
+                    return None
+                logger.info(f"Fetched {len(df)} records from SZSE")
+                return df
+            except Exception as e:
+                logger.warning(f"SZSE fetch attempt {attempt + 1} failed: {e}")
+                if attempt < 2:
+                    time.sleep(3)
+        logger.error("Failed to fetch SZSE shares after 3 attempts")
+        return None
 
     def _save_to_database(
         self, df: pd.DataFrame, exchange: str, column_map: Dict[str, str]

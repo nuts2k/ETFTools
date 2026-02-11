@@ -2,12 +2,14 @@ import os
 from diskcache import Cache
 import logging
 
+from app.core.config import settings
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Cache setup matches akshare_service.py
-CACHE_DIR = os.path.join(os.getcwd(), ".cache")
+CACHE_DIR = settings.CACHE_DIR
 disk_cache = Cache(CACHE_DIR)
 ETF_LIST_CACHE_KEY = "etf_list_all"
 

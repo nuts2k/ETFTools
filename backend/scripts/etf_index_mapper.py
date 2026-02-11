@@ -14,7 +14,8 @@ import random
 import re
 import sys
 import time
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 from typing import Dict, List, Optional, Tuple
 
 import akshare as ak
@@ -437,7 +438,7 @@ def process_etf(
     """
     处理单个 ETF，返回处理结果类型: MAPPED / UNMAPPABLE / PENDING
     """
-    today = date.today().isoformat()
+    today = datetime.now(ZoneInfo("Asia/Shanghai")).date().isoformat()
     
     # 爬取跟踪标的、简称和业绩比较基准指数名称
     source_name, short_name, benchmark_index = fetch_tracking_index(etf_code)
