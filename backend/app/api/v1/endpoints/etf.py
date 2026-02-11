@@ -10,6 +10,7 @@ import re
 from app.core.cache import etf_cache
 from app.services.akshare_service import ak_service
 from app.services.valuation_service import valuation_service
+from app.services.etf_classifier import ETFClassifier
 from app.services.trend_cache_service import trend_cache_service
 from app.services.temperature_cache_service import temperature_cache_service
 from app.services.grid_service import calculate_grid_params_cached
@@ -120,7 +121,14 @@ async def get_etf_info(code: str):
     
     # 补充 market (交易状态)
     info["market"] = get_market_status()
-    
+
+    # 补充 tags（优先从缓存读取，缓存无则实时分类）
+    info["tags"] = info.get("tags", [])
+    if not info["tags"]:
+        classifier = ETFClassifier()
+        tags = classifier.classify(info.get("name", ""), code)
+        info["tags"] = [t.to_dict() for t in tags]
+
     return info
 
 @router.get("/{code}/history")

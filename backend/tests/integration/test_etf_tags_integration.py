@@ -64,6 +64,28 @@ class TestTagsIntegration:
             assert "tags" in item
             assert isinstance(item["tags"], list)
 
+    @patch("app.api.v1.endpoints.etf.get_market_status", return_value="交易中")
+    def test_info_returns_tags(self, mock_status):
+        """info 接口应包含 tags 字段，且标签内容正确"""
+        self._setup_cache_with_tags()
+
+        from app.main import app
+        client = TestClient(app)
+        resp = client.get("/api/v1/etf/510300/info")
+        assert resp.status_code == 200
+
+        data = resp.json()
+        assert "tags" in data
+        assert isinstance(data["tags"], list)
+        assert len(data["tags"]) > 0
+        # 沪深300ETF 应包含宽基标签
+        labels = [t["label"] for t in data["tags"]]
+        assert "沪深300" in labels or "宽基" in labels
+        # 每个 tag 应有 label 和 group
+        for tag in data["tags"]:
+            assert "label" in tag
+            assert "group" in tag
+
     def test_update_etf_info_preserves_tags(self):
         """watchlist 同步更新价格后 tags 不丢失"""
         cache = self._setup_cache_with_tags()

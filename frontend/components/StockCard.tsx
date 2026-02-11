@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { LineChart, Plus, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TAG_COLORS } from "@/lib/tag-colors";
 import type { ETFItem } from "@/lib/api";
 
 interface StockCardProps {
@@ -12,13 +13,6 @@ interface StockCardProps {
   searchQuery?: string;
   showTags?: boolean;
 }
-
-const TAG_COLORS: Record<string, string> = {
-  type: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  industry: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-  strategy: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  special: "bg-secondary text-muted-foreground",
-};
 
 function HighlightText({ text, highlight }: { text: string; highlight?: string }) {
     if (!highlight || !text) return <>{text}</>;

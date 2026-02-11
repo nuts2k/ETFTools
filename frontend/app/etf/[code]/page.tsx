@@ -23,6 +23,7 @@ import FundFlowCard from "@/components/FundFlowCard";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
+import { TAG_COLORS } from "@/lib/tag-colors";
 
 export default function ETFDetailPage() {
   const params = useParams();
@@ -221,7 +222,24 @@ export default function ETFDetailPage() {
         {loading ? (
             <div className="h-8 w-48 bg-secondary/50 animate-pulse rounded-lg mb-2" />
         ) : (
-            <h1 className="text-xl font-medium text-muted-foreground">{info?.name}</h1>
+            <>
+              <h1 className="text-xl font-medium text-muted-foreground">{info?.name}</h1>
+              {info?.tags && info.tags.length > 0 && (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 mt-1.5">
+                  {info.tags.map((tag) => (
+                    <span
+                      key={`${tag.group}-${tag.label}`}
+                      className={cn(
+                        "text-[10px] font-medium px-1.5 py-0.5 rounded",
+                        TAG_COLORS[tag.group] || TAG_COLORS.special
+                      )}
+                    >
+                      {tag.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </>
         )}
         
         <div className="mt-2 flex flex-col items-center">
