@@ -55,21 +55,46 @@ class ETFClassifier:
         "中证500": "中证500",
         "中证1000": "中证1000",
         "中证2000": "中证2000",
+        "中证A500": "中证A500",
+        "A500": "中证A500",
+        "中证A50": "中证A50",
+        "中证A100": "中证A100",
+        "A100": "中证A100",
+        "中证800": "中证800",
+        "国证2000": "国证2000",
         "上证50": "上证50",
         "上证180": "上证180",
+        "上证380": "上证380",
+        "上证580": "上证580",
+        "上证指数": "上证指数",
         "创业板": "创业板",
         "科创50": "宽基",
         "科创板50": "宽基",
         "科创板": "宽基",
+        "双创50": "双创50",
+        "双创": "双创50",
         "深100": "深证100",
         "深证100": "深证100",
+        "深证50": "深证50",
+        "深证主板": "深证50",
+        "深证成指": "深成指",
+        "深成ETF": "深成指",
+        "深300": "深证300",
         "中小100": "中小100",
+        "中创400": "中创400",
+        "创新100": "创新100",
+        "超大盘": "宽基",
+        "中盘": "宽基",
+        "A股ETF": "宽基",
+        "漂亮50": "宽基",
+        "核心50": "宽基",
     }
 
     # 数字+ETF 模式 → 指数名称
     BROAD_BASE_NUMBER_PATTERNS: Dict[str, str] = {
         "300ETF": "沪深300",
         "500ETF": "中证500",
+        "800ETF": "中证800",
         "1000ETF": "中证1000",
         "2000ETF": "中证2000",
         "50ETF": "上证50",
@@ -85,19 +110,45 @@ class ETFClassifier:
 
     # 跨境指数关键词
     CROSS_BORDER_KEYWORDS = [
-        "恒生", "纳指", "纳斯达克", "标普", "中概",
-        "港股", "美股", "日经", "德国", "法国",
-        "A50",
+        "恒生", "恒指", "纳指", "纳斯达克", "标普", "中概",
+        "港股", "港股通", "美股", "日经", "东证", "德国", "法国",
+        "美国", "日本", "巴西", "沙特", "亚太", "亚洲", "东南亚",
+        "道琼斯", "富时", "沪港深", "香港", "MSCI",
     ]
 
+    # 需要特殊处理的跨境关键词（避免误匹配）
+    # A50 → 跨境（富时A50），但 A500/中证A50 不是跨境
+    CROSS_BORDER_SPECIAL_PATTERNS = {
+        "A50": {"exclude_prefixes": ["中证"], "exclude_contains": ["A500"]},
+    }
+
     # 商品关键词
-    COMMODITY_KEYWORDS = ["黄金", "白银", "原油", "豆粕", "有色金属"]
+    COMMODITY_KEYWORDS = ["黄金", "白银", "原油", "豆粕", "有色金属", "大宗商品"]
+
+    # 货币基金关键词
+    CURRENCY_KEYWORDS = [
+        "货币", "添益", "快钱", "快线", "日利", "天金",
+        "现金添富", "财富宝", "添利",
+    ]
+
+    # 债券类关键词
+    BOND_KEYWORDS = [
+        "国债", "信用债", "公司债", "可转债", "政金债",
+        "地方债", "地债", "短融", "城投债", "国开债", "债券",
+    ]
+
+    # REITs 代码前缀（180xxx, 508xxx）
+    REITS_CODE_PREFIXES = ["180", "508"]
+    # REITs 名称关键词（作为补充）
+    REITS_KEYWORDS = ["REIT", "REITs"]
 
     # 行业分类关键词：标签名 → 同义词列表（长关键词优先匹配）
     INDUSTRY_KEYWORDS: Dict[str, List[str]] = {
         "半导体": ["半导体", "芯片", "集成电路"],
-        "医药": ["医药", "医疗", "生物医药", "生物", "创新药", "CXO", "医疗器械"],
-        "科技": ["科技", "科创", "信息技术"],
+        "医药": ["医药", "医疗", "生物医药", "生物", "创新药", "CXO", "医疗器械", "药ETF"],
+        "中药": ["中药"],
+        "疫苗": ["疫苗"],
+        "科技": ["科技", "科创", "信息技术", "TMT"],
         "人工智能": ["人工智能", "AI", "AIETF", "机器人"],
         "新能源": ["新能源", "光伏", "风电", "储能"],
         "新能源车": ["新能源车", "新能车", "整车"],
@@ -107,27 +158,57 @@ class ETFClassifier:
         "保险": ["保险"],
         "非银金融": ["非银"],
         "军工": ["军工", "国防"],
-        "食品饮料": ["食品饮料", "白酒", "啤酒", "酒"],
-        "消费": ["消费", "零售", "商贸"],
-        "家电": ["家电", "家居"],
+        "食品饮料": ["食品饮料", "食品", "白酒", "啤酒", "酒"],
+        "消费": ["消费", "零售", "商贸", "国货"],
+        "家电": ["家电", "家居", "消电"],
         "汽车": ["汽车"],
         "电子": ["电子"],
         "计算机": ["计算机", "软件"],
-        "通信": ["通信", "5G"],
-        "传媒": ["传媒", "文化", "游戏"],
+        "通信": ["通信", "5G", "电信"],
+        "传媒": ["传媒", "文化", "游戏", "影视"],
         "有色金属": ["有色", "铜", "铝", "稀土"],
+        "稀有金属": ["稀有金属"],
         "煤炭": ["煤炭"],
         "化工": ["化工", "石化"],
         "钢铁": ["钢铁", "建材", "水泥"],
         "房地产": ["房地产", "地产", "REITs"],
         "基建": ["基建", "建筑"],
-        "农业": ["农业", "种业", "养殖"],
-        "电力": ["电力", "公用事业"],
+        "农业": ["农业", "种业", "养殖", "畜牧", "农牧", "粮食"],
+        "电力": ["电力", "公用事业", "绿电"],
         "旅游": ["旅游"],
         "互联网": ["互联网", "中概互联"],
         "机床": ["机床"],
+        # 新增行业
+        "航空航天": ["航空航天", "航空", "航天", "通用航空", "卫星"],
+        "碳中和": ["碳中和", "低碳"],
+        "云计算": ["云计算"],
+        "物联网": ["物联网"],
+        "信创": ["信创"],
+        "数字经济": ["数字经济", "大数据"],
+        "新材料": ["新材料", "材料"],
+        "电池": ["电池", "锂电"],
+        "油气": ["油气", "石油", "天然气"],
+        "交通运输": ["交通运输", "交运", "物流"],
+        "船舶": ["船舶"],
+        "电网": ["电网"],
+        "信息安全": ["信息安全"],
+        "环保": ["环保"],
+        "养老": ["养老"],
+        "智能制造": ["智能制造", "智能驾驶", "智能电车", "智能电动", "智能车", "工业母机"],
+        "高端装备": ["高端装备", "高端制造", "工程机械"],
+        "机械": ["机械ETF"],
+        "VR": ["VR"],
+        "专精特新": ["专精特新"],
+        "能源": ["能源"],
+        "矿业": ["矿业"],
+        "教育": ["教育"],
+        "资源": ["资源"],
+        "区域主题": [
+            "湾创", "大湾区", "杭州湾", "长三角", "长江保护",
+            "成渝", "张江", "G60", "浙江", "湖北",
+        ],
         # 商品细分（同时产生 industry 标签）
-        "黄金": ["黄金"],
+        "黄金": ["黄金", "金ETF", "上海金"],
         "白银": ["白银"],
         "原油": ["原油"],
         "豆粕": ["豆粕"],
@@ -136,15 +217,26 @@ class ETFClassifier:
     # 策略关键词：标签名 → 同义词列表
     STRATEGY_KEYWORDS: Dict[str, List[str]] = {
         "红利": ["红利"],
+        "高股息": ["高股息"],
+        "现金流": ["现金流"],
         "价值": ["价值"],
         "成长": ["成长"],
         "低波动": ["低波"],
         "质量": ["质量"],
         "增强": ["增强"],
+        "央企": ["央企", "央视"],
+        "国企": ["国企"],
+        "一带一路": ["一带一路"],
+        "基本面": ["基本面"],
+        "民企": ["民企"],
+        "战略新兴": ["战略新兴"],
+        "产业升级": ["产业升级"],
+        "新经济": ["新经济"],
+        "治理": ["治理", "责任"],
     }
 
     # 特殊属性关键词（直接作为标签）
-    SPECIAL_KEYWORDS = ["LOF", "联接", "QDII", "ESG"]
+    SPECIAL_KEYWORDS = ["LOF", "联接", "QDII", "ESG", "可持续"]
 
     # 排除规则：触发词 → 需排除的标签列表
     EXCLUSION_RULES: Dict[str, List[str]] = {
@@ -153,8 +245,17 @@ class ETFClassifier:
 
     # 标签包含规则：具体标签 → 应移除的泛化标签
     SUBSUME_RULES: Dict[str, List[str]] = {
-        "新能源车": ["新能源"],
+        "新能源车": ["新能源", "能源"],
+        "新能源": ["能源"],
         "非银金融": ["金融"],
+        "中药": ["医药"],
+        "疫苗": ["医药"],
+        "高股息": ["红利"],
+        "航空航天": ["军工"],
+        "稀有金属": ["有色金属"],
+        "油气": ["原油"],
+        "智能制造": ["机械"],
+        "高端装备": ["机械"],
     }
 
     def __init__(self) -> None:
@@ -182,6 +283,9 @@ class ETFClassifier:
         tags.extend(self._match_broad_base(name))
         tags.extend(self._match_cross_border(name))
         tags.extend(self._match_commodity(name))
+        tags.extend(self._match_currency(name))
+        tags.extend(self._match_bond(name))
+        tags.extend(self._match_reits(name, etf_code))
 
         # Step 2: 扫描细分关键词
         tags.extend(self._match_industry(name))
@@ -278,6 +382,24 @@ class ETFClassifier:
         for keyword in self.CROSS_BORDER_KEYWORDS:
             if keyword in name:
                 return [ETFTag(label="跨境", group="type")]
+
+        # 特殊模式匹配（如 A50 需排除 A500/中证A50）
+        for keyword, rules in self.CROSS_BORDER_SPECIAL_PATTERNS.items():
+            if keyword not in name:
+                continue
+            excluded = False
+            for prefix in rules.get("exclude_prefixes", []):
+                if f"{prefix}{keyword}" in name:
+                    excluded = True
+                    break
+            if not excluded:
+                for contains in rules.get("exclude_contains", []):
+                    if contains in name:
+                        excluded = True
+                        break
+            if not excluded:
+                return [ETFTag(label="跨境", group="type")]
+
         return []
 
     def _match_commodity(self, name: str) -> List[ETFTag]:
@@ -285,6 +407,33 @@ class ETFClassifier:
         for keyword in self.COMMODITY_KEYWORDS:
             if keyword in name:
                 return [ETFTag(label="商品", group="type")]
+        return []
+
+    def _match_currency(self, name: str) -> List[ETFTag]:
+        """匹配货币基金"""
+        for keyword in self.CURRENCY_KEYWORDS:
+            if keyword in name:
+                return [ETFTag(label="货币", group="type")]
+        return []
+
+    def _match_bond(self, name: str) -> List[ETFTag]:
+        """匹配债券类"""
+        for keyword in self.BOND_KEYWORDS:
+            if keyword in name:
+                return [ETFTag(label="债券", group="type")]
+        return []
+
+    def _match_reits(self, name: str, etf_code: str) -> List[ETFTag]:
+        """匹配 REITs（基于代码前缀或名称关键词）"""
+        # 代码前缀匹配
+        if etf_code:
+            for prefix in self.REITS_CODE_PREFIXES:
+                if etf_code.startswith(prefix):
+                    return [ETFTag(label="REITs", group="type")]
+        # 名称关键词匹配
+        for keyword in self.REITS_KEYWORDS:
+            if keyword in name:
+                return [ETFTag(label="REITs", group="type")]
         return []
 
     # ========== Step 2: 细分匹配 ==========
