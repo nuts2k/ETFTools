@@ -128,6 +128,12 @@
 - 新增或修改 API 端点必须有集成测试
 - 使用 pytest 和 FastAPI TestClient
 
+⚠️ **【强制】TypeScript 编译验证**
+- 所有前端开发任务在宣称完成前，必须验证 TypeScript 编译成功
+- 验证命令：`cd frontend && npm run build`
+- 确保没有类型错误，避免 CI/CD 构建失败
+- 本地开发时的类型警告可能不会阻止 dev server 运行，但会导致生产构建失败
+
 ⚠️ **【推荐】测试覆盖率**
 - 核心业务逻辑测试覆盖率应达到 80% 以上
 - 使用 `pytest --cov` 检查覆盖率
