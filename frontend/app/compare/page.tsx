@@ -426,6 +426,7 @@ function CompareContent() {
                 const firstMetrics = Object.values(compareData.metrics)[0];
                 if (!firstMetrics) return null;
                 const years = firstMetrics.actual_years;
+                if (years === undefined) return null;
                 const periodYears = period === "1y" ? 1 : period === "3y" ? 3 : period === "5y" ? 5 : null;
                 if (period === "all" || (periodYears && years < periodYears * 0.9)) {
                   return <span className={period === "all" ? "ml-1" : "text-yellow-600 dark:text-yellow-400 ml-1"}>（实际 {years.toFixed(1)} 年）</span>;
