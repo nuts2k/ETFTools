@@ -142,9 +142,9 @@ describe("ETF 详情页 tags 展示", () => {
     });
 
     const typeTag = screen.getByText("宽基");
-    expect(typeTag.className).toContain("bg-blue-500/10");
+    expect(typeTag.className).toContain("bg-blue-500/15");
 
     const industryTag = screen.getByText("半导体");
-    expect(industryTag.className).toContain("bg-purple-500/10");
+    expect(industryTag.className).toContain("bg-purple-500/15");
   });
 });

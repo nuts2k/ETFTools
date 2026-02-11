@@ -135,7 +135,8 @@ describe("搜索页标签筛选", () => {
     fireEvent.change(input, { target: { value: "300" } });
 
     await waitFor(() => {
-      expect(screen.queryByRole("radiogroup")).not.toBeInTheDocument();
+      const radiogroup = screen.getByRole("radiogroup");
+      expect(radiogroup.parentElement).toHaveClass("hidden");
     });
   });
 });
