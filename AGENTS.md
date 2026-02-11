@@ -218,7 +218,8 @@
 |------|------|------|
 | `/` | GET | API 根端点（含版本信息） |
 | `/health` | GET | 健康检查（含版本信息、数据就绪状态） |
-| `/etf/search?q={keyword}` | GET | 搜索 ETF |
+| `/etf/tags/popular` | GET | 获取搜索页热门标签列表 |
+| `/etf/search?q={keyword}&tag={label}` | GET | 搜索 ETF（支持文本搜索或标签筛选，二选一） |
 | `/etf/{code}/info` | GET | 获取实时基础信息（含交易状态） |
 | `/etf/{code}/history` | GET | 获取 QFQ 历史数据 |
 | `/etf/{code}/metrics` | GET | 获取核心指标 (CAGR, MDD, ATR, Volatility) |

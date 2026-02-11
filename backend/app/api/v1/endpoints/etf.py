@@ -47,16 +47,41 @@ def get_market_status() -> str:
 
     return "已收盘"
 
+POPULAR_TAGS = [
+    {"label": "宽基", "group": "type"},
+    {"label": "半导体", "group": "industry"},
+    {"label": "医药", "group": "industry"},
+    {"label": "红利", "group": "strategy"},
+    {"label": "跨境", "group": "type"},
+    {"label": "新能源", "group": "industry"},
+    {"label": "人工智能", "group": "industry"},
+    {"label": "券商", "group": "industry"},
+    {"label": "消费", "group": "industry"},
+    {"label": "军工", "group": "industry"},
+    {"label": "黄金", "group": "industry"},
+    {"label": "银行", "group": "industry"},
+    {"label": "商品", "group": "type"},
+    {"label": "债券", "group": "type"},
+]
+
+@router.get("/tags/popular")
+async def get_popular_tags():
+    """返回搜索页热门标签列表"""
+    return POPULAR_TAGS
+
 @router.get("/search", response_model=List[Dict])
-@limiter.limit("30/minute")  # 限制搜索频率
+@limiter.limit("30/minute")
 async def search_etf(
     request: Request,
-    q: str = Query(..., min_length=1, description="ETF代码或名称关键字")
+    q: Optional[str] = Query(None, min_length=1, description="ETF代码或名称关键字"),
+    tag: Optional[str] = Query(None, min_length=1, max_length=20, description="按标签筛选"),
 ):
-    """
-    搜索 ETF
-    """
-    return etf_cache.search(q)
+    """搜索 ETF（支持文本搜索或标签筛选）"""
+    if tag:
+        return etf_cache.filter_by_tag(tag)
+    if q:
+        return etf_cache.search(q)
+    return []
 
 @router.get("/batch-price")
 @limiter.limit("120/minute")

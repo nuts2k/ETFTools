@@ -56,6 +56,18 @@ class ETFCacheManager:
         if not found:
             self.etf_list.append(info)
 
+    def filter_by_tag(self, tag_label: str, limit: int = 50) -> List[Dict]:
+        """按标签筛选 ETF"""
+        results = []
+        for item in self.etf_list:
+            for t in item.get("tags", []):
+                if t.get("label") == tag_label:
+                    results.append(item)
+                    break
+            if len(results) >= limit:
+                break
+        return results
+
     def search(self, query: str, limit: int = 20) -> List[Dict]:
         """内存搜索：匹配代码或名称"""
         if not query:
