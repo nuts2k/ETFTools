@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Star, Settings } from "lucide-react";
+import { Search, Star, Settings, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
@@ -18,6 +18,11 @@ export function BottomNav() {
       label: "搜索",
       href: "/search",
       icon: Search,
+    },
+    {
+      label: "对比",
+      href: "/compare",
+      icon: ArrowLeftRight,
     },
     {
       label: "设置",

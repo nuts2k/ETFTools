@@ -191,6 +191,8 @@
 | **资金流向服务** | `backend/app/services/fund_flow_service.py` | 份额规模、排名业务逻辑 |
 | **资金流向缓存** | `backend/app/services/fund_flow_cache_service.py` | 资金流向数据缓存（4h TTL） |
 | **份额备份服务** | `backend/app/services/share_history_backup_service.py` | CSV 导出和月度备份 |
+| **对比服务** | `backend/app/services/compare_service.py` | 归一化、相关性、降采样计算 |
+| **对比端点** | `backend/app/api/v1/endpoints/compare.py` | ETF 对比 API |
 | **静态配置** | `backend/app/data/metrics_config.json` | 动态指标参数 |
 
 ### 前端关键文件
@@ -208,6 +210,7 @@
 | **下拉刷新指示器** | `frontend/components/PullToRefreshIndicator.tsx` | 下拉视觉反馈 |
 | **认证上下文** | `frontend/contexts/AuthContext.tsx` | JWT 管理 |
 | **资金流向卡片** | `frontend/components/FundFlowCard.tsx` | 份额规模、排名展示 |
+| **对比页** | `frontend/app/compare/page.tsx` | ETF 对比（选择器+图表+指标） |
 | **PWA 配置** | `frontend/public/manifest.json` | PWA 清单、图标、主屏幕安装 |
 
 ## 6. API 接口速查 (API Reference)
@@ -239,6 +242,7 @@
 | `/alerts/config` | PUT | 更新告警配置（含每日摘要开关） |
 | `/alerts/trigger` | POST | 手动触发告警检查 |
 | `/alerts/trigger?summary=true` | POST | 手动触发每日摘要 |
+| `/etf/compare?codes={codes}&period={period}` | GET | ETF 对比（归一化走势+相关性+对齐指标+温度） |
 | `/etf/{code}/fund-flow` | GET | 获取 ETF 资金流向数据（份额规模、排名） |
 | `/admin/fund-flow/collect` | POST | 手动触发份额采集（管理员） |
 | `/admin/fund-flow/export` | POST | 导出份额历史 CSV（管理员） |

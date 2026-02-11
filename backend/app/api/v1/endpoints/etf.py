@@ -15,6 +15,7 @@ from app.services.trend_cache_service import trend_cache_service
 from app.services.temperature_cache_service import temperature_cache_service
 from app.services.grid_service import calculate_grid_params_cached
 from app.services.fund_flow_cache_service import fund_flow_cache_service
+from app.services.metrics_service import calculate_period_metrics
 from app.core.config_loader import metric_config
 from app.middleware.rate_limit import limiter
 
@@ -226,61 +227,9 @@ async def get_etf_metrics(code: str, period: str = "5y", force_refresh: bool = F
             "risk_level": "Low"
         }
 
-    # 3. 计算指标
+    # 3. 计算核心指标（复用纯函数）
     closes = df_period["close"]
-    
-    # CAGR
-    # 使用实际数据范围计算年数，解决历史数据不足选定时间段的问题
-    actual_start_date = df_period.index[0]
-    actual_end_date = df_period.index[-1]
-    actual_days = (actual_end_date - actual_start_date).days
-    actual_years = actual_days / 365.25
-    
-    total_return = (closes.iloc[-1] / closes.iloc[0]) - 1
-    
-    cagr = 0.0
-    if actual_years > 0 and closes.iloc[0] > 0:
-        cagr = (closes.iloc[-1] / closes.iloc[0]) ** (1 / actual_years) - 1
-
-    # Max Drawdown
-    # 累计最大值
-    rolling_max = closes.cummax()
-    drawdown = (closes - rolling_max) / rolling_max
-    max_drawdown = drawdown.min()
-    
-    # 1. Trough Date (mdd_trough): date of max drawdown
-    trough_idx = drawdown.idxmin()
-    mdd_trough = trough_idx.strftime("%Y-%m-%d")
-    
-    # 2. Peak Date (mdd_start): last time price was at rolling_max before trough
-    # We look at data up to trough
-    data_upto_trough = closes.loc[:trough_idx]
-    rolling_max_upto_trough = rolling_max.loc[:trough_idx]
-    
-    # The peak price is the rolling_max at the trough date
-    peak_price = rolling_max_upto_trough.iloc[-1]
-    
-    # Find the last date where price >= peak_price (before or on trough date)
-    # Actually, strictly speaking, it's where price == peak_price
-    # Because peak_price comes from rolling_max, there must be at least one point where close == peak_price
-    peak_idx = data_upto_trough[data_upto_trough >= peak_price].index[-1]
-    mdd_start = peak_idx.strftime("%Y-%m-%d")
-    
-    # 3. Recovery Date (mdd_end): first time price >= peak_price after trough
-    data_after_trough = closes.loc[trough_idx:]
-    # drop the first point (trough itself) to avoid matching if trough == peak (impossible for drawdown < 0)
-    data_after_trough = data_after_trough.iloc[1:]
-    
-    mdd_end = None
-    if not data_after_trough.empty:
-        recovered = data_after_trough[data_after_trough >= peak_price]
-        if not recovered.empty:
-            mdd_end = recovered.index[0].strftime("%Y-%m-%d")
-    
-    # Volatility (Annualized)
-    # 日收益率标准差 * sqrt(252)
-    daily_returns = closes.pct_change().dropna()
-    volatility = daily_returns.std() * np.sqrt(252)
+    period_metrics = calculate_period_metrics(closes)
     
     # 获取估值数据 (非阻塞或独立获取，不因估值失败影响指标)
     # 此功能暂时关闭，如需开启请参考 AGENTS.md
@@ -401,17 +350,8 @@ async def get_etf_metrics(code: str, period: str = "5y", force_refresh: bool = F
     )
 
     return {
-        "period": f"{actual_start_date.date()} to {actual_end_date.date()}",
-        "total_return": round(total_return, 4),
-        "cagr": round(cagr, 4),
-        "actual_years": round(actual_years, 4),
-        "max_drawdown": round(max_drawdown, 4),
-        "mdd_date": mdd_trough, # Keep backward compatibility
-        "mdd_start": mdd_start,
-        "mdd_trough": mdd_trough,
-        "mdd_end": mdd_end,
-        "volatility": round(volatility, 4),
-        "risk_level": "High" if volatility > 0.25 else ("Medium" if volatility > 0.15 else "Low"),
+        "period": f"{df_period.index[0].date()} to {df_period.index[-1].date()}",
+        **period_metrics,
         "valuation": valuation_data,
         "atr": round(atr_val, 4) if atr_val is not None else None,
         "current_drawdown": round(current_drawdown, 4) if current_drawdown is not None else None,

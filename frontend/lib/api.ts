@@ -400,3 +400,21 @@ export async function setMaxWatchlistItems(
   }
   return response.json()
 }
+
+export type CompareMetrics = Pick<
+  ETFMetrics,
+  'cagr' | 'total_return' | 'actual_years' | 'max_drawdown' | 'volatility' | 'risk_level' | 'mdd_date' | 'mdd_start' | 'mdd_trough' | 'mdd_end'
+>;
+
+export interface CompareData {
+  etf_names: Record<string, string>;
+  period_label: string;
+  warnings: string[];
+  normalized: {
+    dates: string[];
+    series: Record<string, number[]>;
+  };
+  correlation: Record<string, number>;
+  metrics: Record<string, CompareMetrics>;
+  temperatures: Record<string, Temperature | null>;
+}
