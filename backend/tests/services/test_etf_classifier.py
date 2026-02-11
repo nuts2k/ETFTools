@@ -284,6 +284,122 @@ class TestExclusionRules:
         assert "金融" not in labels
 
 
+class TestCurrencyMatching:
+    """货币基金匹配测试"""
+
+    def test_currency_etf(self, classifier: ETFClassifier):
+        """货币ETF → [货币]"""
+        labels = [t.label for t in classifier.classify("货币ETF")]
+        assert labels == ["货币"]
+
+    def test_tianyi(self, classifier: ETFClassifier):
+        """添益 → [货币]"""
+        labels = [t.label for t in classifier.classify("银华日利")]
+        assert labels == ["货币"]
+
+
+class TestBondMatching:
+    """债券类匹配测试"""
+
+    def test_treasury_bond(self, classifier: ETFClassifier):
+        """国债ETF → [债券]"""
+        labels = [t.label for t in classifier.classify("国债ETF")]
+        assert labels == ["债券"]
+
+    def test_convertible_bond(self, classifier: ETFClassifier):
+        """可转债ETF → [债券]"""
+        labels = [t.label for t in classifier.classify("可转债ETF")]
+        assert labels == ["债券"]
+
+    def test_credit_bond(self, classifier: ETFClassifier):
+        """信用债ETF → [债券]"""
+        labels = [t.label for t in classifier.classify("信用债ETF")]
+        assert labels == ["债券"]
+
+
+class TestREITsMatching:
+    """REITs 匹配测试"""
+
+    def test_reits_by_code_508(self, classifier: ETFClassifier):
+        """508xxx 代码 → [REITs]"""
+        tags = classifier.classify("中金普洛斯REIT", "508056")
+        labels = [t.label for t in tags]
+        assert "REITs" in labels
+
+    def test_reits_by_code_180(self, classifier: ETFClassifier):
+        """180xxx 代码 → [REITs]"""
+        tags = classifier.classify("华安张江产业园REIT", "180101")
+        labels = [t.label for t in tags]
+        assert "REITs" in labels
+
+    def test_reits_no_fangdichan(self, classifier: ETFClassifier):
+        """REITs 不应自动产生房地产标签（如高速公路REITs）"""
+        tags = classifier.classify("浙商沪杭甬REIT", "508001")
+        labels = [t.label for t in tags]
+        assert "REITs" in labels
+        assert "房地产" not in labels
+
+    def test_reits_by_name_only(self, classifier: ETFClassifier):
+        """名称含 REIT 但无代码 → [REITs]"""
+        tags = classifier.classify("某某REIT")
+        labels = [t.label for t in tags]
+        assert "REITs" in labels
+
+
+class TestCrossBorderSpecialPatterns:
+    """跨境特殊模式匹配测试"""
+
+    def test_a50_is_cross_border(self, classifier: ETFClassifier):
+        """A50ETF → [跨境]（富时A50）"""
+        labels = [t.label for t in classifier.classify("A50ETF")]
+        assert labels == ["跨境"]
+
+    def test_a500_not_cross_border(self, classifier: ETFClassifier):
+        """中证A500 → [宽基]（非跨境）"""
+        labels = [t.label for t in classifier.classify("中证A500ETF")]
+        assert "跨境" not in labels
+        assert "宽基" in labels
+
+    def test_zhongzheng_a50_not_cross_border(self, classifier: ETFClassifier):
+        """中证A50 → [宽基]（非跨境）"""
+        labels = [t.label for t in classifier.classify("中证A50ETF")]
+        assert "跨境" not in labels
+        assert "宽基" in labels
+
+    def test_southeast_asia(self, classifier: ETFClassifier):
+        """东南亚科技ETF → [跨境, 科技]"""
+        labels = [t.label for t in classifier.classify("东南亚科技ETF")]
+        assert labels == ["跨境", "科技"]
+
+
+class TestSubsumeRules:
+    """SUBSUME 去重规则测试"""
+
+    def test_zhongyao_subsumes_yiyao(self, classifier: ETFClassifier):
+        """中药 应消解 医药"""
+        labels = [t.label for t in classifier.classify("中药ETF")]
+        assert "中药" in labels
+        assert "医药" not in labels
+
+    def test_dienwang_subsumes_dianli(self, classifier: ETFClassifier):
+        """电网 应消解 电力"""
+        labels = [t.label for t in classifier.classify("电网ETF")]
+        assert "电网" in labels
+        assert "电力" not in labels
+
+    def test_kuangye_subsumes_ziyuan(self, classifier: ETFClassifier):
+        """矿业 应消解 资源"""
+        labels = [t.label for t in classifier.classify("矿业ETF")]
+        assert "矿业" in labels
+        assert "资源" not in labels
+
+    def test_hangkonhangtian_subsumes_jungong(self, classifier: ETFClassifier):
+        """航空航天 应消解 军工"""
+        labels = [t.label for t in classifier.classify("航空航天ETF")]
+        assert "航空航天" in labels
+        assert "军工" not in labels
+
+
 # 验证矩阵：31个边界用例
 VALIDATION_MATRIX = [
     ("沪深300ETF", ["宽基", "沪深300"], "纯宽基"),
@@ -317,6 +433,19 @@ VALIDATION_MATRIX = [
     ("沪深300增强", ["宽基", "沪深300", "增强"], "宽基+策略"),
     ("创业板联接", ["宽基", "创业板", "联接"], "宽基+特殊属性"),
     ("华夏上证50ETF联接A", ["宽基", "上证50", "联接"], "长名称+后缀"),
+    # 阶段1新增用例
+    ("货币ETF", ["货币"], "货币基金"),
+    ("国债ETF", ["债券"], "债券类"),
+    ("可转债ETF", ["债券"], "可转债"),
+    ("东南亚科技ETF", ["跨境", "科技"], "东南亚跨境"),
+    ("中证A500ETF", ["宽基", "中证A500"], "新宽基A500"),
+    ("中证A50ETF", ["宽基", "中证A50"], "中证A50非跨境"),
+    ("中药ETF", ["中药"], "中药不产生医药"),
+    ("疫苗ETF", ["疫苗"], "疫苗不产生医药"),
+    ("高股息ETF", ["高股息"], "高股息不产生红利"),
+    ("矿业ETF", ["矿业"], "矿业不产生资源"),
+    ("电网ETF", ["电网"], "电网不产生电力"),
+    ("航空航天ETF", ["航空航天"], "航空航天不产生军工"),
 ]
 
 

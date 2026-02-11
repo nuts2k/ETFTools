@@ -20,10 +20,12 @@ from pathlib import Path
 # 添加项目路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from typing import Dict, List
+
 from app.services.etf_classifier import ETFClassifier
 
 
-def fetch_all_etfs() -> list[dict]:
+def fetch_all_etfs() -> List[Dict]:
     """
     获取全量 ETF 列表
 
