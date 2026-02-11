@@ -16,7 +16,7 @@ class TestMetricsEndpointCache:
 
     @patch("app.services.trend_cache_service.disk_cache")
     @patch("app.services.temperature_cache_service.disk_cache")
-    @patch("app.services.akshare_service.ak_service")
+    @patch("app.api.v1.endpoints.etf.ak_service")
     def test_metrics_endpoint_uses_cache(
         self,
         mock_ak_service,
@@ -54,7 +54,7 @@ class TestMetricsEndpointCache:
 
     @patch("app.services.trend_cache_service.disk_cache")
     @patch("app.services.temperature_cache_service.disk_cache")
-    @patch("app.services.akshare_service.ak_service")
+    @patch("app.api.v1.endpoints.etf.ak_service")
     def test_metrics_endpoint_force_refresh(
         self,
         mock_ak_service,
@@ -100,7 +100,7 @@ class TestMetricsEndpointCache:
 
     @patch("app.services.trend_cache_service.disk_cache")
     @patch("app.services.temperature_cache_service.disk_cache")
-    @patch("app.services.akshare_service.ak_service")
+    @patch("app.api.v1.endpoints.etf.ak_service")
     def test_metrics_endpoint_cache_hit(
         self,
         mock_ak_service,
