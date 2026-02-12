@@ -15,8 +15,10 @@ import json
 # 强制禁用代理，防止本地环境代理干扰
 urllib.request.getproxies = lambda: {}
 
-# 补丁 requests 增加默认 User-Agent 并彻底禁用代理
+# 补丁 requests 增加默认 User-Agent、超时时间并彻底禁用代理
 _original_session_init = requests.Session.__init__
+_original_session_request = requests.Session.request
+
 def _patched_session_init(self, *args, **kwargs):
     _original_session_init(self, *args, **kwargs)
     self.headers.update({
@@ -24,7 +26,15 @@ def _patched_session_init(self, *args, **kwargs):
     })
     self.trust_env = False
     self.proxies = {"http": None, "https": None}
+
+def _patched_session_request(self, method, url, **kwargs):
+    # 为国外服务器设置更长的超时时间（默认 180 秒）
+    if 'timeout' not in kwargs:
+        kwargs['timeout'] = 180
+    return _original_session_request(self, method, url, **kwargs)
+
 requests.Session.__init__ = _patched_session_init
+requests.Session.request = _patched_session_request
 
 from app.core.cache import etf_cache
 from app.core.config import settings
@@ -86,18 +96,21 @@ class AkShareService:
                         "名称": "name",
                         "最新价": "price",
                         "涨跌幅": "change_pct",
-                        "成交额": "volume", 
+                        "成交额": "volume",
                     })
                     df["price"] = pd.to_numeric(df["price"], errors="coerce")
                     df["change_pct"] = pd.to_numeric(df["change_pct"], errors="coerce")
                     records = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
-                    
+
                     logger.info(f"Successfully loaded {len(records)} ETFs from EastMoney.")
                     disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
                     return records
             except Exception as e:
                 logger.error(f"EastMoney fetch failed: {e}")
-                time.sleep(2)
+                # 增加重试间隔，避免触发频率限制（国外服务器需要更长间隔）
+                if i < retries - 1:
+                    logger.info(f"Waiting 60 seconds before retry...")
+                    time.sleep(60)
 
         # --- Attempt 2: Sina Fallback ---
         logger.warning("EastMoney failed, trying Sina fallback...")
@@ -245,7 +258,8 @@ class AkShareService:
             except Exception as e:
                 logger.warning(f"EastMoney history attempt {attempt + 1} failed for {code}: {e}")
                 if attempt < retries - 1:
-                    time.sleep(2)
+                    logger.info(f"Waiting 60 seconds before retry...")
+                    time.sleep(60)
 
         # --- Fallback: 过期磁盘缓存 ---
         fallback_data = disk_cache.get(fallback_key)
