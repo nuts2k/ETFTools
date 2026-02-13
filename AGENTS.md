@@ -32,6 +32,28 @@
 - 后端: `cd backend && uvicorn app.main:app --reload --port 8000`
 - 前端: `cd frontend && npm run dev`
 
+**远程调试**: `./scripts/remote-diagnose.sh` (快速诊断远程服务器)
+
+### 3.1 远程调试配置 (Remote Debugging)
+
+**配置文件**: `.remote-config.json` (本地配置，不提交到 Git)
+
+**首次配置**:
+```bash
+cp .remote-config.template.json .remote-config.json
+# 编辑 .remote-config.json 填写真实的服务器信息
+```
+
+**AI 代理使用说明**:
+- 当需要排查远程服务器问题时，AI 代理会自动读取 `.remote-config.json` 获取服务器连接信息
+- 配置文件包含：SSH host、服务器地址、容器名称等
+- 详细的调试命令和排查流程参见 [远程调试文档](docs/deployment/remote-debug.md)
+
+**安全提醒**:
+- ⚠️ `.remote-config.json` 包含敏感信息，已添加到 `.gitignore`
+- ⚠️ 不要在公开文档中包含真实的服务器地址、域名等信息
+- ⚠️ 使用模板文件 `.remote-config.template.json` 作为公开的配置示例
+
 ## 4. 强制性开发规范 (Mandatory Standards)
 
 ### 4.1 数据一致性规范
@@ -188,7 +210,7 @@
 
 **快速链接**:
 - **项目规划**: [PRD](docs/planning/PRD.md), [PLAN](docs/planning/PLAN.md)
-- **部署指南**: [Docker 部署](docs/deployment/docker-guide.md), [多架构支持](docs/deployment/docker-multiarch-guide.md)
+- **部署指南**: [Docker 部署](docs/deployment/docker-guide.md), [多架构支持](docs/deployment/docker-multiarch-guide.md), [远程调试](docs/deployment/remote-debug.md)
 - **技术研究**: [ETF 估值](docs/research/etf-valuation-research.md), [PE 分位数](docs/research/pe-percentile-research.md)
 - **测试报告**: [docs/testing/](docs/testing/)
 

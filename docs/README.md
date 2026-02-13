@@ -12,6 +12,7 @@
 ### 部署运维
 - [Docker 部署指南](deployment/docker-guide.md) - Docker 容器化部署说明
 - [Docker 多架构支持](deployment/docker-multiarch-guide.md) - 多平台镜像构建指南
+- [远程调试配置](deployment/remote-debug.md) - 生产环境远程调试指南
 - [GitHub Actions 配置指南](deployment/github-actions-setup.md) - CI/CD 自动化构建配置
 - [Docker 统一设计](deployment/docker-unified-design.md) - Docker 架构设计文档
 - [Docker 多平台设计](deployment/docker-multiplatform-design.md) - 多平台构建设计方案
@@ -85,6 +86,7 @@
 **文档列表：**
 - `docker-guide.md` - Docker 部署指南
 - `docker-multiarch-guide.md` - Docker 多架构支持指南
+- `remote-debug.md` - 生产环境远程调试配置
 - `github-actions-setup.md` - GitHub Actions CI/CD 配置指南
 - `docker-unified-design.md` - Docker 统一设计方案
 - `docker-multiplatform-design.md` - Docker 多平台设计方案
@@ -183,4 +185,4 @@ ls -lt docs/implementation/
 
 ---
 
-**最后更新：** 2026-02-11
+**最后更新：** 2026-02-13

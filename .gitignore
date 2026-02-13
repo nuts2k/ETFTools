@@ -75,3 +75,7 @@ cache/
 .gemini/
 .opencode/
 .trae/
+
+# Remote server configuration (contains sensitive information)
+.remote-config.json
+.remote-config.local.json

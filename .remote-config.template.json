@@ -1,0 +1,14 @@
+{
+  "server": {
+    "ssh_host": "your-server-alias",
+    "hostname": "your-server.example.com",
+    "user": "root",
+    "description": "生产服务器描述"
+  },
+  "container": {
+    "name": "etftool",
+    "image": "your-registry/etftool:latest",
+    "port": "3000",
+    "memory_limit": "256MiB"
+  }
+}
