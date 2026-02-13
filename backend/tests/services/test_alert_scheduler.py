@@ -91,3 +91,127 @@ async def test_fetch_and_compute_etf_metrics_none_dataframe():
 
         # 验证调用参数
         mock_ak_service.fetch_history_raw.assert_called_once_with("510300", "daily", "qfq")
+
+
+# ---- _fetch_summary_etf_data 测试 ----
+
+def _make_etf_info(code, change_pct):
+    return {"code": code, "name": f"ETF{code}", "price": 1.0, "change_pct": change_pct, "volume": 0}
+
+
+def _make_metrics():
+    return {"temperature": 50.0, "daily_trend": "上涨", "weekly_trend": "震荡"}
+
+
+@pytest.mark.anyio
+async def test_fetch_summary_etf_data_happy_path():
+    """新鲜数据全部命中，不走缓存 fallback"""
+    fresh_list = [_make_etf_info("510300", -0.5), _make_etf_info("159201", -1.2)]
+
+    with patch('app.services.alert_scheduler.ak_service') as mock_ak, \
+         patch.object(AlertScheduler, '_fetch_and_compute_etf_metrics', new_callable=AsyncMock) as mock_metrics:
+        mock_ak.fetch_all_etfs.return_value = fresh_list
+        mock_metrics.return_value = _make_metrics()
+
+        scheduler = AlertScheduler()
+        result = await scheduler._fetch_summary_etf_data(["510300", "159201"])
+
+        assert len(result) == 2
+        assert result["510300"]["info"]["change_pct"] == -0.5
+        assert result["159201"]["info"]["change_pct"] == -1.2
+        # 不应调用 get_etf_info（无需 fallback）
+        mock_ak.get_etf_info.assert_not_called()
+
+
+@pytest.mark.anyio
+async def test_fetch_summary_etf_data_partial_miss_fallback():
+    """部分 ETF 不在新鲜数据中，单独 fallback 到缓存"""
+    fresh_list = [_make_etf_info("510300", -0.5)]
+    cached_info = _make_etf_info("159201", -1.0)
+
+    with patch('app.services.alert_scheduler.ak_service') as mock_ak, \
+         patch.object(AlertScheduler, '_fetch_and_compute_etf_metrics', new_callable=AsyncMock) as mock_metrics:
+        mock_ak.fetch_all_etfs.return_value = fresh_list
+        mock_ak.get_etf_info.return_value = cached_info
+        mock_metrics.return_value = _make_metrics()
+
+        scheduler = AlertScheduler()
+        result = await scheduler._fetch_summary_etf_data(["510300", "159201"])
+
+        assert len(result) == 2
+        assert result["510300"]["info"]["change_pct"] == -0.5
+        assert result["159201"]["info"]["change_pct"] == -1.0
+        # 只对缺失的 ETF 调用 get_etf_info
+        mock_ak.get_etf_info.assert_called_once_with("159201")
+
+
+@pytest.mark.anyio
+async def test_fetch_summary_etf_data_total_failure_fallback():
+    """数据源完全失败（返回空），所有 ETF fallback 到缓存"""
+    cached_info = _make_etf_info("510300", -0.8)
+
+    with patch('app.services.alert_scheduler.ak_service') as mock_ak, \
+         patch.object(AlertScheduler, '_fetch_and_compute_etf_metrics', new_callable=AsyncMock) as mock_metrics:
+        mock_ak.fetch_all_etfs.return_value = []
+        mock_ak.get_etf_info.return_value = cached_info
+        mock_metrics.return_value = _make_metrics()
+
+        scheduler = AlertScheduler()
+        result = await scheduler._fetch_summary_etf_data(["510300"])
+
+        assert result["510300"]["info"]["change_pct"] == -0.8
+        mock_ak.get_etf_info.assert_called_once_with("510300")
+
+
+@pytest.mark.anyio
+async def test_fetch_summary_etf_data_fetch_all_raises():
+    """fetch_all_etfs 抛异常，降级到缓存"""
+    cached_info = _make_etf_info("510300", -0.3)
+
+    with patch('app.services.alert_scheduler.ak_service') as mock_ak, \
+         patch.object(AlertScheduler, '_fetch_and_compute_etf_metrics', new_callable=AsyncMock) as mock_metrics:
+        mock_ak.fetch_all_etfs.side_effect = RuntimeError("network error")
+        mock_ak.get_etf_info.return_value = cached_info
+        mock_metrics.return_value = _make_metrics()
+
+        scheduler = AlertScheduler()
+        result = await scheduler._fetch_summary_etf_data(["510300"])
+
+        assert result["510300"]["info"]["change_pct"] == -0.3
+        mock_ak.get_etf_info.assert_called_once_with("510300")
+
+
+@pytest.mark.anyio
+async def test_fetch_summary_etf_data_etf_unavailable_from_all():
+    """ETF 从所有来源都获取失败，info 为 None"""
+    with patch('app.services.alert_scheduler.ak_service') as mock_ak, \
+         patch.object(AlertScheduler, '_fetch_and_compute_etf_metrics', new_callable=AsyncMock) as mock_metrics:
+        mock_ak.fetch_all_etfs.return_value = []
+        mock_ak.get_etf_info.return_value = None
+        mock_metrics.return_value = _make_metrics()
+
+        scheduler = AlertScheduler()
+        result = await scheduler._fetch_summary_etf_data(["999999"])
+
+        assert result["999999"]["info"] is None
+        assert result["999999"]["metrics"] is not None
+
+
+@pytest.mark.anyio
+async def test_fetch_summary_etf_data_individual_exception():
+    """单个 ETF 处理异常不影响其他 ETF"""
+    fresh_list = [_make_etf_info("510300", -0.5)]
+
+    with patch('app.services.alert_scheduler.ak_service') as mock_ak, \
+         patch.object(AlertScheduler, '_fetch_and_compute_etf_metrics', new_callable=AsyncMock) as mock_metrics:
+        mock_ak.fetch_all_etfs.return_value = fresh_list
+        # 第一个 ETF 的 metrics 抛异常，第二个正常
+        mock_metrics.side_effect = [RuntimeError("compute failed"), _make_metrics()]
+        mock_ak.get_etf_info.return_value = _make_etf_info("159201", -1.0)
+
+        scheduler = AlertScheduler()
+        result = await scheduler._fetch_summary_etf_data(["510300", "159201"])
+
+        # 510300 因异常被跳过，159201 正常
+        assert "510300" not in result
+        assert "159201" in result

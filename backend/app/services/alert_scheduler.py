@@ -97,6 +97,50 @@ class AlertScheduler:
             self._scheduler = None
             logger.info("Alert scheduler stopped")
 
+    async def _fetch_summary_etf_data(
+        self, etf_codes: List[str]
+    ) -> Dict[str, Dict[str, Any]]:
+        """为日报获取 ETF 数据（行情 + 指标）
+
+        直接从数据源获取最新行情，绕过内存缓存，确保使用收盘数据。
+        仅在数据源完全不可用时 fallback 到内存缓存。
+        """
+        try:
+            fresh_list = await asyncio.to_thread(ak_service.fetch_all_etfs)
+        except Exception as e:
+            logger.error(f"Summary: fetch_all_etfs raised: {e}")
+            fresh_list = []
+        fresh_map = {item["code"]: item for item in fresh_list} if fresh_list else {}
+
+        if fresh_map:
+            logger.info(f"Summary: fetched {len(fresh_map)} ETFs fresh from source")
+        else:
+            logger.warning("Summary: fresh fetch failed, falling back to cache")
+
+        etf_data: Dict[str, Dict[str, Any]] = {}
+        for etf_code in etf_codes:
+            try:
+                info = fresh_map.get(etf_code)
+                if info is None:
+                    # ETF 不在全市场列表（退市/停牌）或数据源完全失败，fallback 到缓存
+                    info = await asyncio.to_thread(
+                        ak_service.get_etf_info, etf_code
+                    )
+                    if info is not None:
+                        logger.info(
+                            f"Summary: {etf_code} not in fresh data, used cache fallback"
+                        )
+                    else:
+                        logger.warning(
+                            f"Summary: {etf_code} not available from any source"
+                        )
+                metrics = await self._fetch_and_compute_etf_metrics(etf_code)
+                etf_data[etf_code] = {"info": info, "metrics": metrics}
+            except Exception as e:
+                logger.error(f"Failed to fetch data for {etf_code}: {e}")
+
+        return etf_data
+
     async def _fetch_and_compute_etf_metrics(self, etf_code: str) -> Optional[Dict[str, Any]]:
         """获取 ETF 数据并计算指标
 
@@ -329,17 +373,8 @@ class AlertScheduler:
             all_etf_codes = list(etf_users_map.keys())
             logger.info(f"Fetching data for {len(all_etf_codes)} ETFs for summary")
 
-            # 按 ETF 去重获取数据
-            etf_data: Dict[str, Dict[str, Any]] = {}
-            for etf_code in all_etf_codes:
-                try:
-                    info = await asyncio.to_thread(
-                        ak_service.get_etf_info, etf_code
-                    )
-                    metrics = await self._fetch_and_compute_etf_metrics(etf_code)
-                    etf_data[etf_code] = {"info": info, "metrics": metrics}
-                except Exception as e:
-                    logger.error(f"Failed to fetch data for {etf_code}: {e}")
+            # 直接从数据源获取最新行情，确保使用收盘数据
+            etf_data = await self._fetch_summary_etf_data(all_etf_codes)
 
             # 按用户去重
             user_map: Dict[int, Dict] = {}
@@ -593,20 +628,9 @@ class AlertScheduler:
                 logger.info(f"No ETFs for user {user_id} summary")
                 return True  # 无数据不算去重
 
-            etf_data: Dict[str, Dict[str, Any]] = {}
-            for etf_code in etf_users_map.keys():
-                try:
-                    info = await asyncio.to_thread(
-                        ak_service.get_etf_info, etf_code
-                    )
-                    metrics = await self._fetch_and_compute_etf_metrics(
-                        etf_code
-                    )
-                    etf_data[etf_code] = {
-                        "info": info, "metrics": metrics
-                    }
-                except Exception as e:
-                    logger.error(f"Failed to fetch {etf_code}: {e}")
+            etf_data = await self._fetch_summary_etf_data(
+                list(etf_users_map.keys())
+            )
 
             first_data = list(etf_users_map.values())[0][0]
             udata = {
