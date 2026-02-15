@@ -116,7 +116,9 @@ export default function SettingsPage() {
                 <span className="text-base font-normal">行情刷新频率</span>
               </div>
               <div className="flex items-center gap-1">
-                <select 
+                <select
+                    id="refresh-rate"
+                    name="refreshRate"
                     className="appearance-none bg-transparent text-right text-muted-foreground text-sm focus:outline-none pr-6 cursor-pointer absolute inset-0 w-full h-full opacity-0"
                     value={settings.refreshRate}
                     onChange={(e) => updateSettings({ refreshRate: Number(e.target.value) as RefreshRate })}
@@ -139,7 +141,9 @@ export default function SettingsPage() {
                 <span className="text-base font-normal">涨跌颜色</span>
               </div>
               <div className="flex items-center gap-1">
-                 <select 
+                 <select
+                    id="color-mode"
+                    name="colorMode"
                     className="appearance-none bg-transparent text-right text-muted-foreground text-sm focus:outline-none pr-6 cursor-pointer absolute inset-0 w-full h-full opacity-0"
                     value={settings.colorMode}
                     onChange={(e) => updateSettings({ colorMode: e.target.value as any })}
@@ -164,7 +168,9 @@ export default function SettingsPage() {
                 <span className="text-base font-normal">主题模式</span>
               </div>
               <div className="flex items-center gap-1">
-                <select 
+                <select
+                    id="theme-mode"
+                    name="theme"
                     className="appearance-none bg-transparent text-right text-muted-foreground text-sm focus:outline-none pr-6 cursor-pointer absolute inset-0 w-full h-full opacity-0"
                     value={theme}
                     onChange={(e) => setTheme(e.target.value)}
