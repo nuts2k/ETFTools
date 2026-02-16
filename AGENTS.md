@@ -13,7 +13,7 @@
 | 层级 | 技术 | 说明 |
 |------|------|------|
 | **后端框架** | FastAPI + Python 3.9+ | 异步 Web 框架 |
-| **数据源** | akshare | 东方财富接口 |
+| **数据源** | akshare, baostock | 东方财富 + Baostock 混合策略 |
 | **数据处理** | pandas | 时间序列分析 |
 | **缓存** | DiskCache + In-Memory | 持久化缓存（4h）+ 实时数据缓存 |
 | **数据库** | SQLite + SQLModel | 用户数据和自选列表 |
