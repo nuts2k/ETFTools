@@ -39,6 +39,7 @@ requests.Session.request = _patched_session_request
 from app.core.cache import etf_cache
 from app.core.config import settings
 from app.core.metrics import track_datasource
+from app.services.datasource_manager import DataSourceManager
 from app.services.etf_classifier import ETFClassifier
 
 _classifier = ETFClassifier()
@@ -61,6 +62,32 @@ logger = logging.getLogger(__name__)
 CACHE_DIR = settings.CACHE_DIR
 disk_cache = Cache(CACHE_DIR)
 ETF_LIST_CACHE_KEY = "etf_list_all"
+
+def _build_history_manager() -> DataSourceManager:
+    """构建历史数据源管理器（延迟初始化，避免循环导入）"""
+    sources = []
+    for name in settings.HISTORY_DATA_SOURCES:
+        if name == "baostock" and settings.BAOSTOCK_ENABLED:
+            from app.services.baostock_service import BaostockSource
+            sources.append(BaostockSource())
+        elif name == "eastmoney":
+            from app.services.eastmoney_history_source import EastMoneyHistorySource
+            sources.append(EastMoneyHistorySource())
+    return DataSourceManager(
+        sources=sources,
+        cb_threshold=settings.CIRCUIT_BREAKER_THRESHOLD,
+        cb_window=settings.CIRCUIT_BREAKER_WINDOW,
+        cb_cooldown=settings.CIRCUIT_BREAKER_COOLDOWN,
+    )
+
+_history_manager: Optional[DataSourceManager] = None
+
+def _get_history_manager() -> DataSourceManager:
+    global _history_manager
+    if _history_manager is None:
+        _history_manager = _build_history_manager()
+    return _history_manager
+
 
 class AkShareService:
     _refresh_lock = threading.Lock()
@@ -150,16 +177,6 @@ class AkShareService:
         df["volume"] = 0.0
         df["price"] = pd.to_numeric(df["price"], errors="coerce")
         return cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
-
-    @staticmethod
-    @track_datasource("eastmoney_history")
-    def _fetch_history_eastmoney(code: str, period: str, adjust: str) -> pd.DataFrame:
-        """从东方财富获取历史数据（单次尝试）"""
-        df = ak.fund_etf_hist_em(symbol=code, period=period, adjust=adjust, start_date="20000101", end_date="20500101")
-        if df.empty:
-            raise ValueError(f"EastMoney history returned empty for {code}")
-        df = df.rename(columns={"日期": "date", "开盘": "open", "收盘": "close", "最高": "high", "最低": "low", "成交量": "volume"})
-        return df
 
     @staticmethod
     def fetch_all_etfs() -> List[Dict]:
@@ -263,30 +280,27 @@ class AkShareService:
 
     @staticmethod
     def fetch_history_raw(code: str, period: str, adjust: str) -> pd.DataFrame:
-        """历史数据获取 (带 DiskCache)，东方财富 + 重试 + 过期缓存兜底"""
+        """历史数据获取（DataSourceManager + DiskCache 兜底）"""
         cache_key = f"hist_{code}_{period}_{adjust}"
         fallback_key = f"hist_fallback_{code}_{period}_{adjust}"
+
+        # 1. DiskCache 命中 → 直接返回
         cached_data = disk_cache.get(cache_key)
         if cached_data is not None:
-             return cast(pd.DataFrame, cached_data)
+            return cast(pd.DataFrame, cached_data)
 
-        # --- EastMoney with retry ---
-        retries = 3
-        for attempt in range(retries):
-            try:
-                df = AkShareService._fetch_history_eastmoney(code, period, adjust)
-                disk_cache.set(cache_key, df, expire=604800)  # 7 天缓存
-                disk_cache.set(fallback_key, df)  # 永不过期的兜底缓存
-                return df
-            except Exception:
-                if attempt < retries - 1:
-                    logger.info("Waiting 60 seconds before retry...")
-                    time.sleep(60)
+        # 2. DataSourceManager 按优先级尝试各在线源
+        manager = _get_history_manager()
+        df = manager.fetch_history(code, "20000101", "20500101", adjust)
+        if df is not None and not df.empty:
+            disk_cache.set(cache_key, df, expire=604800)  # 7 天缓存
+            disk_cache.set(fallback_key, df)  # 永不过期兜底
+            return df
 
-        # --- Fallback: 过期磁盘缓存 ---
+        # 3. 所有在线源失败 → 过期缓存兜底
         fallback_data = disk_cache.get(fallback_key)
         if fallback_data is not None:
-            logger.warning(f"Using stale fallback cache for {code}")
+            logger.warning("Using stale fallback cache for %s", code)
             return cast(pd.DataFrame, fallback_data)
 
         return pd.DataFrame()
