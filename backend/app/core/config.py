@@ -41,6 +41,13 @@ class Settings(BaseSettings):
     
     # 速率限制配置
     ENABLE_RATE_LIMIT: bool = False
+
+    # 数据源配置
+    HISTORY_DATA_SOURCES: List[str] = ["eastmoney", "ths_history"]
+    BAOSTOCK_ENABLED: bool = False  # Baostock 不支持 ETF 基金，仅支持股票
+    CIRCUIT_BREAKER_THRESHOLD: float = 0.1
+    CIRCUIT_BREAKER_WINDOW: int = 10
+    CIRCUIT_BREAKER_COOLDOWN: int = 300
     
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -33,6 +33,7 @@ class SourceStats:
         "last_success_at",
         "last_failure_at",
         "last_error",
+        "circuit_open_until",
     )
 
     def __init__(self) -> None:
@@ -44,6 +45,7 @@ class SourceStats:
         self.last_success_at: Optional[datetime] = None
         self.last_failure_at: Optional[datetime] = None
         self.last_error: Optional[str] = None
+        self.circuit_open_until: Optional[float] = None
 
 
 class DataSourceMetrics:
@@ -105,6 +107,49 @@ class DataSourceMetrics:
             if not stats:
                 return {"status": "unknown"}
             return self._stats_to_dict(stats)
+
+    def is_circuit_open(
+        self,
+        source: str,
+        threshold: float = 0.1,
+        window: int = 10,
+        cooldown: int = 300,
+    ) -> bool:
+        """
+        检查数据源是否被熔断。
+
+        规则：
+        - 最近 window 次调用成功率 < threshold → 开启熔断
+        - 熔断持续 cooldown 秒
+        - 到期后允许一次探测（半开状态）
+        """
+        with self._lock:
+            stats = self._sources.get(source)
+            if not stats:
+                return False
+
+            now = time.monotonic()
+
+            # 在冷却期内 → 熔断开启
+            if stats.circuit_open_until is not None:
+                if now < stats.circuit_open_until:
+                    return True
+                # 冷却期过 → 半开，允许探测
+                stats.circuit_open_until = None
+                return False
+
+            # 数据不足 → 不熔断
+            recent = list(stats.results)[-window:]
+            if len(recent) < window:
+                return False
+
+            # 成功率低于阈值 → 开启熔断
+            rate = sum(recent) / len(recent)
+            if rate < threshold:
+                stats.circuit_open_until = now + cooldown
+                return True
+
+            return False
 
     def get_summary(self) -> Dict[str, Dict[str, Any]]:
         """所有数据源状态汇总"""

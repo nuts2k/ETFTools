@@ -39,8 +39,8 @@
 ### 阶段二：稳定性提升（2-4 周）
 
 #### 2.1 Baostock 集成（历史数据）
-- [ ] 新建 `baostock_service.py`
-- [ ] 修改 `fetch_history_raw()` 优先使用 Baostock
+- [x] 新建 `baostock_service.py`
+- [x] 修改 `fetch_history_raw()` 优先使用 Baostock
 - [ ] 数据一致性验证（Baostock vs AkShare）
 - [ ] 灰度发布（10% → 50% → 100%）
 
@@ -49,9 +49,9 @@
 **参考文档**: `docs/research/baostock-evaluation.md`
 
 #### 2.2 降级策略优化
-- [ ] EastMoney 失败后立即切换 Sina（取消 60 秒等待）
-- [ ] 根据历史成功率动态调整数据源优先级
-- [ ] 增加 THS 备用的触发条件测试
+- [x] EastMoney 失败后立即切换 Sina（取消 60 秒等待）
+- [x] 根据历史成功率动态调整数据源优先级
+- [x] 增加 THS 备用的触发条件测试
 
 **优先级**: 🟢 低
 **预期收益**: 响应速度提升 30-60 秒
