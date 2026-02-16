@@ -38,6 +38,7 @@ requests.Session.request = _patched_session_request
 
 from app.core.cache import etf_cache
 from app.core.config import settings
+from app.core.metrics import track_datasource
 from app.services.etf_classifier import ETFClassifier
 
 _classifier = ETFClassifier()
@@ -54,8 +55,6 @@ def _enrich_with_tags(etf_list: List[Dict]) -> List[Dict]:
             etf["tags"] = []
     return etf_list
 
-# 配置日志
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # DiskCache setup
@@ -82,105 +81,136 @@ class AkShareService:
         return []
 
     @staticmethod
+    @track_datasource("eastmoney")
+    def _fetch_etfs_eastmoney() -> List[Dict[str, Any]]:
+        """从东方财富获取 ETF 列表（单次尝试）"""
+        df = ak.fund_etf_spot_em()
+        if df.empty:
+            raise ValueError("EastMoney returned empty DataFrame")
+        df = df.rename(columns={
+            "代码": "code",
+            "名称": "name",
+            "最新价": "price",
+            "涨跌幅": "change_pct",
+            "成交额": "volume",
+        })
+        df["price"] = pd.to_numeric(df["price"], errors="coerce")
+        df["change_pct"] = pd.to_numeric(df["change_pct"], errors="coerce")
+        return cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
+
+    @staticmethod
+    @track_datasource("sina")
+    def _fetch_etfs_sina() -> List[Dict[str, Any]]:
+        """从新浪获取 ETF 列表"""
+        sina_categories = ["ETF基金", "QDII基金", "封闭式基金"]
+        all_sina_records: List[Dict[str, Any]] = []
+        for cat in sina_categories:
+            try:
+                df = ak.fund_etf_category_sina(symbol=cat)
+                if df is not None and not df.empty:
+                    col_map = {"代码": "code", "名称": "name", "最新价": "price", "涨跌幅": "change_pct", "成交额": "volume"}
+                    actual_map = {k: v for k, v in col_map.items() if k in df.columns}
+                    df = df.rename(columns=actual_map)
+
+                    if "code" in df.columns:
+                        df["code"] = df["code"].astype(str).str.replace("sh", "").str.replace("sz", "")
+                        for col in ["price", "change_pct", "volume"]:
+                            if col not in df.columns:
+                                df[col] = 0.0
+
+                        subset = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
+                        all_sina_records.extend(subset)
+            except Exception as cat_e:
+                logger.warning(f"Sina category {cat} failed: {cat_e}")
+
+        if not all_sina_records:
+            raise ValueError("Sina returned no records from any category")
+
+        seen: set[str] = set()
+        deduped: List[Dict[str, Any]] = []
+        for r in all_sina_records:
+            if r['code'] not in seen:
+                deduped.append(r)
+                seen.add(r['code'])
+        return deduped
+
+    @staticmethod
+    @track_datasource("ths")
+    def _fetch_etfs_ths() -> List[Dict[str, Any]]:
+        """从同花顺获取 ETF 列表"""
+        df = ak.fund_etf_spot_ths()
+        if df.empty:
+            raise ValueError("THS returned empty DataFrame")
+        df = df.rename(columns={
+            "基金代码": "code",
+            "基金名称": "name",
+            "当前-单位净值": "price"
+        })
+        df["change_pct"] = 0.0
+        df["volume"] = 0.0
+        df["price"] = pd.to_numeric(df["price"], errors="coerce")
+        return cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
+
+    @staticmethod
+    @track_datasource("eastmoney_history")
+    def _fetch_history_eastmoney(code: str, period: str, adjust: str) -> pd.DataFrame:
+        """从东方财富获取历史数据（单次尝试）"""
+        df = ak.fund_etf_hist_em(symbol=code, period=period, adjust=adjust, start_date="20000101", end_date="20500101")
+        if df.empty:
+            raise ValueError(f"EastMoney history returned empty for {code}")
+        df = df.rename(columns={"日期": "date", "开盘": "open", "收盘": "close", "最高": "high", "最低": "low", "成交量": "volume"})
+        return df
+
+    @staticmethod
     def fetch_all_etfs() -> List[Dict]:
-        """获取全市场 ETF 实时行情"""
-        # --- Attempt 1: EastMoney ---
+        """获取全市场 ETF 实时行情（5 级降级链）"""
+        # --- Attempt 1: EastMoney (带重试) ---
         retries = 2
         for i in range(retries):
             try:
-                logger.info(f"Fetching ETF spot data from EastMoney (Attempt {i+1}/{retries})...")
-                df = ak.fund_etf_spot_em()
-                if not df.empty:
-                    df = df.rename(columns={
-                        "代码": "code",
-                        "名称": "name",
-                        "最新价": "price",
-                        "涨跌幅": "change_pct",
-                        "成交额": "volume",
-                    })
-                    df["price"] = pd.to_numeric(df["price"], errors="coerce")
-                    df["change_pct"] = pd.to_numeric(df["change_pct"], errors="coerce")
-                    records = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
-
-                    logger.info(f"Successfully loaded {len(records)} ETFs from EastMoney.")
-                    disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
-                    return records
-            except Exception as e:
-                logger.error(f"EastMoney fetch failed: {e}")
-                # 增加重试间隔，避免触发频率限制（国外服务器需要更长间隔）
-                if i < retries - 1:
-                    logger.info(f"Waiting 60 seconds before retry...")
-                    time.sleep(60)
-
-        # --- Attempt 2: Sina Fallback ---
-        logger.warning("EastMoney failed, trying Sina fallback...")
-        try:
-            sina_categories = ["ETF基金", "QDII基金", "封闭式基金"]
-            all_sina_records: List[Dict[str, Any]] = []
-            for cat in sina_categories:
-                try:
-                    logger.info(f"Fetching {cat} from Sina...")
-                    df = ak.fund_etf_category_sina(symbol=cat)
-                    if df is not None and not df.empty:
-                        col_map = {"代码": "code", "名称": "name", "最新价": "price", "涨跌幅": "change_pct", "成交额": "volume"}
-                        actual_map = {k: v for k, v in col_map.items() if k in df.columns}
-                        df = df.rename(columns=actual_map)
-                        
-                        if "code" in df.columns:
-                            df["code"] = df["code"].astype(str).str.replace("sh", "").str.replace("sz", "")
-                            for col in ["price", "change_pct", "volume"]:
-                                if col not in df.columns:
-                                    df[col] = 0.0
-                            
-                            subset = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
-                            all_sina_records.extend(subset)
-                except Exception as cat_e:
-                    logger.warning(f"Sina category {cat} failed: {cat_e}")
-            
-            if all_sina_records:
-                seen: set[str] = set()
-                deduped: List[Dict[str, Any]] = []
-                for r in all_sina_records:
-                    if r['code'] not in seen:
-                        deduped.append(r)
-                        seen.add(r['code'])
-                
-                logger.info(f"Successfully loaded {len(deduped)} ETFs from Sina.")
-                disk_cache.set(ETF_LIST_CACHE_KEY, deduped, expire=86400)
-                return deduped
-        except Exception as e:
-            logger.error(f"Sina fetch failed: {e}")
-
-        # --- Attempt 3: THS Fallback ---
-        logger.warning("Sina failed, trying THS fallback...")
-        try:
-            logger.info("Fetching ETF spot data from THS...")
-            df = ak.fund_etf_spot_ths()
-            if not df.empty:
-                df = df.rename(columns={
-                    "基金代码": "code",
-                    "基金名称": "name",
-                    "当前-单位净值": "price"
-                })
-                df["change_pct"] = 0.0
-                df["volume"] = 0.0
-                df["price"] = pd.to_numeric(df["price"], errors="coerce")
-                
-                records = cast(List[Dict[str, Any]], df[["code", "name", "price", "change_pct", "volume"]].to_dict(orient="records"))
-                
-                logger.info(f"Successfully loaded {len(records)} ETFs from THS.")
+                records = AkShareService._fetch_etfs_eastmoney()
                 disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
                 return records
-        except Exception as e:
-            logger.error(f"THS fetch failed: {e}")
+            except Exception:
+                if i < retries - 1:
+                    logger.info("Waiting 60 seconds before retry...")
+                    time.sleep(60)
+
+        # --- Attempt 2: Sina ---
+        logger.warning("EastMoney failed, trying Sina fallback...")
+        try:
+            records = AkShareService._fetch_etfs_sina()
+            disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
+            return records
+        except Exception:
+            pass
+
+        # --- Attempt 3: THS ---
+        logger.warning("Sina failed, trying THS fallback...")
+        try:
+            records = AkShareService._fetch_etfs_ths()
+            disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
+            return records
+        except Exception:
+            pass
 
         # --- Attempt 4: Disk Cache ---
-        logger.warning("All online fetches failed. Attempting to load from disk cache...")
+        logger.warning("All online sources failed. Attempting disk cache...")
+        # 触发管理员告警
+        try:
+            from app.services.admin_alert_service import admin_alert_service
+            admin_alert_service.send_admin_alert_sync(
+                "all_sources_down",
+                "EastMoney、Sina、THS 均获取失败，当前使用磁盘缓存/本地兜底数据"
+            )
+        except Exception as alert_err:
+            logger.error(f"Failed to send admin alert: {alert_err}")
+
         cached_list = cast(List[Dict[str, Any]], disk_cache.get(ETF_LIST_CACHE_KEY))
         if cached_list and len(cached_list) > 20:
             logger.info(f"Restored {len(cached_list)} ETFs from disk cache.")
             return cached_list
-        
+
         # --- Attempt 5: Fallback JSON ---
         logger.warning("Disk cache empty or stale. Loading fallback JSON...")
         return AkShareService.load_fallback_data()
@@ -248,17 +278,13 @@ class AkShareService:
         retries = 3
         for attempt in range(retries):
             try:
-                logger.info(f"Fetching history for {code} adjust={adjust} from EastMoney (attempt {attempt + 1}/{retries})")
-                df = ak.fund_etf_hist_em(symbol=code, period=period, adjust=adjust, start_date="20000101", end_date="20500101")
-                if not df.empty:
-                    df = df.rename(columns={"日期": "date", "开盘": "open", "收盘": "close", "最高": "high", "最低": "low", "成交量": "volume"})
-                    disk_cache.set(cache_key, df, expire=604800)  # 7 天缓存
-                    disk_cache.set(fallback_key, df)  # 永不过期的兜底缓存
-                    return df
-            except Exception as e:
-                logger.warning(f"EastMoney history attempt {attempt + 1} failed for {code}: {e}")
+                df = AkShareService._fetch_history_eastmoney(code, period, adjust)
+                disk_cache.set(cache_key, df, expire=604800)  # 7 天缓存
+                disk_cache.set(fallback_key, df)  # 永不过期的兜底缓存
+                return df
+            except Exception:
                 if attempt < retries - 1:
-                    logger.info(f"Waiting 60 seconds before retry...")
+                    logger.info("Waiting 60 seconds before retry...")
                     time.sleep(60)
 
         # --- Fallback: 过期磁盘缓存 ---

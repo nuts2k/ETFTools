@@ -6,6 +6,9 @@ import logging
 import requests
 import uvicorn
 
+from app.core.logging_config import setup_logging
+setup_logging()
+
 from app.core.config import settings
 from app.core.cache import etf_cache
 from app.core.database import create_db_and_tables
@@ -18,8 +21,6 @@ from app.api.v1.api import api_router
 from app.middleware.rate_limit import limiter, rate_limit_handler
 from slowapi.errors import RateLimitExceeded
 
-# Setup logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def load_initial_data():
@@ -104,11 +105,21 @@ async def root():
 
 @app.get("/api/v1/health")
 async def health_check():
+    from app.core.metrics import datasource_metrics
     return {
         "status": "ok",
         "version": settings.VERSION,
         "data_ready": etf_cache.is_initialized,
-        "environment": settings.ENVIRONMENT
+        "environment": settings.ENVIRONMENT,
+        "datasource_status": datasource_metrics.get_overall_status(),
+    }
+
+@app.get("/api/v1/health/datasources")
+async def datasource_health():
+    from app.core.metrics import datasource_metrics
+    return {
+        "status": datasource_metrics.get_overall_status(),
+        "sources": datasource_metrics.get_summary(),
     }
 
 if __name__ == "__main__":

@@ -10,6 +10,8 @@
 |---------|---------|------|
 | **应用入口** | `backend/app/main.py` | CORS 配置、生命周期管理 |
 | **核心配置** | `backend/app/core/config.py` | 环境变量、SECRET_KEY |
+| **日志配置** | `backend/app/core/logging_config.py` | 集中日志格式和输出配置 |
+| **数据源指标** | `backend/app/core/metrics.py` | 数据源成功率、延迟追踪 |
 | **数据库** | `backend/app/core/database.py` | SQLite 连接和会话管理 |
 | **缓存管理** | `backend/app/core/cache.py` | DiskCache 配置 |
 | **份额历史数据库** | `backend/app/core/share_history_database.py` | 独立 SQLite 数据库配置 |
@@ -38,6 +40,7 @@
 | **资金流向缓存** | `backend/app/services/fund_flow_cache_service.py` | 资金流向数据缓存（4h TTL） |
 | **份额备份服务** | `backend/app/services/share_history_backup_service.py` | CSV 导出和月度备份 |
 | **对比服务** | `backend/app/services/compare_service.py` | 归一化、相关性、降采样计算 |
+| **管理员告警** | `backend/app/services/admin_alert_service.py` | 数据源故障 Telegram 告警广播 |
 
 ### 1.4 数据模型
 
@@ -123,4 +126,4 @@
 
 ---
 
-**最后更新**: 2026-02-11
+**最后更新**: 2026-02-16
