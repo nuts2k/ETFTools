@@ -231,3 +231,46 @@ class TestTrackDatasourceDecorator:
             pass
 
         assert my_function.__name__ == "my_function"
+
+
+class TestCircuitBreaker:
+    def test_not_open_for_unknown_source(self, metrics):
+        assert metrics.is_circuit_open("nonexistent") is False
+
+    def test_not_open_with_insufficient_data(self, metrics):
+        """数据不足 window 大小时不触发熔断"""
+        for _ in range(5):
+            metrics.record_failure("src", "err", 10.0)
+        assert metrics.is_circuit_open("src", threshold=0.1, window=10) is False
+
+    def test_opens_when_below_threshold(self, metrics):
+        """成功率低于阈值时开启熔断"""
+        for _ in range(10):
+            metrics.record_failure("src", "err", 10.0)
+        assert metrics.is_circuit_open("src", threshold=0.1, window=10) is True
+
+    def test_stays_open_during_cooldown(self, metrics):
+        """熔断冷却期内保持开启"""
+        for _ in range(10):
+            metrics.record_failure("src", "err", 10.0)
+        metrics.is_circuit_open("src", threshold=0.1, window=10, cooldown=300)
+        # 立即再次检查，仍然开启
+        assert metrics.is_circuit_open("src", threshold=0.1, window=10, cooldown=300) is True
+
+    def test_half_open_after_cooldown(self, metrics):
+        """冷却期过后进入半开状态（允许探测）"""
+        for _ in range(10):
+            metrics.record_failure("src", "err", 10.0)
+        metrics.is_circuit_open("src", threshold=0.1, window=10, cooldown=0)
+        # cooldown=0 立即过期，应允许探测
+        import time
+        time.sleep(0.01)
+        assert metrics.is_circuit_open("src", threshold=0.1, window=10, cooldown=0) is False
+
+    def test_not_open_when_above_threshold(self, metrics):
+        """成功率高于阈值时不触发"""
+        for _ in range(8):
+            metrics.record_success("src", 10.0)
+        for _ in range(2):
+            metrics.record_failure("src", "err", 10.0)
+        assert metrics.is_circuit_open("src", threshold=0.1, window=10) is False
