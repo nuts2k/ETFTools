@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.4.5] - 2026-02-16
+
+### 新增
+
+- 添加同花顺历史数据源 ThsHistorySource 作为 EastMoney 的降级备选
+- delegate fetch_history_raw to DataSourceManager
+- Phase 2 数据源实现 — BaostockSource, EastMoneyHistorySource, DataSourceManager
+- Phase 2 基础设施 — 配置项、熔断逻辑、数据源协议
+- Phase 1 日志系统优化 + 监控告警
+- add id and name attributes to form inputs
+
+### 修复
+
+- 限制 Next.js 堆内存到 128MB 以降低容器 OOM 风险
+- code review 修复 — 线程安全、去重metrics、HTTPS、is_available
+- disable Baostock by default — it doesn't support ETF funds
+- 实时行情降级链优先使用 Sina，去掉 EastMoney 120秒重试等待
+
+
 ## [0.4.4] - 2026-02-13
 
 ### 新增
