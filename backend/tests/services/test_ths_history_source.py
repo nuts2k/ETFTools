@@ -63,11 +63,13 @@ class TestThsHistorySourceFetch:
         assert source.fetch_history("510300", "2024-01-01", "2024-12-31") is None
 
     @patch("app.services.ths_history_source.requests.get")
-    def test_network_exception(self, mock_get):
+    def test_network_exception_propagates(self, mock_get):
+        """网络异常向上抛出，由 DataSourceManager 统一处理"""
         mock_get.side_effect = Exception("connection refused")
 
         source = ThsHistorySource()
-        assert source.fetch_history("510300", "2024-01-01", "2024-12-31") is None
+        with pytest.raises(Exception, match="connection refused"):
+            source.fetch_history("510300", "2024-01-01", "2024-12-31")
 
     @patch("app.services.ths_history_source.requests.get")
     def test_date_filtering(self, mock_get):

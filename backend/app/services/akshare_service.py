@@ -84,11 +84,14 @@ def _build_history_manager() -> DataSourceManager:
     )
 
 _history_manager: Optional[DataSourceManager] = None
+_history_manager_lock = threading.Lock()
 
 def _get_history_manager() -> DataSourceManager:
     global _history_manager
     if _history_manager is None:
-        _history_manager = _build_history_manager()
+        with _history_manager_lock:
+            if _history_manager is None:
+                _history_manager = _build_history_manager()
     return _history_manager
 
 

@@ -6,7 +6,10 @@
 """
 import logging
 import time
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
+
+if TYPE_CHECKING:
+    from app.services.datasource_protocol import HistoryDataSource
 
 import pandas as pd
 
@@ -20,7 +23,7 @@ class DataSourceManager:
 
     def __init__(
         self,
-        sources: List,
+        sources: "List[HistoryDataSource]",
         metrics: Optional[DataSourceMetrics] = None,
         cb_threshold: float = 0.1,
         cb_window: int = 10,
@@ -40,6 +43,11 @@ class DataSourceManager:
         adjust: str = "qfq",
     ) -> Optional[pd.DataFrame]:
         for source in self._sources:
+            # 可用性检查
+            if not source.is_available():
+                logger.info("[%s] not available, skipping", source.name)
+                continue
+
             # 熔断检查
             if self._metrics.is_circuit_open(
                 source.name,

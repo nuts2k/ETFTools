@@ -6,13 +6,10 @@ URL 中 01 = 日K前复权，返回上市至今全部数据。
 """
 import json
 import logging
-import time
 from typing import Optional
 
 import pandas as pd
 import requests
-
-from app.core.metrics import datasource_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +40,8 @@ def _parse_ths_response(text: str) -> Optional[pd.DataFrame]:
         for col in ["open", "high", "low", "close", "volume", "amount"]:
             df[col] = pd.to_numeric(df[col], errors="coerce")
         return df
-    except Exception:
+    except Exception as e:
+        logger.debug("[ths_history] failed to parse response: %s", e)
         return None
 
 
@@ -62,43 +60,28 @@ class ThsHistorySource:
         # 01=日K前复权, 00=不复权, 02=后复权
         fq_map = {"qfq": "01", "hfq": "02", "": "00"}
         fq = fq_map.get(adjust, "01")
-        url = f"http://d.10jqka.com.cn/v6/line/hs_{code}/{fq}/last36000.js"
+        url = f"https://d.10jqka.com.cn/v6/line/hs_{code}/{fq}/last36000.js"
 
-        start = time.monotonic()
-        try:
-            resp = requests.get(url, headers=_HEADERS, timeout=10)
-            if resp.status_code != 200:
-                latency = (time.monotonic() - start) * 1000
-                datasource_metrics.record_failure(self.name, f"HTTP {resp.status_code}", latency)
-                logger.warning("[ths_history] HTTP %d for %s", resp.status_code, code)
-                return None
-
-            df = _parse_ths_response(resp.text)
-            if df is None or df.empty:
-                latency = (time.monotonic() - start) * 1000
-                datasource_metrics.record_failure(self.name, f"empty result for {code}", latency)
-                return None
-
-            # 日期范围过滤
-            sd = start_date.replace("-", "")
-            ed = end_date.replace("-", "")
-            sd_fmt = f"{sd[:4]}-{sd[4:6]}-{sd[6:8]}" if len(sd) == 8 else start_date
-            ed_fmt = f"{ed[:4]}-{ed[4:6]}-{ed[6:8]}" if len(ed) == 8 else end_date
-            df = df[(df["date"] >= sd_fmt) & (df["date"] <= ed_fmt)]
-
-            if df.empty:
-                latency = (time.monotonic() - start) * 1000
-                datasource_metrics.record_failure(self.name, f"no data in range for {code}", latency)
-                return None
-
-            latency = (time.monotonic() - start) * 1000
-            datasource_metrics.record_success(self.name, latency)
-            return df.reset_index(drop=True)
-        except Exception as e:
-            latency = (time.monotonic() - start) * 1000
-            datasource_metrics.record_failure(self.name, str(e), latency)
-            logger.warning("[ths_history] failed for %s: %s", code, e)
+        resp = requests.get(url, headers=_HEADERS, timeout=10)
+        if resp.status_code != 200:
+            logger.warning("[ths_history] HTTP %d for %s", resp.status_code, code)
             return None
+
+        df = _parse_ths_response(resp.text)
+        if df is None or df.empty:
+            return None
+
+        # 日期范围过滤
+        sd = start_date.replace("-", "")
+        ed = end_date.replace("-", "")
+        sd_fmt = f"{sd[:4]}-{sd[4:6]}-{sd[6:8]}" if len(sd) == 8 else start_date
+        ed_fmt = f"{ed[:4]}-{ed[4:6]}-{ed[6:8]}" if len(ed) == 8 else end_date
+        df = df[(df["date"] >= sd_fmt) & (df["date"] <= ed_fmt)]
+
+        if df.empty:
+            return None
+
+        return df.reset_index(drop=True)
 
     def is_available(self) -> bool:
         return True

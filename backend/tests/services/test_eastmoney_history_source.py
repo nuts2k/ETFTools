@@ -42,7 +42,9 @@ class TestEastMoneyHistorySourceFetch:
         assert source.fetch_history("510300", "2024-01-01", "2024-12-31") is None
 
     @patch("app.services.eastmoney_history_source.ak")
-    def test_exception_returns_none(self, mock_ak):
+    def test_exception_propagates(self, mock_ak):
+        """异常向上抛出，由 DataSourceManager 统一处理"""
         mock_ak.fund_etf_hist_em.side_effect = Exception("connection refused")
         source = EastMoneyHistorySource()
-        assert source.fetch_history("510300", "2024-01-01", "2024-12-31") is None
+        with pytest.raises(Exception, match="connection refused"):
+            source.fetch_history("510300", "2024-01-01", "2024-12-31")
