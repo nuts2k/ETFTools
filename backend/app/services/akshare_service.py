@@ -164,20 +164,7 @@ class AkShareService:
     @staticmethod
     def fetch_all_etfs() -> List[Dict]:
         """获取全市场 ETF 实时行情（5 级降级链）"""
-        # --- Attempt 1: EastMoney (带重试) ---
-        retries = 2
-        for i in range(retries):
-            try:
-                records = AkShareService._fetch_etfs_eastmoney()
-                disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
-                return records
-            except Exception:
-                if i < retries - 1:
-                    logger.info("Waiting 60 seconds before retry...")
-                    time.sleep(60)
-
-        # --- Attempt 2: Sina ---
-        logger.warning("EastMoney failed, trying Sina fallback...")
+        # --- Attempt 1: Sina（成功率最高） ---
         try:
             records = AkShareService._fetch_etfs_sina()
             disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
@@ -185,8 +172,17 @@ class AkShareService:
         except Exception:
             pass
 
+        # --- Attempt 2: EastMoney（单次尝试，不等待） ---
+        logger.warning("Sina failed, trying EastMoney fallback...")
+        try:
+            records = AkShareService._fetch_etfs_eastmoney()
+            disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
+            return records
+        except Exception:
+            pass
+
         # --- Attempt 3: THS ---
-        logger.warning("Sina failed, trying THS fallback...")
+        logger.warning("EastMoney failed, trying THS fallback...")
         try:
             records = AkShareService._fetch_etfs_ths()
             disk_cache.set(ETF_LIST_CACHE_KEY, records, expire=86400)
