@@ -73,6 +73,9 @@ def _build_history_manager() -> DataSourceManager:
         elif name == "eastmoney":
             from app.services.eastmoney_history_source import EastMoneyHistorySource
             sources.append(EastMoneyHistorySource())
+        elif name == "ths_history":
+            from app.services.ths_history_source import ThsHistorySource
+            sources.append(ThsHistorySource())
     return DataSourceManager(
         sources=sources,
         cb_threshold=settings.CIRCUIT_BREAKER_THRESHOLD,

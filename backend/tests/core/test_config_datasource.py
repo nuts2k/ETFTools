@@ -7,7 +7,7 @@ class TestDataSourceConfig:
     def test_default_history_sources(self):
         """默认历史数据源优先级列表"""
         from app.core.config import settings
-        assert settings.HISTORY_DATA_SOURCES == ["eastmoney"]
+        assert settings.HISTORY_DATA_SOURCES == ["eastmoney", "ths_history"]
 
     def test_baostock_disabled_default(self):
         """Baostock 默认关闭（不支持 ETF）"""
