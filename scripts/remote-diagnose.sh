@@ -1,6 +1,11 @@
 #!/bin/bash
 # ETFTool 远程诊断脚本
 # 用于快速检查远程服务器上的 ETFTool 容器状态
+#
+# 用法:
+#   ./remote-diagnose.sh           # 使用默认服务器
+#   ./remote-diagnose.sh prod      # 指定服务器名称
+#   ./remote-diagnose.sh --list    # 列出所有可用服务器
 
 set -e
 
@@ -25,27 +30,86 @@ if [ ! -f "$CONFIG_FILE" ]; then
     exit 1
 fi
 
-# 读取配置文件
+# 检查 jq 是否安装
 if ! command -v jq &> /dev/null; then
-    echo -e "${YELLOW}警告: 未安装 jq，使用简单的 grep 解析配置${NC}"
-    REMOTE_HOST=$(grep -o '"ssh_host"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" | cut -d'"' -f4)
-    CONTAINER_NAME=$(grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' "$CONFIG_FILE" | tail -1 | cut -d'"' -f4)
-else
-    REMOTE_HOST=$(jq -r '.server.ssh_host' "$CONFIG_FILE")
-    CONTAINER_NAME=$(jq -r '.container.name' "$CONFIG_FILE")
-fi
-
-# 验证配置
-if [ -z "$REMOTE_HOST" ] || [ -z "$CONTAINER_NAME" ]; then
-    echo -e "${RED}错误: 配置文件格式不正确${NC}"
-    echo "请检查 $CONFIG_FILE 的内容"
+    echo -e "${RED}错误: 需要安装 jq 来解析多服务器配置${NC}"
+    echo -e "${YELLOW}安装方法:${NC}"
+    echo "  macOS: brew install jq"
+    echo "  Ubuntu/Debian: sudo apt-get install jq"
+    echo "  CentOS/RHEL: sudo yum install jq"
     exit 1
 fi
+
+# 列出所有服务器
+list_servers() {
+    echo -e "${BLUE}========================================${NC}"
+    echo -e "${BLUE}可用的服务器列表${NC}"
+    echo -e "${BLUE}========================================${NC}"
+
+    DEFAULT_SERVER=$(jq -r '.default_server // "未设置"' "$CONFIG_FILE")
+    echo -e "${YELLOW}默认服务器: $DEFAULT_SERVER${NC}"
+    echo ""
+
+    jq -r '.servers | to_entries[] | "\(.key)\t\(.value.server.description // "无描述")\t\(.value.server.hostname)"' "$CONFIG_FILE" | \
+    while IFS=$'\t' read -r name desc hostname; do
+        if [ "$name" = "$DEFAULT_SERVER" ]; then
+            echo -e "${GREEN}* $name${NC} - $desc ($hostname)"
+        else
+        echo -e "  $name - $desc ($hostname)"
+        fi
+    done
+    echo ""
+    echo "用法: ./remote-diagnose.sh [服务器名称]"
+}
+
+# 处理命令行参数
+if [ "$1" = "--list" ] || [ "$1" = "-l" ]; then
+    list_servers
+    exit 0
+fi
+
+# 确定要使用的服务器
+if [ -n "$1" ]; then
+    SERVER_NAME="$1"
+else
+    SERVER_NAME=$(jq -r '.default_server' "$CONFIG_FILE")
+    if [ "$SERVER_NAME" = "null" ] || [ -z "$SERVER_NAME" ]; then
+        echo -e "${RED}错误: 未指定服务器且配置文件中没有设置 default_server${NC}"
+        echo -e "${YELLOW}请使用以下方式之一:${NC}"
+        echo "  1. 指定服务器名称: ./remote-diagnose.sh prod"
+        echo "  2. 查看可用服务器: ./remote-diagnose.sh --list"
+        echo "  3. 在配置文件中设置 default_server"
+        exit 1
+    fi
+fi
+
+# 读取服务器配置
+SERVER_CONFIG=$(jq -r ".servers.\"$SERVER_NAME\"" "$CONFIG_FILE")
+if [ "$SERVER_CONFIG" = "null" ]; then
+    echo -e "${RED}错误: 服务器 '$SERVER_NAME' 不存在${NC}"
+    echo -e "${YELLOW}可用的服务器:${NC}"
+    jq -r '.servers | keys[]' "$CONFIG_FILE" | sed 's/^/  /'
+    exit 1
+fi
+
+# 提取配置信息
+REMOTE_HOST=$(echo "$SERVER_CONFIG" | jq -r '.server.ssh_host')
+CONTAINER_NAME=$(echo "$SERVER_CONFIG" | jq -r '.container.name')
+SERVER_DESC=$(echo "$SERVER_CONFIG" | jq -r '.server.description // "无描述"')
+
+# 验证配置
+if [ -z "$REMOTE_HOST" ] || [ "$REMOTE_HOST" = "null" ] || [ -z "$CONTAINER_NAME" ] || [ "$CONTAINER_NAME" = "null" ]; then
+    echo -e "${RED}错误: 服务器 '$SERVER_NAME' 的配置不完整${NC}"
+    echo "请检查 $CONFIG_FILE 中的配置"
+    exit 1
+fi
+
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}ETFTool 远程诊断工具${NC}"
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}服务器: $REMOTE_HOST${NC}"
+echo -e "${BLUE}服务器: $SERVER_NAME ($SERVER_DESC)${NC}"
+echo -e "${BLUE}SSH Host: $REMOTE_HOST${NC}"
 echo -e "${BLUE}容器: $CONTAINER_NAME${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""

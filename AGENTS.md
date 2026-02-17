@@ -32,7 +32,10 @@
 - 后端: `cd backend && uvicorn app.main:app --reload --port 8000`
 - 前端: `cd frontend && npm run dev`
 
-**远程调试**: `./scripts/remote-diagnose.sh` (快速诊断远程服务器)
+**远程调试**:
+- 单服务器诊断: `./scripts/remote-diagnose.sh [服务器名称]`
+- 批量诊断: `./scripts/remote-diagnose-all.sh`
+- 列出所有服务器: `./scripts/remote-diagnose.sh --list`
 
 ### 3.1 远程调试配置 (Remote Debugging)
 
@@ -44,9 +47,28 @@ cp .remote-config.template.json .remote-config.json
 # 编辑 .remote-config.json 填写真实的服务器信息
 ```
 
+**多服务器配置结构**:
+```json
+{
+  "default_server": "prod",
+  "servers": {
+    "prod": { "server": {...}, "container": {...} },
+    "staging": { "server": {...}, "container": {...} },
+    "backup": { "server": {...}, "container": {...} }
+  }
+}
+```
+
+**使用方法**:
+- 诊断默认服务器: `./scripts/remote-diagnose.sh`
+- 诊断指定服务器: `./scripts/remote-diagnose.sh prod`
+- 诊断所有服务器: `./scripts/remote-diagnose-all.sh`
+- 列出所有服务器: `./scripts/remote-diagnose.sh --list`
+
 **AI 代理使用说明**:
 - 当需要排查远程服务器问题时，AI 代理会自动读取 `.remote-config.json` 获取服务器连接信息
 - 配置文件包含：SSH host、服务器地址、容器名称等
+- 支持多服务器配置，可以指定服务器名称或使用默认服务器
 - 详细的调试命令和排查流程参见 [远程调试文档](docs/deployment/remote-debug.md)
 
 **安全提醒**:

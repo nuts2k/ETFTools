@@ -1,6 +1,6 @@
 # 远程调试配置 (Remote Debugging Configuration)
 
-本文档提供 ETFTool 生产环境的远程调试方法和命令参考，供开发者和 AI 代理使用。
+本文档提供 ETFTool 生产环境的远程调试方法和命令参考，支持多服务器配置，供开发者和 AI 代理使用。
 
 ## ⚠️ 配置说明
 
@@ -16,40 +16,85 @@
 2. **编辑配置文件**，填写你的真实服务器信息:
    ```json
    {
-     "server": {
-       "ssh_host": "your-server-alias",      // SSH config 中的别名
-       "hostname": "your-server.example.com", // 服务器域名或 IP
-       "user": "root",                        // SSH 用户名
-       "description": "生产服务器描述"
-     },
-     "container": {
-       "name": "etftool",                     // Docker 容器名称
-       "image": "your-registry/etftool:latest",
-       "port": "3000",
-       "memory_limit": "256MiB"
+     "default_server": "prod",
+     "servers": {
+       "prod": {
+         "server": {
+           "ssh_host": "your-prod-server",      // SSH config 中的别名
+           "hostname": "prod.example.com",       // 服务器域名或 IP
+           "user": "root",                       // SSH 用户名
+           "description": "生产服务器"
+         },
+         "container": {
+           "name": "etftool",                    // Docker 容器名称
+           "image": "your-registry/etftool:latest",
+           "port": "3000",
+           "memory_limit": "256MiB"
+         }
+       },
+       "staging": {
+         "server": {
+           "ssh_host": "your-staging-server",
+           "hostname": "staging.example.com",
+           "user": "root",
+           "description": "测试服务器"
+         },
+         "container": {
+           "name": "etftool-staging",
+           "image": "your-registry/etftool:staging",
+           "port": "3000",
+           "memory_limit": "256MiB"
+         }
+       }
      }
    }
    ```
 
 3. **确保 SSH 配置正确**:
-   在 `~/.ssh/config` 中添加服务器配置:
+   在 `~/.ssh/config` 中添加所有服务器配置:
    ```
-   Host your-server-alias
-       HostName your-server.example.com
+   Host your-prod-server
+       HostName prod.example.com
+       User root
+       Port 22
+
+   Host your-staging-server
+       HostName staging.example.com
        User root
        Port 22
    ```
 
 4. **验证配置**:
    ```bash
-   ssh your-server-alias "echo 'SSH 连接成功'"
+   # 验证单个服务器
+   ssh your-prod-server "echo 'SSH 连接成功'"
+
+   # 列出所有配置的服务器
+   ./scripts/remote-diagnose.sh --list
    ```
+
+### 多服务器配置说明
+
+**配置结构**:
+- `default_server`: 默认使用的服务器名称（不带参数运行脚本时使用）
+- `servers`: 服务器配置对象，key 为服务器名称，value 为服务器详细配置
+
+**服务器命名建议**:
+- `prod`: 生产环境
+- `staging`: 测试/预发布环境
+- `backup`: 备份服务器
+- `dev`: 开发服务器
+
+**配置最佳实践**:
+- 为每台服务器设置清晰的 `description`，便于识别
+- 使用有意义的容器名称，避免冲突
+- 根据服务器用途设置合适的 `memory_limit`
 
 ### AI 代理使用说明
 
 当 AI 代理需要排查远程服务器问题时，会：
 1. 读取项目根目录的 `.remote-config.json` 文件
-2. 获取服务器连接信息（SSH host、容器名称等）
+2. 根据 `default_server` 或用户指定的服务器名称获取配置
 3. 使用 SSH 连接到远程服务器执行诊断命令
 
 **注意**: `.remote-config.json` 已添加到 `.gitignore`，不会被提交到 Git 仓库。
@@ -58,12 +103,14 @@
 
 以下使用占位符表示，实际值从 `.remote-config.json` 读取：
 
-- **SSH Host**: `${server.ssh_host}`
-- **服务器地址**: `${server.hostname}`
-- **用户**: `${server.user}`
-- **容器名称**: `${container.name}`
-- **容器镜像**: `${container.image}`
-- **端口映射**: `${container.port}`
+- **默认服务器**: `${default_server}`
+- **服务器名称**: `${server_name}` (如: prod, staging, backup)
+- **SSH Host**: `${servers[server_name].server.ssh_host}`
+- **服务器地址**: `${servers[server_name].server.hostname}`
+- **用户**: `${servers[server_name].server.user}`
+- **容器名称**: `${servers[server_name].container.name}`
+- **容器镜像**: `${servers[server_name].container.image}`
+- **端口映射**: `${servers[server_name].container.port}`
 
 ## Docker 容器架构
 
@@ -79,10 +126,20 @@
 
 ## 常用调试命令
 
-以下命令使用 `$SSH_HOST` 和 `$CONTAINER_NAME` 作为占位符，实际使用时需要替换为真实值。
+以下命令使用 `$SSH_HOST`、`$CONTAINER_NAME` 和 `$SERVER_NAME` 作为占位符，实际使用时需要替换为真实值。
+
+**提示**: 使用诊断脚本可以自动处理这些占位符：
+```bash
+# 自动使用配置文件中的值
+./scripts/remote-diagnose.sh prod
+```
 
 ### 1. 查看容器状态
 ```bash
+# 使用脚本（推荐）
+./scripts/remote-diagnose.sh $SERVER_NAME
+
+# 手动执行
 ssh $SSH_HOST "docker ps -a | grep $CONTAINER_NAME"
 ```
 
@@ -217,21 +274,40 @@ ssh $SSH_HOST "docker restart $CONTAINER_NAME"
 当用户要求排查远程服务器问题时，AI 代理应该：
 
 1. **读取配置**: 首先读取 `.remote-config.json` 获取服务器信息
-2. **自动连接**: 使用配置中的 SSH host 连接，无需询问用户
-3. **系统性排查**: 按照以下顺序检查：
+2. **确定目标服务器**:
+   - 如果用户指定了服务器名称（如 "prod", "staging"），使用该服务器
+   - 如果未指定，使用 `default_server` 配置的服务器
+   - 如果需要检查所有服务器，使用批量诊断脚本
+3. **自动连接**: 使用配置中的 SSH host 连接，无需询问用户
+4. **系统性排查**: 按照以下顺序检查：
    - 容器状态（是否运行、健康检查）
    - 资源使用（CPU、内存、磁盘）
    - 最近日志（查找错误信息）
    - 进程状态（Supervisor 管理的三个进程）
-4. **主动分析**: 根据日志和状态信息，主动判断问题原因
-5. **提供建议**: 给出具体的解决方案，而不仅仅是展示信息
+5. **主动分析**: 根据日志和状态信息，主动判断问题原因
+6. **提供建议**: 给出具体的解决方案，而不仅仅是展示信息
+
+**多服务器场景**:
+- 如果问题可能影响多台服务器，使用批量诊断脚本快速检查
+- 发现异常服务器后，使用单服务器诊断脚本深入排查
+- 比较不同服务器的状态，找出差异和问题根源
 
 ## 快速诊断脚本
 
-项目提供了快速诊断脚本 `scripts/remote-diagnose.sh`，会自动从配置文件读取服务器信息：
+项目提供了两个快速诊断脚本，会自动从配置文件读取服务器信息：
+
+### 1. 单服务器诊断
 
 ```bash
+# 使用默认服务器
 ./scripts/remote-diagnose.sh
+
+# 指定服务器名称
+./scripts/remote-diagnose.sh prod
+./scripts/remote-diagnose.sh staging
+
+# 列出所有可用服务器
+./scripts/remote-diagnose.sh --list
 ```
 
 该脚本会检查：
@@ -240,6 +316,24 @@ ssh $SSH_HOST "docker restart $CONTAINER_NAME"
 - 资源使用情况（CPU、内存）
 - 进程状态
 - 最近的日志
+
+### 2. 批量服务器诊断
+
+```bash
+# 诊断所有配置的服务器
+./scripts/remote-diagnose-all.sh
+```
+
+该脚本会：
+- 遍历所有配置的服务器
+- 并行检查每台服务器的状态
+- 显示汇总报告（正常/异常服务器数量）
+- 如果有异常，提示使用单服务器诊断查看详情
+
+**使用场景**:
+- 快速检查所有服务器的健康状态
+- 定期巡检（可配置 cron 任务）
+- 部署后验证所有服务器是否正常
 
 ## 注意事项
 
@@ -260,5 +354,6 @@ ssh $SSH_HOST "docker restart $CONTAINER_NAME"
 - 定期更新 SSH 密钥和服务器访问凭证
 
 ---
-**最后更新**: 2026-02-13
+**最后更新**: 2026-02-17
 **维护者**: AI Agent (Claude Code)
+**版本**: v2.0 (支持多服务器配置)
