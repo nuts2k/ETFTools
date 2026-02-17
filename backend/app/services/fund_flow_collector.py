@@ -269,7 +269,7 @@ class FundFlowCollector:
         logger.info(message)
 
         return {
-            "success": total_collected > 0,
+            "success": True,
             "collected": total_collected,
             "failed": 0 if em_df is not None else 1,
             "message": message,
