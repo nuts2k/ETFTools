@@ -235,11 +235,12 @@ class FundFlowCollector:
         # 3. 获取深交所官方数据
         szse_df = self._fetch_szse_shares(whitelist)
 
-        # 4. 合并数据：SZSE 覆盖 EastMoney 的深市部分
+        # 4. 合并数据：同一 (code, date) 以 SZSE 为准
         if em_df is not None and szse_df is not None:
-            szse_codes = set(szse_df["code"])
+            szse_keys = set(zip(szse_df["code"], szse_df["date"]))
+            em_keep = [k not in szse_keys for k in zip(em_df["code"], em_df["date"])]
             merged_df = pd.concat(
-                [em_df[~em_df["code"].isin(szse_codes)], szse_df],
+                [em_df[em_keep], szse_df],
                 ignore_index=True,
             )
         elif em_df is not None:

@@ -221,7 +221,7 @@ def test_fetch_szse_shares_filters_by_whitelist(sample_szse_data_with_lof):
 
 
 def test_collect_daily_snapshot_new_flow():
-    """测试新的采集流程：白名单 → EastMoney → SZSE 补充"""
+    """测试新的采集流程：同日期时 SZSE 覆盖 EastMoney 深市数据"""
     collector = FundFlowCollector()
 
     whitelist = {"510300", "510500", "159915", "159919"}
@@ -229,7 +229,7 @@ def test_collect_daily_snapshot_new_flow():
     em_df = pd.DataFrame({
         "code": ["510300", "510500", "159915", "159919"],
         "shares": [910.62, 450.30, 320.45, 280.12],
-        "date": ["2026-02-13"] * 4,
+        "date": ["2026-02-17"] * 4,
         "etf_type": [None] * 4,
     })
 
@@ -250,10 +250,45 @@ def test_collect_daily_snapshot_new_flow():
         assert result["success"] is True
         assert result["collected"] == 4
 
-        # 验证 _save_to_database 被调用，且深市数据被 SZSE 覆盖
+        # 验证合并后只有 4 条（SZSE 覆盖了同日期的 EM 深市数据）
         saved_df = mock_save.call_args[0][0]
+        assert len(saved_df) == 4
         szse_159915 = saved_df.loc[saved_df["code"] == "159915", "shares"].iloc[0]
         assert szse_159915 == pytest.approx(321.00, rel=0.01)
+
+
+def test_collect_daily_snapshot_different_dates_kept():
+    """测试不同日期的数据都保留（EM 昨天 + SZSE 今天）"""
+    collector = FundFlowCollector()
+
+    whitelist = {"510300", "159915"}
+
+    em_df = pd.DataFrame({
+        "code": ["510300", "159915"],
+        "shares": [910.62, 320.45],
+        "date": ["2026-02-14"] * 2,
+        "etf_type": [None] * 2,
+    })
+
+    szse_df = pd.DataFrame({
+        "code": ["159915"],
+        "shares": [321.00],
+        "date": ["2026-02-17"],
+        "etf_type": ["ETF"],
+    })
+
+    with patch.object(collector, "_build_etf_whitelist", return_value=whitelist), \
+         patch.object(collector, "_fetch_em_shares", return_value=em_df), \
+         patch.object(collector, "_fetch_szse_shares", return_value=szse_df), \
+         patch.object(collector, "_save_to_database", return_value=3) as mock_save:
+
+        result = collector.collect_daily_snapshot()
+
+        # EM 的 159915(02-14) 和 SZSE 的 159915(02-17) 日期不同，都保留
+        saved_df = mock_save.call_args[0][0]
+        assert len(saved_df) == 3
+        codes_159915 = saved_df[saved_df["code"] == "159915"]
+        assert len(codes_159915) == 2
 
 
 def test_collect_daily_snapshot_em_failure_fallback():
