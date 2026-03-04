@@ -172,9 +172,11 @@ sqlite3 etf_share_history.db ".schema etf_share_history"
    - 主入口，依次采集上交所和深交所
    - 返回 `{"success": bool, "collected": int, "failed": int, "message": str}`
 
-2. `_fetch_sse_shares() -> pd.DataFrame`
-   - 调用 `ak.fund_etf_scale_sse()`
-   - 返回原始 DataFrame
+2. `_fetch_sse_shares(whitelist: set) -> pd.DataFrame`
+   - 使用 `requests` 直接调用 SSE 官方 API（`query.sse.com.cn/commonQuery.do`）
+   - 需要 `Referer: https://www.sse.com.cn/` 请求头
+   - 自动向前回溯 5 个工作日，找到有数据的日期
+   - 返回标准化 DataFrame
 
 3. `_fetch_szse_shares() -> pd.DataFrame`
    - 调用 `ak.fund_etf_scale_szse()`
@@ -256,7 +258,7 @@ async def _run_monthly_backup(self):
 **新建**: `backend/tests/services/test_fund_flow_collector.py`
 
 **测试用例**:
-- `test_fetch_sse_shares_success` — Mock `ak.fund_etf_scale_sse()`，验证返回 DataFrame
+- `test_fetch_sse_shares_success` — Mock `requests.get`，验证 SSE API 返回 DataFrame
 - `test_fetch_szse_shares_success` — Mock `ak.fund_etf_scale_szse()`
 - `test_save_to_database` — 使用内存 SQLite，验证数据正确写入
 - `test_save_to_database_dedup` — 插入相同数据两次，验证不重复
