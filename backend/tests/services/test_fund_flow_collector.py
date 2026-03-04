@@ -325,3 +325,126 @@ def test_collect_daily_snapshot_whitelist_failure():
 
         assert result["success"] is False
         assert result["collected"] == 0
+
+
+# --- SSE 数据源测试 ---
+
+from unittest.mock import MagicMock
+import json
+
+
+@pytest.fixture
+def sample_sse_api_response():
+    """模拟 SSE 官方 API 返回的 JSON 响应"""
+    return {
+        "result": [
+            {"SEC_CODE": "510300", "TOT_VOL": "9106200.00", "STAT_DATE": "2026-03-03", "ETF_TYPE": "股票ETF"},
+            {"SEC_CODE": "510500", "TOT_VOL": "4503000.00", "STAT_DATE": "2026-03-03", "ETF_TYPE": "股票ETF"},
+            {"SEC_CODE": "159915", "TOT_VOL": "3204500.00", "STAT_DATE": "2026-03-03", "ETF_TYPE": "股票ETF"},
+            {"SEC_CODE": "511260", "TOT_VOL": "500000.00", "STAT_DATE": "2026-03-03", "ETF_TYPE": "债券ETF"},
+        ],
+        "success": "true",
+    }
+
+
+def _mock_sse_response(json_data, status_code=200):
+    """构造 mock 的 requests.Response 对象"""
+    resp = MagicMock()
+    resp.status_code = status_code
+    resp.json.return_value = json_data
+    resp.raise_for_status = MagicMock()
+    return resp
+
+
+def test_fetch_sse_shares_success(sample_sse_api_response):
+    """测试成功获取 SSE 份额数据"""
+    collector = FundFlowCollector()
+    whitelist = {"510300", "510500", "159915", "511260"}
+
+    with patch("app.services.fund_flow_collector.requests.get",
+               return_value=_mock_sse_response(sample_sse_api_response)):
+        result = collector._fetch_sse_shares(whitelist)
+
+    assert result is not None
+    assert len(result) == 4
+    assert "code" in result.columns
+    assert "shares" in result.columns
+    assert "date" in result.columns
+    assert "etf_type" in result.columns
+
+
+def test_fetch_sse_shares_unit_conversion(sample_sse_api_response):
+    """测试万份 → 亿份转换：TOT_VOL 9106200 万份 = 910.62 亿份"""
+    collector = FundFlowCollector()
+    whitelist = {"510300", "510500", "159915", "511260"}
+
+    with patch("app.services.fund_flow_collector.requests.get",
+               return_value=_mock_sse_response(sample_sse_api_response)):
+        result = collector._fetch_sse_shares(whitelist)
+
+    row_510300 = result.loc[result["code"] == "510300", "shares"].iloc[0]
+    assert row_510300 == pytest.approx(910.62, rel=0.01)
+
+
+def test_fetch_sse_shares_uses_stat_date(sample_sse_api_response):
+    """测试使用 API 返回的 STAT_DATE 而非 today"""
+    collector = FundFlowCollector()
+    whitelist = {"510300"}
+
+    with patch("app.services.fund_flow_collector.requests.get",
+               return_value=_mock_sse_response(sample_sse_api_response)):
+        result = collector._fetch_sse_shares(whitelist)
+
+    assert result.iloc[0]["date"] == "2026-03-03"
+
+
+def test_fetch_sse_shares_whitelist_filter(sample_sse_api_response):
+    """测试白名单过滤"""
+    collector = FundFlowCollector()
+    whitelist = {"510300", "510500"}  # 只保留 2 个
+
+    with patch("app.services.fund_flow_collector.requests.get",
+               return_value=_mock_sse_response(sample_sse_api_response)):
+        result = collector._fetch_sse_shares(whitelist)
+
+    assert result is not None
+    assert len(result) == 2
+    assert set(result["code"]) == {"510300", "510500"}
+
+
+def test_fetch_sse_shares_date_fallback():
+    """测试日期回溯：当日无数据时回溯到前一天"""
+    collector = FundFlowCollector()
+    whitelist = {"510300"}
+
+    empty_response = {"result": [], "success": "true"}
+    data_response = {
+        "result": [
+            {"SEC_CODE": "510300", "TOT_VOL": "9106200.00", "STAT_DATE": "2026-03-03", "ETF_TYPE": "股票ETF"},
+        ],
+        "success": "true",
+    }
+
+    # 第一次调用（今天）返回空，第二次（昨天）返回数据
+    with patch("app.services.fund_flow_collector.requests.get",
+               side_effect=[
+                   _mock_sse_response(empty_response),
+                   _mock_sse_response(data_response),
+               ]):
+        result = collector._fetch_sse_shares(whitelist)
+
+    assert result is not None
+    assert len(result) == 1
+    assert result.iloc[0]["date"] == "2026-03-03"
+
+
+def test_fetch_sse_shares_retry_on_failure():
+    """测试网络异常时 3 次重试后返回 None"""
+    collector = FundFlowCollector()
+    whitelist = {"510300"}
+
+    with patch("app.services.fund_flow_collector.requests.get",
+               side_effect=Exception("Connection error")):
+        result = collector._fetch_sse_shares(whitelist)
+
+    assert result is None

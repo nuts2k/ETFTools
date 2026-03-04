@@ -13,6 +13,7 @@ from typing import Dict, Any, Optional
 from zoneinfo import ZoneInfo
 
 import pandas as pd
+import requests
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlmodel import Session
@@ -62,6 +63,88 @@ class FundFlowCollector:
         except Exception as e:
             logger.error(f"Failed to build ETF whitelist: {e}")
             return None
+
+    def _fetch_sse_shares(self, whitelist: set) -> Optional[pd.DataFrame]:
+        """
+        从上交所官方 API 获取 ETF 份额数据
+
+        自动向前回溯最近 5 个日期（跳过周末），找到第一个有数据的日期。
+        每个日期请求最多重试 3 次。
+
+        Args:
+            whitelist: ETF 代码白名单
+
+        Returns:
+            标准化 DataFrame（columns: code, shares, date, etf_type），失败时返回 None
+        """
+        from datetime import timedelta
+
+        SSE_API_URL = "https://query.sse.com.cn/commonQuery.do"
+        SSE_HEADERS = {
+            "Referer": "https://www.sse.com.cn/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        }
+
+        today = datetime.now(ZoneInfo("Asia/Shanghai")).date()
+
+        # 向前回溯最近 5 个日期（跳过周末）
+        dates_to_try = []
+        d = today
+        while len(dates_to_try) < 5:
+            if d.weekday() < 5:  # 周一到周五
+                dates_to_try.append(d)
+            d -= timedelta(days=1)
+
+        for target_date in dates_to_try:
+            date_str = target_date.strftime("%Y-%m-%d")
+
+            for attempt in range(3):
+                try:
+                    logger.info(f"Fetching SSE shares for {date_str} (attempt {attempt + 1}/3)...")
+                    resp = requests.get(
+                        SSE_API_URL,
+                        params={
+                            "sqlId": "COMMON_SSE_ZQPZ_ETFZL_XXPL_ETFGM_SEARCH_L",
+                            "STAT_DATE": date_str,
+                        },
+                        headers=SSE_HEADERS,
+                        timeout=30,
+                    )
+                    resp.raise_for_status()
+                    data = resp.json()
+
+                    records = data.get("result", [])
+                    if not records:
+                        logger.info(f"SSE returned no data for {date_str}, trying earlier date...")
+                        break  # 该日期无数据，尝试更早的日期
+
+                    df = pd.DataFrame(records)
+
+                    # 白名单过滤
+                    df = df[df["SEC_CODE"].astype(str).isin(whitelist)]
+
+                    if df.empty:
+                        logger.info(f"SSE data for {date_str} has no whitelisted ETFs")
+                        break
+
+                    # 标准化列名和单位：TOT_VOL 单位为万份，转换为亿份（÷10000）
+                    result = pd.DataFrame({
+                        "code": df["SEC_CODE"].astype(str).values,
+                        "shares": pd.to_numeric(df["TOT_VOL"], errors="coerce") / 1e4,
+                        "date": df["STAT_DATE"].astype(str).values,
+                        "etf_type": df["ETF_TYPE"].astype(str).values if "ETF_TYPE" in df.columns else None,
+                    })
+
+                    logger.info(f"Fetched {len(result)} ETF shares from SSE (date: {date_str})")
+                    return result
+
+                except Exception as e:
+                    logger.warning(f"SSE fetch attempt {attempt + 1} for {date_str} failed: {e}")
+                    if attempt < 2:
+                        time.sleep(3)
+
+        logger.error("Failed to fetch SSE shares after trying 5 dates")
+        return None
 
     def _fetch_em_shares(self, whitelist: set) -> Optional[pd.DataFrame]:
         """
