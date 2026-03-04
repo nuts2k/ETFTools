@@ -176,7 +176,8 @@ def test_fetch_em_shares_returns_none_on_failure():
     """测试 EastMoney 接口失败时返回 None"""
     collector = FundFlowCollector()
 
-    with patch("akshare.fund_etf_spot_em", side_effect=Exception("API error")):
+    with patch("akshare.fund_etf_spot_em", side_effect=Exception("API error")), \
+         patch("app.services.fund_flow_collector.time.sleep"):
         result = collector._fetch_em_shares({"510300"})
 
     assert result is None
@@ -439,12 +440,14 @@ def test_fetch_sse_shares_date_fallback():
 
 
 def test_fetch_sse_shares_retry_on_failure():
-    """测试网络异常时 3 次重试后返回 None"""
+    """测试网络异常时重试后返回 None"""
     collector = FundFlowCollector()
     whitelist = {"510300"}
 
     with patch("app.services.fund_flow_collector.requests.get",
-               side_effect=Exception("Connection error")):
+               side_effect=Exception("Connection error")) as mock_get, \
+         patch("app.services.fund_flow_collector.time.sleep"):
         result = collector._fetch_sse_shares(whitelist)
 
     assert result is None
+    assert mock_get.call_count == 15  # 5 dates x 3 retries each

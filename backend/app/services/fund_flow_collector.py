@@ -8,7 +8,7 @@
 import asyncio
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from zoneinfo import ZoneInfo
 
@@ -77,8 +77,6 @@ class FundFlowCollector:
         Returns:
             标准化 DataFrame（columns: code, shares, date, etf_type），失败时返回 None
         """
-        from datetime import timedelta
-
         SSE_API_URL = "https://query.sse.com.cn/commonQuery.do"
         SSE_HEADERS = {
             "Referer": "https://www.sse.com.cn/",
@@ -117,6 +115,11 @@ class FundFlowCollector:
                     if not records:
                         logger.info(f"SSE returned no data for {date_str}, trying earlier date...")
                         break  # 该日期无数据，尝试更早的日期
+
+                    # 校验响应结构
+                    if "SEC_CODE" not in records[0] or "TOT_VOL" not in records[0]:
+                        logger.error(f"SSE API response structure changed: keys={list(records[0].keys())}")
+                        return None
 
                     df = pd.DataFrame(records)
 
