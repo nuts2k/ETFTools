@@ -1,7 +1,7 @@
 """
 资金流向采集服务
 
-通过 Sina 白名单 + EastMoney 份额 + 深交所补充 三步管线采集 ETF 份额数据，
+通过 Sina 白名单 + 上交所官方 + 深交所官方 三步管线采集 ETF 份额数据，
 使用 APScheduler 定时调度。
 """
 
@@ -146,6 +146,8 @@ class FundFlowCollector:
         logger.error("Failed to fetch SSE shares after trying 5 dates")
         return None
 
+    # [DEPRECATED] 2026-03-04: EastMoney push2 服务器已封锁日本云服务器 IP 段，
+    # 该方法不再被 collect_daily_snapshot() 调用。保留代码供参考。
     def _fetch_em_shares(self, whitelist: set) -> Optional[pd.DataFrame]:
         """
         从 EastMoney 列表接口获取 ETF 份额数据（最多重试 3 次）
@@ -292,8 +294,8 @@ class FundFlowCollector:
 
         流程：
         1. 从 Sina 列表构建 ETF 白名单
-        2. 从 EastMoney 获取份额数据（主力）
-        3. 从深交所官方获取深市数据（补充，覆盖 EastMoney 深市部分）
+        2. 从上交所官方 API 获取沪市份额数据
+        3. 从深交所官方获取深市数据
         4. 合并并保存到数据库
 
         Returns:
@@ -312,22 +314,22 @@ class FundFlowCollector:
                 "message": "Failed to build ETF whitelist",
             }
 
-        # 2. 获取 EastMoney 份额数据
-        em_df = self._fetch_em_shares(whitelist)
+        # 2. 获取上交所官方份额数据
+        sse_df = self._fetch_sse_shares(whitelist)
 
         # 3. 获取深交所官方数据
         szse_df = self._fetch_szse_shares(whitelist)
 
         # 4. 合并数据：同一 (code, date) 以 SZSE 为准
-        if em_df is not None and szse_df is not None:
+        if sse_df is not None and szse_df is not None:
             szse_keys = set(zip(szse_df["code"], szse_df["date"]))
-            em_keep = [k not in szse_keys for k in zip(em_df["code"], em_df["date"])]
+            sse_keep = [k not in szse_keys for k in zip(sse_df["code"], sse_df["date"])]
             merged_df = pd.concat(
-                [em_df[em_keep], szse_df],
+                [sse_df[sse_keep], szse_df],
                 ignore_index=True,
             )
-        elif em_df is not None:
-            merged_df = em_df
+        elif sse_df is not None:
+            merged_df = sse_df
         elif szse_df is not None:
             merged_df = szse_df
         else:
@@ -343,8 +345,8 @@ class FundFlowCollector:
         total_collected = self._save_to_database(merged_df)
 
         sources = []
-        if em_df is not None:
-            sources.append(f"EastMoney: {len(em_df)}")
+        if sse_df is not None:
+            sources.append(f"SSE: {len(sse_df)}")
         if szse_df is not None:
             sources.append(f"SZSE: {len(szse_df)}")
 
@@ -354,7 +356,7 @@ class FundFlowCollector:
         return {
             "success": True,
             "collected": total_collected,
-            "failed": 0 if em_df is not None else 1,
+            "failed": 0 if sse_df is not None else 1,
             "message": message,
         }
 
