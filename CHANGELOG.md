@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.7] - 2026-03-04
+
+### 新增
+
+- switch collect_daily_snapshot() from EastMoney to SSE API
+- add _fetch_sse_shares() method with SSE official API
+
+### 修复
+
+- code review 修复 — mock sleep、响应校验、import 整理
+
+
 ## [0.4.6] - 2026-02-17
 
 ### 新增
