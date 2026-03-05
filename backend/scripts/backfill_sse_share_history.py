@@ -31,7 +31,7 @@ import pandas as pd
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 
-from app.core.share_history_database import share_history_engine
+from app.core.share_history_database import share_history_engine, create_share_history_tables
 from app.models.etf_share_history import ETFShareHistory
 
 logging.basicConfig(
@@ -49,13 +49,14 @@ SSE_HEADERS = {
 
 
 def build_etf_whitelist() -> set:
-    """从 Sina 列表接口构建 ETF 白名单（过滤债券 ETF）"""
+    """从 Sina 列表接口构建 ETF 白名单（过滤债券 ETF），失败时返回 None"""
     import akshare as ak
 
     logger.info("Building ETF whitelist from Sina list...")
     df = ak.fund_etf_category_sina(symbol="ETF基金")
     if df is None or df.empty:
-        raise RuntimeError("Sina ETF list is empty, cannot build whitelist")
+        logger.error("Sina ETF list is empty, cannot build whitelist")
+        return None
 
     df["代码"] = df["代码"].astype(str).str.replace(r"^(sh|sz)", "", regex=True)
 
@@ -223,8 +224,14 @@ def main():
             print(f"  {d}")
         return
 
+    # 确保数据库表已创建（幂等，已有表时不会重建）
+    create_share_history_tables()
+
     # 构建 ETF 白名单
     whitelist = build_etf_whitelist()
+    if whitelist is None:
+        print("错误：无法构建 ETF 白名单，请检查网络连接后重试")
+        sys.exit(1)
 
     # 查询已有日期（跳过优化）
     existing_dates = get_existing_dates(args.start, args.end)
@@ -232,7 +239,8 @@ def main():
 
     # 统计
     total_days = len(weekdays)
-    skipped_days = 0
+    already_in_db_days = 0
+    non_trading_days = 0
     trading_days = 0
     total_inserted = 0
     total_skipped = 0
@@ -243,7 +251,7 @@ def main():
 
         if date_str in existing_dates:
             logger.info(f"[{i}/{total_days}] {date_str} — 已有数据，跳过")
-            skipped_days += 1
+            already_in_db_days += 1
             continue
 
         try:
@@ -251,7 +259,7 @@ def main():
 
             if df.empty:
                 logger.info(f"[{i}/{total_days}] {date_str} — 非交易日或无数据，跳过")
-                skipped_days += 1
+                non_trading_days += 1
             else:
                 inserted, skipped = save_to_database(df)
                 trading_days += 1
@@ -273,12 +281,13 @@ def main():
     print("\n" + "=" * 60)
     print("补录完成汇总")
     print("=" * 60)
-    print(f"  总工作日数：    {total_days}")
-    print(f"  有效交易日数：  {trading_days}")
-    print(f"  跳过日数：      {skipped_days}")
-    print(f"  失败日数：      {len(failed_dates)}")
-    print(f"  新增记录总数：  {total_inserted}")
-    print(f"  重复跳过总数：  {total_skipped}")
+    print(f"  总工作日数：      {total_days}")
+    print(f"  有效交易日数：    {trading_days}")
+    print(f"  已有数据跳过：    {already_in_db_days}")
+    print(f"  非交易日跳过：    {non_trading_days}")
+    print(f"  请求失败日数：    {len(failed_dates)}")
+    print(f"  新增记录总数：    {total_inserted}")
+    print(f"  重复跳过总数：    {total_skipped}")
     if failed_dates:
         print(f"\n  失败日期：")
         for d in failed_dates:
