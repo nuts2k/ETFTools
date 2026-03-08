@@ -21,6 +21,7 @@
 - [产品需求文档 (PRD)](planning/PRD.md) - 完整的产品需求规格
 - [项目开发计划 (PLAN)](planning/PLAN.md) - 开发路线图和里程碑
 - [功能路线图 (FEATURE-ROADMAP)](planning/FEATURE-ROADMAP.md) - 新功能规划与优先级
+- [到价提醒设计评审](planning/2026-03-08-price-alert-design-review.md) - 到价提醒设计缺陷与修订建议
 
 ### 技术研究
 - [ETF 估值研究](research/etf-valuation-research.md) - ETF 估值方法和指标研究
@@ -35,6 +36,7 @@
 - `PRD.md` - 产品需求文档
 - `PLAN.md` - 项目开发计划
 - `FEATURE-ROADMAP.md` - 新功能规划与优先级路线图
+- `2026-03-08-price-alert-design-review.md` - 到价提醒设计评审与修订清单
 
 ### research/ - 研究类文档
 技术研究、算法分析、业务逻辑研究等。
