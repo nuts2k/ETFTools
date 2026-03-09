@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { Bell, X, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { getTelegramConfig, createPriceAlert, getPriceAlerts } from "@/lib/api"
@@ -122,8 +123,8 @@ export default function PriceAlertButton({
         />
       </button>
 
-      {/* 创建弹窗 */}
-      {showDialog && (
+      {/* 创建弹窗 - 通过 portal 渲染到 body，避免父级 transform 影响 fixed 定位 */}
+      {showDialog && createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
           {/* 遮罩 */}
           <div
@@ -260,7 +261,8 @@ export default function PriceAlertButton({
               </>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

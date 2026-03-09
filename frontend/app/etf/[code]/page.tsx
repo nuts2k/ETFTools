@@ -245,24 +245,22 @@ export default function ETFDetailPage() {
             </>
         )}
         
-        <div className="mt-2 flex flex-col items-center relative">
+        <div className="mt-2 flex flex-col items-center">
           {loading ? (
               <div className="h-12 w-40 bg-secondary/50 animate-pulse rounded-lg mb-2" />
           ) : (
-              <>
+              <div className="flex items-center gap-1">
                 <span className="text-[48px] font-bold tracking-tighter leading-none text-foreground tabular-nums">
                   {info?.price.toFixed(3)}
                 </span>
                 {info && (
-                  <div className="absolute right-0 top-1/2 -translate-y-1/2">
-                    <PriceAlertButton
-                      etfCode={code}
-                      etfName={info.name}
-                      currentPrice={info.price}
-                    />
-                  </div>
+                  <PriceAlertButton
+                    etfCode={code}
+                    etfName={info.name}
+                    currentPrice={info.price}
+                  />
                 )}
-              </>
+              </div>
           )}
           
           {loading ? (
