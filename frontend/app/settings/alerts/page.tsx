@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import PriceAlertList from "@/components/PriceAlertList";
 import {
   getAlertConfig,
   saveAlertConfig,
@@ -305,6 +306,9 @@ export default function AlertsSettingsPage() {
             </div>
           </div>
         </section>
+
+        {/* 到价提醒管理 */}
+        <PriceAlertList />
 
         {/* 操作按钮 */}
         <section className="space-y-3">

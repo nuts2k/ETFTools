@@ -25,6 +25,7 @@
 | **用户认证** | `backend/app/api/v1/endpoints/auth.py` | 注册、登录、JWT |
 | **管理员端点** | `backend/app/api/v1/endpoints/admin.py` | 用户管理、系统配置 |
 | **对比端点** | `backend/app/api/v1/endpoints/compare.py` | ETF 对比 API |
+| **到价提醒端点** | `backend/app/api/v1/endpoints/price_alerts.py` | 到价提醒 CRUD API |
 
 ### 1.3 服务层
 
@@ -41,12 +42,14 @@
 | **份额备份服务** | `backend/app/services/share_history_backup_service.py` | CSV 导出和月度备份 |
 | **对比服务** | `backend/app/services/compare_service.py` | 归一化、相关性、降采样计算 |
 | **管理员告警** | `backend/app/services/admin_alert_service.py` | 数据源故障 Telegram 告警广播 |
+| **到价提醒服务** | `backend/app/services/price_alert_service.py` | 到价提醒业务逻辑（创建/触发/清理） |
 
 ### 1.4 数据模型
 
 | 功能模块 | 文件路径 | 说明 |
 |---------|---------|------|
 | **份额历史模型** | `backend/app/models/etf_share_history.py` | ETF 份额历史数据模型 |
+| **到价提醒模型** | `backend/app/models/price_alert.py` | 到价提醒数据模型 |
 
 ### 1.5 静态配置
 
@@ -74,6 +77,8 @@
 | **图表组件** | `frontend/components/ETFChart.tsx` | Recharts 配置、交互 |
 | **下拉刷新指示器** | `frontend/components/PullToRefreshIndicator.tsx` | 下拉视觉反馈 |
 | **资金流向卡片** | `frontend/components/FundFlowCard.tsx` | 份额规模、排名展示 |
+| **到价提醒按钮** | `frontend/components/PriceAlertButton.tsx` | 详情页铃铛按钮 + 创建弹窗 |
+| **到价提醒列表** | `frontend/components/PriceAlertList.tsx` | 设置页提醒管理列表 |
 
 ### 2.3 Hooks 和上下文
 
@@ -126,4 +131,4 @@
 
 ---
 
-**最后更新**: 2026-02-16
+**最后更新**: 2026-03-09

@@ -20,6 +20,7 @@ import ValuationCard from "@/components/ValuationCard";
 import TrendAnalysisCard from "@/components/TrendAnalysisCard";
 import GridSuggestionCard from "@/components/GridSuggestionCard";
 import FundFlowCard from "@/components/FundFlowCard";
+import PriceAlertButton from "@/components/PriceAlertButton";
 import { useWatchlist } from "@/hooks/use-watchlist";
 import { useSettings } from "@/hooks/use-settings";
 import { cn } from "@/lib/utils";
@@ -194,17 +195,26 @@ export default function ETFDetailPage() {
             <ArrowLeft className="h-6 w-6" />
           </button>
           <h2 className="text-lg font-bold tracking-tight text-foreground">{code}</h2>
-          <button 
-            onClick={toggleWatchlist}
-            className="absolute right-4 flex w-10 h-10 items-center justify-center rounded-full text-foreground hover:bg-secondary transition-colors -mr-2 active:scale-90"
-          >
-            <Star 
-              className={cn(
-                "h-6 w-6 transition-all", 
-                watched ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
-              )} 
-            />
-          </button>
+          <div className="absolute right-4 flex items-center gap-0 -mr-2">
+            {info && (
+              <PriceAlertButton
+                etfCode={code}
+                etfName={info.name}
+                currentPrice={info.price}
+              />
+            )}
+            <button
+              onClick={toggleWatchlist}
+              className="flex w-10 h-10 items-center justify-center rounded-full text-foreground hover:bg-secondary transition-colors active:scale-90"
+            >
+              <Star
+                className={cn(
+                  "h-6 w-6 transition-all",
+                  watched ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                )}
+              />
+            </button>
+          </div>
         </div>
       </header>
 

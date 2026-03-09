@@ -38,6 +38,9 @@
 | `/etf/{code}/fund-flow` | GET | 获取 ETF 资金流向数据（份额规模、排名） |
 | `/admin/fund-flow/collect` | POST | 手动触发份额采集（管理员） |
 | `/admin/fund-flow/export` | POST | 导出份额历史 CSV（管理员） |
+| `/price-alerts` | GET | 获取当前用户的到价提醒列表（支持 `?active_only=true`） |
+| `/price-alerts` | POST | 创建到价提醒（需 Telegram 已验证） |
+| `/price-alerts/{id}` | DELETE | 删除到价提醒（仅限自己的） |
 
 ## 版本信息
 
@@ -45,4 +48,4 @@
 
 ---
 
-**最后更新**: 2026-02-16
+**最后更新**: 2026-03-09
