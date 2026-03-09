@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { createPortal } from "react-dom"
 import { Bell, X, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
@@ -30,6 +30,24 @@ export default function PriceAlertButton({
   const [error, setError] = useState("")
   const [successMsg, setSuccessMsg] = useState("")
   const [telegramConfigured, setTelegramConfigured] = useState<boolean | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // ESC 关闭弹窗
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape" && !isSubmitting) {
+      setShowDialog(false)
+    }
+  }, [isSubmitting])
+
+  useEffect(() => {
+    if (!showDialog) return
+    document.addEventListener("keydown", handleKeyDown)
+    return () => document.removeEventListener("keydown", handleKeyDown)
+  }, [showDialog, handleKeyDown])
 
   // 从目标价和当前价自动推断方向
   useEffect(() => {
@@ -124,7 +142,7 @@ export default function PriceAlertButton({
       </button>
 
       {/* 创建弹窗 - 通过 portal 渲染到 body，避免父级 transform 影响 fixed 定位 */}
-      {showDialog && createPortal(
+      {mounted && showDialog && createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
           {/* 遮罩 */}
           <div

@@ -152,7 +152,7 @@ export default function PriceAlertList() {
             {filter === "active" ? "暂无活跃提醒" : "暂无已触发提醒"}
           </div>
         ) : (
-          <div className="space-y-2 max-h-[420px] overflow-y-auto">
+          <div className="space-y-2 max-h-[50dvh] overflow-y-auto">
             {displayed.map((alert) => (
               <div
                 key={alert.id}

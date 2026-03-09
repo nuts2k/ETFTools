@@ -249,7 +249,7 @@ export default function ETFDetailPage() {
           {loading ? (
               <div className="h-12 w-40 bg-secondary/50 animate-pulse rounded-lg mb-2" />
           ) : (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <span className="text-[48px] font-bold tracking-tighter leading-none text-foreground tabular-nums">
                   {info?.price.toFixed(3)}
                 </span>
