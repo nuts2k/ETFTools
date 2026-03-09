@@ -58,7 +58,7 @@ class PriceAlertResponse(BaseModel):
     etf_code: str
     etf_name: str
     target_price: float
-    direction: str
+    direction: PriceAlertDirection
     note: Optional[str]
     is_triggered: bool
     triggered_at: Optional[datetime]

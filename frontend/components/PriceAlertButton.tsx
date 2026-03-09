@@ -30,14 +30,24 @@ export default function PriceAlertButton({
   const [successMsg, setSuccessMsg] = useState("")
   const [telegramConfigured, setTelegramConfigured] = useState<boolean | null>(null)
 
+  // 从目标价和当前价自动推断方向
+  useEffect(() => {
+    const price = parseFloat(targetPrice)
+    if (!isNaN(price) && price > 0 && currentPrice > 0) {
+      setDirection(price < currentPrice ? "below" : "above")
+    }
+  }, [targetPrice, currentPrice])
+
   // 组件挂载时获取活跃提醒和 Telegram 配置（缓存，避免每次点击都请求）
   useEffect(() => {
     if (!token) return
+    let cancelled = false
     Promise.all([
       getPriceAlerts(token, true),
       getTelegramConfig(token).catch(() => null),
     ])
       .then(([alerts, telegramData]) => {
+        if (cancelled) return
         const has = alerts.some((a) => a.etf_code === etfCode)
         setHasActiveAlert(has)
         setTelegramConfigured(
@@ -45,6 +55,7 @@ export default function PriceAlertButton({
         )
       })
       .catch(() => {})
+    return () => { cancelled = true }
   }, [token, etfCode])
 
   const handleBellClick = async () => {
@@ -66,14 +77,6 @@ export default function PriceAlertButton({
     setNote("")
     setShowDialog(true)
   }
-
-  // 目标价变化时自动推断方向
-  useEffect(() => {
-    const price = parseFloat(targetPrice)
-    if (!isNaN(price) && price > 0 && currentPrice > 0) {
-      setDirection(price < currentPrice ? "below" : "above")
-    }
-  }, [targetPrice, currentPrice])
 
   const handleSubmit = async () => {
     const price = parseFloat(targetPrice)

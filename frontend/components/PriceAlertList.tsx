@@ -22,6 +22,7 @@ export default function PriceAlertList() {
   const [filter, setFilter] = useState<"active" | "triggered">("active")
   const [deletingId, setDeletingId] = useState<number | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [telegramConfigured, setTelegramConfigured] = useState<boolean | null>(null)
 
   const fetchAlerts = useCallback(async () => {
@@ -55,11 +56,12 @@ export default function PriceAlertList() {
     if (!token) return
     setDeletingId(id)
     setConfirmDeleteId(null)
+    setDeleteError(null)
     try {
       await deletePriceAlert(token, id)
       setAlerts((prev) => prev.filter((a) => a.id !== id))
     } catch {
-      // 静默失败
+      setDeleteError("删除失败，请重试")
     } finally {
       setDeletingId(null)
     }
@@ -92,6 +94,13 @@ export default function PriceAlertList() {
       </div>
 
       <div className="bg-card rounded-xl overflow-hidden shadow-sm ring-1 ring-border/50 p-4">
+        {/* 删除错误提示 */}
+        {deleteError && (
+          <div className="p-3 bg-destructive/10 rounded-lg text-sm text-destructive mb-3">
+            {deleteError}
+          </div>
+        )}
+
         {/* Telegram 未配置提示 */}
         {telegramConfigured === false && (
           <div className="p-3 bg-amber-500/10 rounded-lg text-sm mb-3">

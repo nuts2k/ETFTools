@@ -74,42 +74,42 @@ class TestInferDirection:
     """方向自动推断测试"""
 
     def test_target_below_current_infers_below(self):
-        assert PriceAlertService._infer_direction(3.40, 3.52) == "below"
+        assert PriceAlertService._infer_direction(3.40, 3.52) == PriceAlertDirection.BELOW
 
     def test_target_above_current_infers_above(self):
-        assert PriceAlertService._infer_direction(6.20, 6.10) == "above"
+        assert PriceAlertService._infer_direction(6.20, 6.10) == PriceAlertDirection.ABOVE
 
     def test_target_equals_current_is_rejected(self):
         """目标价=当前价时，无论推断方向如何，创建时都会被拒绝"""
         result = PriceAlertService._infer_direction(3.50, 3.50)
-        assert result in ("above", "below")
-        # 无论推断为哪个方向，_is_condition_already_met 都应返回 True
-        assert PriceAlertService._is_condition_already_met(result, 3.50, 3.50) is True
+        assert result in (PriceAlertDirection.ABOVE, PriceAlertDirection.BELOW)
+        # 无论推断为哪个方向，_check_price_condition 都应返回 True
+        assert PriceAlertService._check_price_condition(result, 3.50, 3.50) is True
 
 
-class TestIsConditionAlreadyMet:
+class TestCheckPriceCondition:
     """创建时条件已满足检查"""
 
     def test_below_already_met(self):
         """当前价 3.48 已经 <= 目标价 3.50，条件已满足"""
-        assert PriceAlertService._is_condition_already_met("below", 3.50, 3.48) is True
+        assert PriceAlertService._check_price_condition("below", 3.50, 3.48) is True
 
     def test_below_not_met(self):
         """当前价 3.52 > 目标价 3.50，条件未满足"""
-        assert PriceAlertService._is_condition_already_met("below", 3.50, 3.52) is False
+        assert PriceAlertService._check_price_condition("below", 3.50, 3.52) is False
 
     def test_above_already_met(self):
         """当前价 6.12 已经 >= 目标价 6.10，条件已满足"""
-        assert PriceAlertService._is_condition_already_met("above", 6.10, 6.12) is True
+        assert PriceAlertService._check_price_condition("above", 6.10, 6.12) is True
 
     def test_above_not_met(self):
         """当前价 6.08 < 目标价 6.10，条件未满足"""
-        assert PriceAlertService._is_condition_already_met("above", 6.10, 6.08) is False
+        assert PriceAlertService._check_price_condition("above", 6.10, 6.08) is False
 
     def test_equal_price_is_met(self):
         """当前价=目标价，条件已满足"""
-        assert PriceAlertService._is_condition_already_met("below", 3.50, 3.50) is True
-        assert PriceAlertService._is_condition_already_met("above", 3.50, 3.50) is True
+        assert PriceAlertService._check_price_condition("below", 3.50, 3.50) is True
+        assert PriceAlertService._check_price_condition("above", 3.50, 3.50) is True
 
 
 class TestCreateAlert:

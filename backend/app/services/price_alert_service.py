@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 from sqlmodel import Session, select, col
 from sqlalchemy import delete
 
-from app.models.price_alert import PriceAlert, PriceAlertCreate
+from app.models.price_alert import PriceAlert, PriceAlertCreate, PriceAlertDirection
 
 logger = logging.getLogger(__name__)
 
@@ -20,31 +20,29 @@ class PriceAlertService:
     """到价提醒业务逻辑"""
 
     @staticmethod
-    def _should_trigger(alert: PriceAlert, current_price: float) -> bool:
-        """判断提醒是否应该触发"""
-        if alert.direction == "below":
-            return current_price <= alert.target_price + EPSILON
-        elif alert.direction == "above":
-            return current_price >= alert.target_price - EPSILON
-        return False
-
-    @staticmethod
-    def _infer_direction(target_price: float, current_price: float) -> str:
-        """根据目标价和当前价自动推断方向"""
-        if target_price < current_price:
-            return "below"
-        return "above"
-
-    @staticmethod
-    def _is_condition_already_met(
+    def _check_price_condition(
         direction: str, target_price: float, current_price: float
     ) -> bool:
-        """检查创建时条件是否已满足"""
-        if direction == "below":
+        """检查价格是否满足方向条件（触发判断 & 创建时前置校验共用）"""
+        if direction == PriceAlertDirection.BELOW:
             return current_price <= target_price + EPSILON
-        elif direction == "above":
+        elif direction == PriceAlertDirection.ABOVE:
             return current_price >= target_price - EPSILON
         return False
+
+    @staticmethod
+    def _should_trigger(alert: PriceAlert, current_price: float) -> bool:
+        """判断提醒是否应该触发"""
+        return PriceAlertService._check_price_condition(
+            alert.direction, alert.target_price, current_price
+        )
+
+    @staticmethod
+    def _infer_direction(target_price: float, current_price: float) -> PriceAlertDirection:
+        """根据目标价和当前价自动推断方向"""
+        if target_price < current_price:
+            return PriceAlertDirection.BELOW
+        return PriceAlertDirection.ABOVE
 
     @staticmethod
     def get_active_count(session: Session, user_id: int) -> int:
@@ -99,10 +97,10 @@ class PriceAlertService:
         )
 
         # 3. 检查条件是否已满足
-        if PriceAlertService._is_condition_already_met(
+        if PriceAlertService._check_price_condition(
             direction, data.target_price, current_price
         ):
-            direction_text = "跌破" if direction == "below" else "突破"
+            direction_text = "跌破" if direction == PriceAlertDirection.BELOW else "突破"
             raise ValueError(
                 f"当前价格 {current_price} 已满足该提醒条件"
                 f"（{direction_text} {data.target_price}），无需设置提醒"

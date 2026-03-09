@@ -10,6 +10,14 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 from app.models.alert_config import SignalPriority, SignalItem
+from app.models.price_alert import PriceAlertDirection
+
+
+def _direction_display(direction: str) -> tuple:
+    """返回方向的 (emoji, 文本) 映射"""
+    if direction == PriceAlertDirection.BELOW:
+        return ("⬇️", "跌破")
+    return ("⬆️", "突破")
 
 
 class TelegramNotificationService:
@@ -190,8 +198,7 @@ class TelegramNotificationService:
 
         if len(alerts) == 1:
             a = alerts[0]
-            direction_emoji = "⬇️" if a.direction == "below" else "⬆️"
-            direction_text = "跌破" if a.direction == "below" else "突破"
+            direction_emoji, direction_text = _direction_display(a.direction)
             name = html_escape(a.etf_name)
             msg = "🔔 到价提醒\n\n"
             msg += f"{name} ({a.etf_code})\n"
@@ -203,8 +210,7 @@ class TelegramNotificationService:
         else:
             msg = f"🔔 到价提醒 ({len(alerts)} 个触发)\n"
             for a in alerts:
-                direction_emoji = "⬇️" if a.direction == "below" else "⬆️"
-                direction_text = "跌破" if a.direction == "below" else "突破"
+                direction_emoji, direction_text = _direction_display(a.direction)
                 name = html_escape(a.etf_name)
                 msg += f"\n📌 {name} ({a.etf_code})\n"
                 msg += f"   当前: <b>{a.triggered_price}</b> {direction_emoji} {direction_text} {a.target_price}\n"
