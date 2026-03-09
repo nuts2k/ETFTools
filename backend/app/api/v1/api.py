@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import etf, auth, users, watchlist, notifications, alerts, admin, compare
+from app.api.v1.endpoints import etf, auth, users, watchlist, notifications, alerts, admin, compare, price_alerts
 
 api_router = APIRouter()
 api_router.include_router(etf.router, prefix="/etf", tags=["etf"])
@@ -10,4 +10,5 @@ api_router.include_router(notifications.router, prefix="/notifications", tags=["
 api_router.include_router(alerts.router, prefix="/alerts", tags=["alerts"])
 api_router.include_router(admin.router, prefix="/admin", tags=["admin"])
 api_router.include_router(compare.router, prefix="/etf", tags=["compare"])
+api_router.include_router(price_alerts.router, prefix="/price-alerts", tags=["price-alerts"])
 
