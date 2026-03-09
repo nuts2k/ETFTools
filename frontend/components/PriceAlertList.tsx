@@ -12,6 +12,8 @@ import {
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 
+const MAX_ACTIVE_ALERTS = 20
+
 export default function PriceAlertList() {
   const { token } = useAuth()
   const router = useRouter()
@@ -19,6 +21,7 @@ export default function PriceAlertList() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<"active" | "triggered">("active")
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [telegramConfigured, setTelegramConfigured] = useState<boolean | null>(null)
 
   const fetchAlerts = useCallback(async () => {
@@ -45,8 +48,13 @@ export default function PriceAlertList() {
   }, [fetchAlerts])
 
   const handleDelete = async (id: number) => {
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id)
+      return
+    }
     if (!token) return
     setDeletingId(id)
+    setConfirmDeleteId(null)
     try {
       await deletePriceAlert(token, id)
       setAlerts((prev) => prev.filter((a) => a.id !== id))
@@ -56,6 +64,13 @@ export default function PriceAlertList() {
       setDeletingId(null)
     }
   }
+
+  // 点击其他地方时取消确认状态
+  useEffect(() => {
+    if (confirmDeleteId === null) return
+    const timer = setTimeout(() => setConfirmDeleteId(null), 3000)
+    return () => clearTimeout(timer)
+  }, [confirmDeleteId])
 
   const activeAlerts = alerts.filter((a) => !a.is_triggered)
   const triggeredAlerts = alerts.filter((a) => a.is_triggered)
@@ -71,7 +86,7 @@ export default function PriceAlertList() {
         <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
           到价提醒
           <span className="ml-1.5 normal-case">
-            ({activeAlerts.length}/20)
+            ({activeAlerts.length}/{MAX_ACTIVE_ALERTS})
           </span>
         </h2>
       </div>
@@ -178,10 +193,17 @@ export default function PriceAlertList() {
                   <button
                     onClick={() => handleDelete(alert.id)}
                     disabled={deletingId === alert.id}
-                    className="ml-2 p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                    className={cn(
+                      "ml-2 p-2 rounded-lg transition-colors",
+                      confirmDeleteId === alert.id
+                        ? "bg-destructive/15 text-destructive"
+                        : "hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                    )}
                   >
                     {deletingId === alert.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : confirmDeleteId === alert.id ? (
+                      <span className="text-xs font-medium px-1">确认</span>
                     ) : (
                       <Trash2 className="h-4 w-4" />
                     )}

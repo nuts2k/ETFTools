@@ -79,10 +79,12 @@ class TestInferDirection:
     def test_target_above_current_infers_above(self):
         assert PriceAlertService._infer_direction(6.20, 6.10) == "above"
 
-    def test_target_equals_current_infers_below(self):
-        """目标价=当前价时推断为 below（实际上创建时会被拒绝）"""
+    def test_target_equals_current_is_rejected(self):
+        """目标价=当前价时，无论推断方向如何，创建时都会被拒绝"""
         result = PriceAlertService._infer_direction(3.50, 3.50)
         assert result in ("above", "below")
+        # 无论推断为哪个方向，_is_condition_already_met 都应返回 True
+        assert PriceAlertService._is_condition_already_met(result, 3.50, 3.50) is True
 
 
 class TestIsConditionAlreadyMet:

@@ -196,13 +196,6 @@ export default function ETFDetailPage() {
           </button>
           <h2 className="text-lg font-bold tracking-tight text-foreground">{code}</h2>
           <div className="absolute right-4 flex items-center gap-0 -mr-2">
-            {info && (
-              <PriceAlertButton
-                etfCode={code}
-                etfName={info.name}
-                currentPrice={info.price}
-              />
-            )}
             <button
               onClick={toggleWatchlist}
               className="flex w-10 h-10 items-center justify-center rounded-full text-foreground hover:bg-secondary transition-colors active:scale-90"
@@ -252,13 +245,24 @@ export default function ETFDetailPage() {
             </>
         )}
         
-        <div className="mt-2 flex flex-col items-center">
+        <div className="mt-2 flex flex-col items-center relative">
           {loading ? (
               <div className="h-12 w-40 bg-secondary/50 animate-pulse rounded-lg mb-2" />
           ) : (
-              <span className="text-[48px] font-bold tracking-tighter leading-none text-foreground tabular-nums">
-                {info?.price.toFixed(3)}
-              </span>
+              <>
+                <span className="text-[48px] font-bold tracking-tighter leading-none text-foreground tabular-nums">
+                  {info?.price.toFixed(3)}
+                </span>
+                {info && (
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                    <PriceAlertButton
+                      etfCode={code}
+                      etfName={info.name}
+                      currentPrice={info.price}
+                    />
+                  </div>
+                )}
+              </>
           )}
           
           {loading ? (

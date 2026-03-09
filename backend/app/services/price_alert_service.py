@@ -1,9 +1,10 @@
 """到价提醒业务服务"""
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
 from sqlmodel import Session, select, col
+from sqlalchemy import delete
 
 from app.models.price_alert import PriceAlert, PriceAlertCreate
 
@@ -180,14 +181,11 @@ class PriceAlertService:
         Returns:
             删除的记录数
         """
-        from sqlalchemy import text
-        result = session.exec(
-            text(
-                "DELETE FROM price_alerts "
-                "WHERE is_triggered = 1 "
-                "AND triggered_at < datetime('now', :offset)"
-            ),
-            params={"offset": f"-{days} days"},
+        cutoff = datetime.utcnow() - timedelta(days=days)
+        stmt = delete(PriceAlert).where(
+            PriceAlert.is_triggered == True,  # noqa: E712
+            PriceAlert.triggered_at < cutoff,
         )
+        result = session.exec(stmt)
         session.commit()
         return result.rowcount

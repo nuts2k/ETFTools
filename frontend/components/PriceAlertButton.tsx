@@ -28,14 +28,21 @@ export default function PriceAlertButton({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [successMsg, setSuccessMsg] = useState("")
+  const [telegramConfigured, setTelegramConfigured] = useState<boolean | null>(null)
 
-  // 检查该 ETF 是否有活跃提醒
+  // 组件挂载时获取活跃提醒和 Telegram 配置（缓存，避免每次点击都请求）
   useEffect(() => {
     if (!token) return
-    getPriceAlerts(token, true)
-      .then((alerts) => {
+    Promise.all([
+      getPriceAlerts(token, true),
+      getTelegramConfig(token).catch(() => null),
+    ])
+      .then(([alerts, telegramData]) => {
         const has = alerts.some((a) => a.etf_code === etfCode)
         setHasActiveAlert(has)
+        setTelegramConfigured(
+          !!telegramData?.enabled && !!telegramData?.verified
+        )
       })
       .catch(() => {})
   }, [token, etfCode])
@@ -46,15 +53,8 @@ export default function PriceAlertButton({
       return
     }
 
-    // 检查 Telegram 配置
-    try {
-      const config = await getTelegramConfig(token)
-      if (!config?.enabled || !config?.verified) {
-        setError("请先配置并验证 Telegram 通知")
-        setShowDialog(true)
-        return
-      }
-    } catch {
+    // 使用已缓存的 Telegram 配置状态
+    if (telegramConfigured === false) {
       setError("请先配置并验证 Telegram 通知")
       setShowDialog(true)
       return

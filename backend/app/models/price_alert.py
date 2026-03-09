@@ -38,7 +38,7 @@ class PriceAlert(SQLModel, table=True):
 
 class PriceAlertCreate(BaseModel):
     etf_code: str
-    etf_name: str
+    etf_name: str = PydanticField(max_length=50)
     target_price: float = PydanticField(gt=0)
     direction: Optional[PriceAlertDirection] = None  # 可选，后端自动推断
     note: Optional[str] = PydanticField(default=None, max_length=200)

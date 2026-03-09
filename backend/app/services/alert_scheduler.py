@@ -54,6 +54,7 @@ class AlertScheduler:
             ),
             id="intraday_alert_check",
             replace_existing=True,
+            max_instances=1,
         )
         logger.info("Intraday alert check scheduled: every 30 minutes (09:00-14:30) Beijing Time")
 
@@ -373,18 +374,18 @@ class AlertScheduler:
                 except Exception as e:
                     logger.error(f"Error sending message to user {user_id}: {e}")
 
-            # 步骤 4: 检查到价提醒
-            await self._check_price_alerts()
+        # 步骤 4: 检查到价提醒（使用独立 session，避免与上方 session 嵌套导致 SQLite 锁定）
+        await self._check_price_alerts()
 
-            # 步骤 5: 清理过期的已触发到价提醒（30 天）
-            try:
-                from app.services.price_alert_service import PriceAlertService
-                with Session(engine) as cleanup_session:
-                    deleted = PriceAlertService.cleanup_old_triggered(cleanup_session)
-                    if deleted > 0:
-                        logger.info(f"Cleaned up {deleted} old triggered price alerts")
-            except Exception as e:
-                logger.error(f"Failed to cleanup old price alerts: {e}")
+        # 步骤 5: 清理过期的已触发到价提醒（30 天）
+        try:
+            from app.services.price_alert_service import PriceAlertService
+            with Session(engine) as cleanup_session:
+                deleted = PriceAlertService.cleanup_old_triggered(cleanup_session)
+                if deleted > 0:
+                    logger.info(f"Cleaned up {deleted} old triggered price alerts")
+        except Exception as e:
+            logger.error(f"Failed to cleanup old price alerts: {e}")
 
     async def _run_daily_summary(self) -> None:
         """执行每日摘要推送"""
@@ -671,7 +672,12 @@ class AlertScheduler:
             return await self._send_user_summary(user_id, udata, etf_data)
 
     async def _check_price_alerts(self) -> None:
-        """检查所有活跃的到价提醒并触发通知"""
+        """检查所有活跃的到价提醒并触发通知
+
+        TODO: 盘中检查时应复用 _run_daily_check 已获取的 ETF 价格数据，
+        并将提醒中的 ETF 代码合并到初始价格获取列表中，避免冗余 API 调用。
+        当前实现为独立获取价格，在提醒 ETF 数量少时性能可接受。
+        """
         from app.services.price_alert_service import PriceAlertService
 
         with Session(engine) as session:

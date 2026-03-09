@@ -128,6 +128,36 @@ class TestCreatePriceAlert:
         })
         assert resp.status_code == 422  # Pydantic validation
 
+    @patch("app.api.v1.endpoints.price_alerts._get_current_etf_price")
+    def test_create_rejects_at_quota_limit(self, mock_price, user_client, test_session, regular_user):
+        """API 层验证：第 21 个提醒被拒绝（HTTP 400）"""
+        mock_price.return_value = 100.0
+
+        regular_user.settings = {
+            "telegram": {"enabled": True, "verified": True, "botToken": "enc", "chatId": "123"}
+        }
+        test_session.commit()
+
+        # 预填 20 条活跃提醒
+        for i in range(20):
+            alert = PriceAlert(
+                user_id=regular_user.id,
+                etf_code=f"{510300 + i:06d}",
+                etf_name=f"ETF-{i}",
+                target_price=float(i + 1),
+                direction="below",
+            )
+            test_session.add(alert)
+        test_session.commit()
+
+        resp = user_client.post("/api/v1/price-alerts", json={
+            "etf_code": "510399",
+            "etf_name": "ETF-extra",
+            "target_price": 1.0,
+        })
+        assert resp.status_code == 400
+        assert "上限" in resp.json()["detail"]
+
 
 class TestDeletePriceAlert:
     """DELETE /api/v1/price-alerts/{id}"""

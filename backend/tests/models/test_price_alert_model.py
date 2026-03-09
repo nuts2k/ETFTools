@@ -90,6 +90,22 @@ class TestPriceAlertCreate:
         )
         assert data.note is None
 
+    def test_etf_name_max_50_chars(self):
+        with pytest.raises(ValidationError):
+            PriceAlertCreate(
+                etf_code="510300",
+                etf_name="x" * 51,
+                target_price=3.50,
+            )
+
+    def test_etf_name_50_chars_ok(self):
+        data = PriceAlertCreate(
+            etf_code="510300",
+            etf_name="x" * 50,
+            target_price=3.50,
+        )
+        assert len(data.etf_name) == 50
+
 
 class TestPriceAlertResponse:
     """PriceAlertResponse 模型测试"""

@@ -179,9 +179,11 @@ class TelegramNotificationService:
         from html import escape as html_escape
         from zoneinfo import ZoneInfo
 
-        # 转换为北京时间
+        # 转换为北京时间（naive datetime 视为 UTC 并转换）
         if check_time.tzinfo is None:
-            time_str = check_time.strftime("%Y-%m-%d %H:%M")
+            from datetime import timezone
+            bj_time = check_time.replace(tzinfo=timezone.utc).astimezone(ZoneInfo("Asia/Shanghai"))
+            time_str = bj_time.strftime("%Y-%m-%d %H:%M")
         else:
             bj_time = check_time.astimezone(ZoneInfo("Asia/Shanghai"))
             time_str = bj_time.strftime("%Y-%m-%d %H:%M")
