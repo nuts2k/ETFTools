@@ -6,6 +6,7 @@
 
 from telegram import Bot
 from telegram.error import TelegramError
+from datetime import datetime
 from typing import Dict, Any, List
 
 from app.models.alert_config import SignalPriority, SignalItem
@@ -164,3 +165,48 @@ class TelegramNotificationService:
         lines.append(f"🌡️ {' | '.join(dist_parts)}")
 
         return "\n".join(lines)
+
+    @staticmethod
+    def format_price_alert_message(
+        alerts: list, check_time: "datetime"
+    ) -> str:
+        """格式化到价提醒消息（HTML 格式）
+
+        Args:
+            alerts: 已触发的 PriceAlert 列表
+            check_time: 检查时间（datetime 对象，将格式化为北京时间）
+        """
+        from html import escape as html_escape
+        from zoneinfo import ZoneInfo
+
+        # 转换为北京时间
+        if check_time.tzinfo is None:
+            time_str = check_time.strftime("%Y-%m-%d %H:%M")
+        else:
+            bj_time = check_time.astimezone(ZoneInfo("Asia/Shanghai"))
+            time_str = bj_time.strftime("%Y-%m-%d %H:%M")
+
+        if len(alerts) == 1:
+            a = alerts[0]
+            direction_emoji = "⬇️" if a.direction == "below" else "⬆️"
+            direction_text = "跌破" if a.direction == "below" else "突破"
+            name = html_escape(a.etf_name)
+            msg = "🔔 到价提醒\n\n"
+            msg += f"{name} ({a.etf_code})\n"
+            msg += f"当前价格: <b>{a.triggered_price}</b> {direction_emoji} {direction_text} {a.target_price}\n"
+            if a.note:
+                msg += f"\n📝 {html_escape(a.note)}\n"
+            msg += f"\n⏰ {time_str}"
+            return msg
+        else:
+            msg = f"🔔 到价提醒 ({len(alerts)} 个触发)\n"
+            for a in alerts:
+                direction_emoji = "⬇️" if a.direction == "below" else "⬆️"
+                direction_text = "跌破" if a.direction == "below" else "突破"
+                name = html_escape(a.etf_name)
+                msg += f"\n📌 {name} ({a.etf_code})\n"
+                msg += f"   当前: <b>{a.triggered_price}</b> {direction_emoji} {direction_text} {a.target_price}\n"
+                if a.note:
+                    msg += f"   📝 {html_escape(a.note)}\n"
+            msg += f"\n⏰ {time_str}"
+            return msg

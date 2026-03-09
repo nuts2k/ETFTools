@@ -87,6 +87,20 @@ class AlertScheduler:
         )
         logger.info("Daily summary scheduled: 15:35 Beijing Time")
 
+        # 15:01 收盘价格提醒补检（到价提醒专用）
+        self._scheduler.add_job(
+            self._run_closing_price_check,
+            CronTrigger(
+                hour=15, minute=1,
+                day_of_week="mon-fri",
+                timezone=ZoneInfo("Asia/Shanghai")
+            ),
+            id="closing_price_check",
+            replace_existing=True,
+            max_instances=1,
+        )
+        logger.info("Closing price check scheduled: 15:01 Beijing Time")
+
         self._scheduler.start()
         logger.info("Alert scheduler started with intraday and daily checks")
 
@@ -358,6 +372,19 @@ class AlertScheduler:
                     logger.info(f"Sent {len(signals_to_send)} alerts to user {user_id}")
                 except Exception as e:
                     logger.error(f"Error sending message to user {user_id}: {e}")
+
+            # 步骤 4: 检查到价提醒
+            await self._check_price_alerts()
+
+            # 步骤 5: 清理过期的已触发到价提醒（30 天）
+            try:
+                from app.services.price_alert_service import PriceAlertService
+                with Session(engine) as cleanup_session:
+                    deleted = PriceAlertService.cleanup_old_triggered(cleanup_session)
+                    if deleted > 0:
+                        logger.info(f"Cleaned up {deleted} old triggered price alerts")
+            except Exception as e:
+                logger.error(f"Failed to cleanup old price alerts: {e}")
 
     async def _run_daily_summary(self) -> None:
         """执行每日摘要推送"""
@@ -642,6 +669,81 @@ class AlertScheduler:
                 ],
             }
             return await self._send_user_summary(user_id, udata, etf_data)
+
+    async def _check_price_alerts(self) -> None:
+        """检查所有活跃的到价提醒并触发通知"""
+        from app.services.price_alert_service import PriceAlertService
+
+        with Session(engine) as session:
+            active_alerts = PriceAlertService.get_all_active_alerts(session)
+            if not active_alerts:
+                return
+
+            # 获取涉及的 ETF 代码
+            etf_codes = set(a.etf_code for a in active_alerts)
+            logger.info(f"Checking {len(active_alerts)} active price alerts for {len(etf_codes)} ETFs")
+
+            # 获取实时价格
+            etf_prices: Dict[str, float] = {}
+            for code in etf_codes:
+                try:
+                    info = await asyncio.to_thread(ak_service.get_etf_info, code)
+                    if info and "price" in info:
+                        etf_prices[code] = info["price"]
+                except Exception as e:
+                    logger.error(f"Failed to get price for {code}: {e}")
+
+            if not etf_prices:
+                logger.warning("No prices fetched for price alert check")
+                return
+
+            # 触发匹配的提醒
+            triggered = PriceAlertService.trigger_alerts(
+                session, active_alerts, etf_prices
+            )
+
+            if not triggered:
+                return
+
+            logger.info(f"Triggered {len(triggered)} price alerts")
+
+            # 按用户分组发送通知
+            user_alerts: Dict[int, list] = {}
+            for alert in triggered:
+                user_alerts.setdefault(alert.user_id, []).append(alert)
+
+            for user_id, alerts in user_alerts.items():
+                await self._send_price_alert_notification(session, user_id, alerts)
+
+    async def _send_price_alert_notification(
+        self, session: Session, user_id: int, alerts: list
+    ) -> None:
+        """发送到价提醒的 Telegram 通知"""
+        user = session.get(User, user_id)
+        if not user:
+            return
+
+        telegram_config = (user.settings or {}).get("telegram", {})
+        if not telegram_config.get("enabled") or not telegram_config.get("verified"):
+            logger.warning(f"User {user_id}: Telegram not configured, skipping price alert notification")
+            return
+
+        bot_token = decrypt_token(telegram_config["botToken"], settings.SECRET_KEY)
+        chat_id = telegram_config["chatId"]
+
+        check_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+        message = TelegramNotificationService.format_price_alert_message(alerts, check_time)
+
+        try:
+            await TelegramNotificationService.send_message(bot_token, chat_id, message)
+            logger.info(f"Sent price alert notification to user {user_id} ({len(alerts)} alerts)")
+        except Exception as e:
+            logger.error(f"Failed to send price alert to user {user_id}: {e}")
+
+    async def _run_closing_price_check(self) -> None:
+        """15:01 收盘补检 - 仅检查到价提醒"""
+        logger.info("Running closing price check for price alerts...")
+        await self._check_price_alerts()
 
 
 # 全局单例

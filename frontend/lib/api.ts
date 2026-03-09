@@ -418,3 +418,73 @@ export interface CompareData {
   metrics: Record<string, CompareMetrics>;
   temperatures: Record<string, Temperature | null>;
 }
+
+// --- 到价提醒 ---
+
+export interface PriceAlertItem {
+  id: number
+  etf_code: string
+  etf_name: string
+  target_price: number
+  direction: "above" | "below"
+  note: string | null
+  is_triggered: boolean
+  triggered_at: string | null
+  triggered_price: number | null
+  created_at: string
+}
+
+export async function getPriceAlerts(
+  token: string,
+  activeOnly?: boolean,
+): Promise<PriceAlertItem[]> {
+  const params = activeOnly ? "?active_only=true" : ""
+  const response = await fetch(`${API_BASE_URL}/price-alerts${params}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "获取提醒列表失败" }))
+    throw new Error(error.detail || "获取提醒列表失败")
+  }
+  return response.json()
+}
+
+export async function createPriceAlert(
+  token: string,
+  data: {
+    etf_code: string
+    etf_name: string
+    target_price: number
+    direction?: "above" | "below"
+    note?: string
+  },
+): Promise<PriceAlertItem> {
+  const response = await fetch(`${API_BASE_URL}/price-alerts`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "创建提醒失败" }))
+    throw new Error(error.detail || "创建提醒失败")
+  }
+  return response.json()
+}
+
+export async function deletePriceAlert(
+  token: string,
+  id: number,
+): Promise<{ message: string }> {
+  const response = await fetch(`${API_BASE_URL}/price-alerts/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: "删除提醒失败" }))
+    throw new Error(error.detail || "删除提醒失败")
+  }
+  return response.json()
+}
