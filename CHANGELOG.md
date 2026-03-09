@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.5.0] - 2026-03-09
+
+### 新增
+
+- add frontend components and update documentation
+- add notification formatting, scheduler integration, and frontend API
+- add backend model, service, and API endpoints
+- add SSE ETF share history backfill script
+
+### 修复
+
+- address code review issues for dialog and alert list
+- add scrollable container for alert list
+- fix dialog broken layout and bell icon positioning
+- address code review issues across backend and frontend
+- address code review issues in backfill script
+
+### 变更
+
+- refactor(price-alert): use enum for direction, consolidate price check logic, fix frontend issues
+
+
 ## [0.4.7] - 2026-03-04
 
 ### 新增
